@@ -1,0 +1,24 @@
+# GitHub Pages Jekyll Configuration
+title: "寶可夢圖鑑搜尋器"
+description: "完整的寶可夢圖鑑搜尋工具，支援離線使用，包含1025+隻寶可夢"
+author: "Pokemon Dex Team"
+url: "https://yourusername.github.io"
+baseurl: "/pokemon-dex"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+plugins:
+  - jekyll-sitemap
+
+# Exclude files from build
+exclude:
+  - create_icons.py
+  - start-server.py
+  - pokemon-search.html
+  - README.md
+  - _config.yml
+
+# Include hidden files
+include:
+  - .htaccess
