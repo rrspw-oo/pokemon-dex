@@ -48,7 +48,7 @@ function validatePokemonIdentifier(idOrName) {
   // Check if it's a valid number (Pokemon ID)
   if (/^\d+$/.test(identifier)) {
     const id = parseInt(identifier);
-    return id >= 1 && id <= 1010; // Valid Pokemon ID range
+    return id >= 1 && id <= 1025; // Valid Pokemon ID range
   }
 
   // Check if it's a valid Pokemon name (only letters, hyphens, and spaces)
@@ -169,7 +169,7 @@ export async function searchPokemon(query, includeEvolutions = false) {
     // If query is a number, fetch all forms for that ID
     if (/^\d+$/.test(query)) {
       const id = parseInt(query, 10);
-      
+
       if (!validatePokemonIdentifier(id)) {
         throw new Error(`Invalid Pokemon ID: ${id}`);
       }
@@ -216,20 +216,27 @@ export async function searchPokemon(query, includeEvolutions = false) {
       if (includeEvolutions && validResults.length > 0) {
         try {
           const evolutionChain = await fetchCompleteEvolutionChain(id);
-          
+
           // Filter out current Pokemon forms to avoid duplicates
-          const currentFormNames = validResults.map(r => r.englishName?.toLowerCase() || r.name?.toLowerCase());
-          const evolutions = evolutionChain.filter(evolution => {
-            const evolutionName = evolution.englishName?.toLowerCase() || evolution.name?.toLowerCase();
+          const currentFormNames = validResults.map(
+            (r) => r.englishName?.toLowerCase() || r.name?.toLowerCase()
+          );
+          const evolutions = evolutionChain.filter((evolution) => {
+            const evolutionName =
+              evolution.englishName?.toLowerCase() ||
+              evolution.name?.toLowerCase();
             return !currentFormNames.includes(evolutionName);
           });
-          
+
           validResults = [...validResults, ...evolutions];
-          
+
           // Sort by Pokemon ID to maintain consistent ordering
           validResults.sort((a, b) => a.id - b.id);
         } catch (evolutionError) {
-          console.warn(`Could not fetch evolution chain for ${id}:`, evolutionError);
+          console.warn(
+            `Could not fetch evolution chain for ${id}:`,
+            evolutionError
+          );
         }
       }
 
@@ -248,30 +255,53 @@ export async function searchPokemon(query, includeEvolutions = false) {
       for (const match of nameMatches.slice(0, 20)) {
         if (!processedIds.has(match.id)) {
           processedIds.add(match.id);
-          
+
           // Check if this is a multi-form Pokemon by finding all forms
           try {
-            const speciesResponse = await fetch(`${POKE_API_BASE}/pokemon-species/${match.id}`);
+            const speciesResponse = await fetch(
+              `${POKE_API_BASE}/pokemon-species/${match.id}`
+            );
             if (speciesResponse.ok) {
               const speciesData = await speciesResponse.json();
-              const forms = speciesData.varieties.map(variety => variety.pokemon.name);
-              
+              const forms = speciesData.varieties.map(
+                (variety) => variety.pokemon.name
+              );
+
               // If multiple forms exist, fetch all forms
               if (forms.length > 1) {
-                forms.forEach(formName => {
-                  allFormsToFetch.push({ id: match.id, name: formName, isForm: true });
+                forms.forEach((formName) => {
+                  allFormsToFetch.push({
+                    id: match.id,
+                    name: formName,
+                    isForm: true,
+                  });
                 });
               } else {
                 // Single form, use the match directly
-                allFormsToFetch.push({ id: match.id, name: match.en.toLowerCase(), isForm: false });
+                allFormsToFetch.push({
+                  id: match.id,
+                  name: match.en.toLowerCase(),
+                  isForm: false,
+                });
               }
             } else {
               // Fallback to direct ID fetch
-              allFormsToFetch.push({ id: match.id, name: match.id.toString(), isForm: false });
+              allFormsToFetch.push({
+                id: match.id,
+                name: match.id.toString(),
+                isForm: false,
+              });
             }
           } catch (error) {
-            console.warn(`Could not fetch species data for ${match.id}, using direct ID:`, error);
-            allFormsToFetch.push({ id: match.id, name: match.id.toString(), isForm: false });
+            console.warn(
+              `Could not fetch species data for ${match.id}, using direct ID:`,
+              error
+            );
+            allFormsToFetch.push({
+              id: match.id,
+              name: match.id.toString(),
+              isForm: false,
+            });
           }
         }
       }
@@ -294,14 +324,16 @@ export async function searchPokemon(query, includeEvolutions = false) {
       // Deduplicate results by Chinese name and ID to avoid showing identical Pokemon
       const deduplicatedResults = [];
       const seen = new Set();
-      
+
       for (const pokemon of validResults) {
         const key = `${pokemon.id}-${pokemon.chineseName}`;
         if (!seen.has(key)) {
           seen.add(key);
           deduplicatedResults.push(pokemon);
         } else {
-          console.log(`Removing duplicate: ${pokemon.id} ${pokemon.chineseName} (${pokemon.englishName})`);
+          console.log(
+            `Removing duplicate: ${pokemon.id} ${pokemon.chineseName} (${pokemon.englishName})`
+          );
         }
       }
 
@@ -311,11 +343,18 @@ export async function searchPokemon(query, includeEvolutions = false) {
       if (includeEvolutions && deduplicatedResults.length > 0) {
         const evolutionPromises = deduplicatedResults.map(async (pokemon) => {
           try {
-            const evolutionChain = await fetchCompleteEvolutionChain(pokemon.id);
+            const evolutionChain = await fetchCompleteEvolutionChain(
+              pokemon.id
+            );
             // Filter out the current Pokemon to avoid duplicates
-            return evolutionChain.filter(evolution => evolution.id !== pokemon.id);
+            return evolutionChain.filter(
+              (evolution) => evolution.id !== pokemon.id
+            );
           } catch (error) {
-            console.error(`Error fetching evolution chain for ${pokemon.id}:`, error);
+            console.error(
+              `Error fetching evolution chain for ${pokemon.id}:`,
+              error
+            );
             return [];
           }
         });
@@ -325,10 +364,10 @@ export async function searchPokemon(query, includeEvolutions = false) {
 
         // Combine original results with evolution forms
         const combinedResults = [...deduplicatedResults, ...allEvolutions];
-        
+
         // Remove duplicates again based on ID and name combination
         const seenEvolutions = new Set();
-        finalResults = combinedResults.filter(pokemon => {
+        finalResults = combinedResults.filter((pokemon) => {
           const key = `${pokemon.id}-${pokemon.englishName || pokemon.name}`;
           if (seenEvolutions.has(key)) {
             return false;
@@ -354,15 +393,22 @@ export async function searchPokemon(query, includeEvolutions = false) {
         // If evolution forms are requested, add evolution chain
         if (includeEvolutions) {
           try {
-            const evolutionChain = await fetchCompleteEvolutionChain(pokemon.id);
+            const evolutionChain = await fetchCompleteEvolutionChain(
+              pokemon.id
+            );
             // Filter out the current Pokemon to avoid duplicates
-            const evolutions = evolutionChain.filter(evolution => evolution.id !== pokemon.id);
+            const evolutions = evolutionChain.filter(
+              (evolution) => evolution.id !== pokemon.id
+            );
             results = [...results, ...evolutions];
 
             // Sort by Pokemon ID to maintain consistent ordering
             results.sort((a, b) => a.id - b.id);
           } catch (evolutionError) {
-            console.warn(`Could not fetch evolution chain for ${pokemon.id}:`, evolutionError);
+            console.warn(
+              `Could not fetch evolution chain for ${pokemon.id}:`,
+              evolutionError
+            );
           }
         }
 
@@ -414,30 +460,32 @@ function getTypeChineseName(englishType) {
 // Fetch evolution chain for a Pokemon
 export async function fetchEvolutionChain(pokemonId) {
   const cacheKey = `evolution_${pokemonId}`;
-  
+
   if (apiCache.has(cacheKey)) {
     return apiCache.get(cacheKey);
   }
 
   try {
     // First get the species data to find evolution chain URL
-    const speciesResponse = await fetch(`${POKE_API_BASE}/pokemon-species/${pokemonId}`);
+    const speciesResponse = await fetch(
+      `${POKE_API_BASE}/pokemon-species/${pokemonId}`
+    );
     if (!speciesResponse.ok) {
       throw new Error(`Species not found: ${pokemonId}`);
     }
-    
+
     const speciesData = await speciesResponse.json();
     const evolutionChainUrl = speciesData.evolution_chain.url;
-    
+
     // Fetch the evolution chain
     const evolutionResponse = await fetch(evolutionChainUrl);
     if (!evolutionResponse.ok) {
       throw new Error(`Evolution chain not found`);
     }
-    
+
     const evolutionData = await evolutionResponse.json();
     const evolutionChain = parseEvolutionChain(evolutionData.chain);
-    
+
     apiCache.set(cacheKey, evolutionChain);
     return evolutionChain;
   } catch (error) {
@@ -449,11 +497,11 @@ export async function fetchEvolutionChain(pokemonId) {
 // Parse evolution chain data recursively
 function parseEvolutionChain(chainData) {
   const evolutionChain = [];
-  
+
   function processEvolution(currentEvolution, stage = 0) {
     const pokemonName = currentEvolution.species.name;
     const pokemonId = extractIdFromUrl(currentEvolution.species.url);
-    
+
     // Get evolution details
     const evolutionDetails = currentEvolution.evolution_details[0] || {};
     const evolutionTrigger = evolutionDetails.trigger?.name || null;
@@ -461,7 +509,7 @@ function parseEvolutionChain(chainData) {
     const item = evolutionDetails.item?.name || null;
     const minHappiness = evolutionDetails.min_happiness || null;
     const timeOfDay = evolutionDetails.time_of_day || null;
-    
+
     const evolutionInfo = {
       id: pokemonId,
       name: pokemonName,
@@ -474,19 +522,19 @@ function parseEvolutionChain(chainData) {
       // Will be populated when we fetch Pokemon data
       chineseName: null,
       englishName: null,
-      image: null
+      image: null,
     };
-    
+
     evolutionChain.push(evolutionInfo);
-    
+
     // Process next evolutions
     if (currentEvolution.evolves_to && currentEvolution.evolves_to.length > 0) {
-      currentEvolution.evolves_to.forEach(nextEvolution => {
+      currentEvolution.evolves_to.forEach((nextEvolution) => {
         processEvolution(nextEvolution, stage + 1);
       });
     }
   }
-  
+
   processEvolution(chainData);
   return evolutionChain;
 }
@@ -502,9 +550,9 @@ export function getEvolutionRequirementText(evolutionInfo) {
   if (!evolutionInfo.evolutionTrigger) {
     return "基本型態";
   }
-  
+
   const requirements = [];
-  
+
   switch (evolutionInfo.evolutionTrigger) {
     case "level-up":
       if (evolutionInfo.minLevel) {
@@ -534,7 +582,7 @@ export function getEvolutionRequirementText(evolutionInfo) {
     default:
       requirements.push("特殊條件");
   }
-  
+
   return requirements.length > 0 ? requirements.join("，") : "進化條件";
 }
 
@@ -558,13 +606,13 @@ function getItemChineseName(itemName) {
     "dubious-disc": "可疑修正檔",
     "prism-scale": "美麗鱗片",
     "reaper-cloth": "靈界之布",
-    "electirizer": "電力增強器",
-    "magmarizer": "熔岩增強器",
-    "protector": "護具",
+    electirizer: "電力增強器",
+    magmarizer: "熔岩增強器",
+    protector: "護具",
     "razor-claw": "銳利之爪",
-    "razor-fang": "銳利之牙"
+    "razor-fang": "銳利之牙",
   };
-  
+
   return itemMap[itemName] || itemName;
 }
 
@@ -572,7 +620,7 @@ function getItemChineseName(itemName) {
 export async function fetchCompleteEvolutionChain(pokemonId) {
   try {
     const evolutionChain = await fetchEvolutionChain(pokemonId);
-    
+
     // Fetch Pokemon data for each evolution
     const promises = evolutionChain.map(async (evolution) => {
       try {
@@ -582,24 +630,30 @@ export async function fetchCompleteEvolutionChain(pokemonId) {
           chineseName: pokemon.chineseName,
           englishName: pokemon.englishName,
           image: pokemon.image,
-          types: pokemon.types
+          types: pokemon.types,
         };
       } catch (error) {
-        console.error(`Error fetching Pokemon data for evolution ${evolution.id}:`, error);
+        console.error(
+          `Error fetching Pokemon data for evolution ${evolution.id}:`,
+          error
+        );
         return {
           ...evolution,
           chineseName: `未知寶可夢 ${evolution.id}`,
           englishName: evolution.name,
           image: generatePlaceholderSprite(evolution.name),
-          types: []
+          types: [],
         };
       }
     });
-    
+
     const completeEvolutionChain = await Promise.all(promises);
     return completeEvolutionChain;
   } catch (error) {
-    console.error(`Error fetching complete evolution chain for ${pokemonId}:`, error);
+    console.error(
+      `Error fetching complete evolution chain for ${pokemonId}:`,
+      error
+    );
     return [];
   }
 }
