@@ -1,12 +1,65 @@
-# React + Vite
+# 寶可夢圖鑑搜尋器 - React版
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一個基於 React 的完整寶可夢圖鑑搜尋工具，具備進化鏈功能和現代化的用戶界面。
 
-Currently, two official plugins are available:
+## 🚀 功能特色
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 🧬 進化鏈系統
+- 自動顯示寶可夢的完整進化鏈
+- 中文進化條件說明（等級、道具、親密度等）
+- 點擊寶可夢卡片重新搜尋該寶可夢的進化家族
+- 視覺化進化路線圖
 
-## Expanding the ESLint configuration
+### 🔍 強大搜尋功能
+- 支援中文、英文名稱搜尋
+- 寶可夢編號快速查詢
+- 智能緩存提升搜尋速度
+- 模糊搜尋支援
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 🎨 現代化界面
+- 響應式設計，支援手機和桌面
+- 像素風格設計
+- 流暢的動畫效果
+- 直觀的點擊交互
+
+### ⚡ 技術特色
+- React 18 + Vite 快速開發
+- 完整的寶可夢資料庫
+- RESTful API 整合
+- 高性能緩存系統
+
+## 🛠 技術堆疊
+
+- **前端框架**: React 18
+- **構建工具**: Vite
+- **樣式**: CSS3 (像素風格)
+- **API**: PokeAPI
+- **狀態管理**: React Hooks
+
+## 📖 使用說明
+
+1. **搜尋寶可夢**: 在搜尋框輸入寶可夢名稱或編號
+2. **查看進化鏈**: 搜尋結果自動包含該寶可夢的所有進化型態  
+3. **進化詳情**: 點擊任何寶可夢卡片查看以該寶可夢為主的進化鏈
+4. **進化條件**: 每個進化階段都顯示詳細的進化需求
+
+## 🔧 開發
+
+```bash
+# 安裝依賴
+npm install
+
+# 開發模式
+npm run dev
+
+# 構建生產版本
+npm run build
+```
+
+## 📚 API 參考
+
+使用 [PokeAPI](https://pokeapi.co/) 獲取寶可夢資料和進化鏈信息。
+
+## 🤖 自動化
+
+本專案使用 Claude Code 進行開發，具備自動化的代碼生成和優化功能。
