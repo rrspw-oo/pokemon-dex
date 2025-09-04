@@ -67,36 +67,16 @@ function App() {
           <h1>寶可夢搜尋器</h1>
           <p>Pokemon Search Tool</p>
         </header>
-
         <SearchBox onSearch={handleSearch} isLoading={isLoading} />
-
         {error && (
           <div className="error-message">
             <p>{error}</p>
           </div>
         )}
-
-        {isLoading ? (
-          <div className="loading">
-            <div className="loading-spinner">
-              <img
-                src="/pikachuLibre.png"
-                alt="Loading Pokemon..."
-                onError={(e) => {
-                  e.target.style.display = "none";
-                  e.target.parentElement.classList.add(
-                    "loading-spinner-fallback"
-                  );
-                  e.target.parentElement.classList.remove("loading-spinner");
-                }}
-              />
-            </div>
-            <p>搜尋中...</p>
-          </div>
-        ) : (
-          <PokemonGrid pokemon={searchResults} onPokemonClick={handlePokemonClick} />
-        )}
-
+        <PokemonGrid
+          pokemon={searchResults}
+          onPokemonClick={handlePokemonClick}
+        />
         <Footer />
       </div>
     </div>

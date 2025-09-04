@@ -80,6 +80,7 @@
 }
 
 /* Responsive adjustments */
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .pokemon-cards {
     gap: 12px;
@@ -123,5 +124,38 @@
   .results-header p {
     font-size: 14px;
     padding: 8px 15px;
+  }
+}
+
+@media (orientation: portrait) {
+  .pokemon-cards {
+    gap: 10px;
+    flex-direction: column;
+  }
+  
+  .empty-icon {
+    font-size: 2.8em;
+  }
+  
+  .empty-state h3 {
+    font-size: 1.25em;
+  }
+  
+  .search-examples {
+    font-size: 11px;
+  }
+  
+  .example {
+    padding: 2px 8px;
+    font-size: 11px;
+  }
+  
+  .pokemon-grid-empty {
+    padding: 35px 12px;
+  }
+  
+  .results-header p {
+    font-size: 13px;
+    padding: 7px 12px;
   }
 }
