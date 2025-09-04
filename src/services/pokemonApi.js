@@ -1,0 +1,631 @@
+// Pokemon API service for fetching Pokemon data
+import {
+  getChineseNameSync,
+  getChineseName,
+  getEnglishName,
+  searchPokemonNamesSync,
+  ensureDataLoaded,
+} from "../utils/pokemonNamesHelper";
+import {
+  getSpriteWithFallback,
+  hasLocalSprite,
+} from "../utils/localSpriteUtils";
+
+const POKE_API_BASE = "https://pokeapi.co/api/v2";
+
+// Cache for API responses
+const apiCache = new Map();
+
+// Initialize Pokemon data loading
+ensureDataLoaded().catch(console.error);
+
+// Generate placeholder pixel sprite
+function generatePlaceholderSprite(pokemonName) {
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+    <svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" style="image-rendering: pixelated;">
+      <rect width="64" height="64" fill="#e0e0e0" stroke="#999" stroke-width="1"/>
+      <rect x="8" y="8" width="48" height="48" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/>
+      <circle cx="20" cy="24" r="3" fill="#333"/>
+      <circle cx="44" cy="24" r="3" fill="#333"/>
+      <rect x="28" y="32" width="8" height="4" fill="#666" rx="2"/>
+      <text x="32" y="52" text-anchor="middle" dominant-baseline="central" 
+            font-family="monospace" font-size="8" fill="#666">
+        ${pokemonName ? pokemonName.substring(0, 6) : "???"}
+      </text>
+    </svg>
+  `)}`;
+}
+
+// Input validation function
+function validatePokemonIdentifier(idOrName) {
+  if (!idOrName) return false;
+
+  const identifier = idOrName.toString().trim();
+
+  // Check for empty string
+  if (!identifier) return false;
+
+  // Check if it's a valid number (Pokemon ID)
+  if (/^\d+$/.test(identifier)) {
+    const id = parseInt(identifier);
+    return id >= 1 && id <= 1010; // Valid Pokemon ID range
+  }
+
+  // Check if it's a valid Pokemon name (only letters, hyphens, and spaces)
+  if (!/^[a-zA-Z\s\-.']+$/.test(identifier)) {
+    console.warn(`Invalid Pokemon identifier format: ${identifier}`);
+    return false;
+  }
+
+  // Additional check for problematic characters
+  const problematicChars = /[ㄅ-ㄭㄱ-ㅎㅏ-ㅣ가-힣一-龯]/;
+  if (problematicChars.test(identifier)) {
+    console.warn(
+      `Pokemon identifier contains unsupported characters: ${identifier}`
+    );
+    return false;
+  }
+
+  return true;
+}
+
+// Fetch Pokemon by ID or name (single Pokémon)
+export async function fetchPokemonById(idOrName) {
+  if (!validatePokemonIdentifier(idOrName)) {
+    throw new Error(`Invalid Pokemon identifier: ${idOrName}`);
+  }
+
+  const cacheKey = `pokemon_${idOrName}`;
+
+  if (apiCache.has(cacheKey)) {
+    return apiCache.get(cacheKey);
+  }
+
+  try {
+    const sanitizedId = idOrName.toString().toLowerCase().trim();
+    const response = await fetch(`${POKE_API_BASE}/pokemon/${sanitizedId}`);
+    if (!response.ok) {
+      throw new Error(`Pokemon not found: ${idOrName}`);
+    }
+
+    const pokemon = await response.json();
+    // Get Chinese and English names using enhanced helpers
+    const chineseName = await getChineseName(pokemon.id, pokemon.name);
+    const englishName = await getEnglishName(pokemon.id, pokemon.name);
+
+    const spriteData = getSpriteWithFallback(pokemon.id, pokemon.name);
+
+    const result = {
+      id: pokemon.id,
+      name: pokemon.name,
+      chineseName: chineseName,
+      englishName: englishName,
+      image: spriteData.primary,
+      imageFallback: spriteData.fallback,
+      imageAlternatives: spriteData.alternatives, // Pass through alternative URLs
+      isLocalSprite: spriteData.isLocal,
+      hasLocalSprite: hasLocalSprite(),
+      originalImage:
+        pokemon.sprites?.other?.["official-artwork"]?.front_default ||
+        pokemon.sprites?.front_default,
+      types: pokemon.types.map((type) => ({
+        name: type.type.name,
+        chinese: getTypeChineseName(type.type.name),
+      })),
+      height: pokemon.height,
+      weight: pokemon.weight,
+      stats: pokemon.stats.map((stat) => ({
+        name: stat.stat.name,
+        value: stat.base_stat,
+      })),
+      // Add debug info for troubleshooting
+      spriteDebugInfo: spriteData.debugInfo,
+    };
+
+    apiCache.set(cacheKey, result);
+    return result;
+  } catch (error) {
+    console.error(`Error fetching Pokemon "${idOrName}":`, error.message);
+
+    const chineseName =
+      getChineseNameSync(idOrName) || `未知寶可夢 (${idOrName})`;
+    const spriteData = getSpriteWithFallback(idOrName, chineseName);
+
+    return {
+      id: parseInt(idOrName) || 0,
+      name: idOrName.toString(),
+      chineseName: chineseName,
+      englishName: idOrName.toString(),
+      image: spriteData.placeholder || spriteData.fallback,
+      imageFallback: spriteData.placeholder || spriteData.fallback,
+      imageAlternatives: spriteData.alternatives || [], // Include alternatives even in error case
+      isLocalSprite: false,
+      hasLocalSprite: hasLocalSprite(),
+      types: [],
+      height: 0,
+      weight: 0,
+      stats: [],
+      error: true,
+      errorMessage: `無法載入寶可夢資料: ${error.message}`,
+      spriteDebugInfo: spriteData.debugInfo,
+    };
+  }
+}
+
+// Search Pokemon by query (supports Chinese, English, and ID with forms and evolution chains)
+export async function searchPokemon(query, includeEvolutions = false) {
+  if (!query || query.length < 1) return [];
+
+  const cacheKey = `search_${query}_${includeEvolutions}`;
+
+  if (apiCache.has(cacheKey)) {
+    return apiCache.get(cacheKey);
+  }
+
+  try {
+    // Ensure Pokemon data is loaded
+    await ensureDataLoaded();
+
+    // If query is a number, fetch all forms for that ID
+    if (/^\d+$/.test(query)) {
+      const id = parseInt(query, 10);
+      
+      if (!validatePokemonIdentifier(id)) {
+        throw new Error(`Invalid Pokemon ID: ${id}`);
+      }
+
+      // Fetch species data to get all forms and base ID
+      const speciesResponse = await fetch(
+        `${POKE_API_BASE}/pokemon-species/${id}`
+      );
+      if (!speciesResponse.ok) {
+        throw new Error(`Species not found for ID: ${id}`);
+      }
+      const speciesData = await speciesResponse.json();
+      const baseId = speciesData.id; // Base ID (e.g., 741 for Oricorio)
+
+      // Get all form names from varieties
+      const forms = speciesData.varieties.map(
+        (variety) => variety.pokemon.name
+      );
+
+      // Fetch data for each form
+      const promises = forms.map(async (formName) => {
+        try {
+          const pokemon = await fetchPokemonById(formName);
+          // Override id to base ID
+          pokemon.id = baseId;
+          // Use enhanced Chinese name lookup for all forms
+          pokemon.chineseName = await getChineseName(pokemon.id, formName);
+          pokemon.is_variant = formName !== "oricorio-baile"; // Mark non-baile as variants
+          return pokemon;
+        } catch (error) {
+          console.error(`Error fetching form ${formName}:`, error);
+          return null;
+        }
+      });
+
+      const results = await Promise.all(promises);
+      let validResults = results.filter((result) => result !== null);
+
+      if (validResults.length === 0) {
+        throw new Error(`No forms found for ID ${id}`);
+      }
+
+      // If evolution forms are requested, add evolution chain
+      if (includeEvolutions && validResults.length > 0) {
+        try {
+          const evolutionChain = await fetchCompleteEvolutionChain(id);
+          
+          // Filter out current Pokemon forms to avoid duplicates
+          const currentFormNames = validResults.map(r => r.englishName?.toLowerCase() || r.name?.toLowerCase());
+          const evolutions = evolutionChain.filter(evolution => {
+            const evolutionName = evolution.englishName?.toLowerCase() || evolution.name?.toLowerCase();
+            return !currentFormNames.includes(evolutionName);
+          });
+          
+          validResults = [...validResults, ...evolutions];
+          
+          // Sort by Pokemon ID to maintain consistent ordering
+          validResults.sort((a, b) => a.id - b.id);
+        } catch (evolutionError) {
+          console.warn(`Could not fetch evolution chain for ${id}:`, evolutionError);
+        }
+      }
+
+      apiCache.set(cacheKey, validResults);
+      return validResults;
+    }
+
+    // Enhanced logic for name search - supports all forms for Chinese names
+    const nameMatches = searchPokemonNamesSync(query);
+
+    if (nameMatches.length > 0) {
+      // For Chinese name search, get all forms for each matched ID
+      const allFormsToFetch = [];
+      const processedIds = new Set();
+
+      for (const match of nameMatches.slice(0, 20)) {
+        if (!processedIds.has(match.id)) {
+          processedIds.add(match.id);
+          
+          // Check if this is a multi-form Pokemon by finding all forms
+          try {
+            const speciesResponse = await fetch(`${POKE_API_BASE}/pokemon-species/${match.id}`);
+            if (speciesResponse.ok) {
+              const speciesData = await speciesResponse.json();
+              const forms = speciesData.varieties.map(variety => variety.pokemon.name);
+              
+              // If multiple forms exist, fetch all forms
+              if (forms.length > 1) {
+                forms.forEach(formName => {
+                  allFormsToFetch.push({ id: match.id, name: formName, isForm: true });
+                });
+              } else {
+                // Single form, use the match directly
+                allFormsToFetch.push({ id: match.id, name: match.en.toLowerCase(), isForm: false });
+              }
+            } else {
+              // Fallback to direct ID fetch
+              allFormsToFetch.push({ id: match.id, name: match.id.toString(), isForm: false });
+            }
+          } catch (error) {
+            console.warn(`Could not fetch species data for ${match.id}, using direct ID:`, error);
+            allFormsToFetch.push({ id: match.id, name: match.id.toString(), isForm: false });
+          }
+        }
+      }
+
+      const promises = allFormsToFetch.map(async (formData) => {
+        try {
+          const pokemon = await fetchPokemonById(formData.name);
+          // Override ID to base ID for consistency
+          pokemon.id = formData.id;
+          return pokemon;
+        } catch (error) {
+          console.error(`Error fetching Pokemon form ${formData.name}:`, error);
+          return null;
+        }
+      });
+
+      const results = await Promise.all(promises);
+      const validResults = results.filter((result) => result !== null);
+
+      // Deduplicate results by Chinese name and ID to avoid showing identical Pokemon
+      const deduplicatedResults = [];
+      const seen = new Set();
+      
+      for (const pokemon of validResults) {
+        const key = `${pokemon.id}-${pokemon.chineseName}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          deduplicatedResults.push(pokemon);
+        } else {
+          console.log(`Removing duplicate: ${pokemon.id} ${pokemon.chineseName} (${pokemon.englishName})`);
+        }
+      }
+
+      let finalResults = deduplicatedResults;
+
+      // If evolution forms are requested, add evolution chains for each result
+      if (includeEvolutions && deduplicatedResults.length > 0) {
+        const evolutionPromises = deduplicatedResults.map(async (pokemon) => {
+          try {
+            const evolutionChain = await fetchCompleteEvolutionChain(pokemon.id);
+            // Filter out the current Pokemon to avoid duplicates
+            return evolutionChain.filter(evolution => evolution.id !== pokemon.id);
+          } catch (error) {
+            console.error(`Error fetching evolution chain for ${pokemon.id}:`, error);
+            return [];
+          }
+        });
+
+        const evolutionResults = await Promise.all(evolutionPromises);
+        const allEvolutions = evolutionResults.flat();
+
+        // Combine original results with evolution forms
+        const combinedResults = [...deduplicatedResults, ...allEvolutions];
+        
+        // Remove duplicates again based on ID and name combination
+        const seenEvolutions = new Set();
+        finalResults = combinedResults.filter(pokemon => {
+          const key = `${pokemon.id}-${pokemon.englishName || pokemon.name}`;
+          if (seenEvolutions.has(key)) {
+            return false;
+          }
+          seenEvolutions.add(key);
+          return true;
+        });
+
+        // Sort by Pokemon ID to maintain consistent ordering
+        finalResults.sort((a, b) => a.id - b.id);
+      }
+
+      apiCache.set(cacheKey, finalResults);
+      return finalResults;
+    }
+
+    // Try direct API search for valid identifiers
+    if (validatePokemonIdentifier(query)) {
+      try {
+        const pokemon = await fetchPokemonById(query);
+        let results = [pokemon];
+
+        // If evolution forms are requested, add evolution chain
+        if (includeEvolutions) {
+          try {
+            const evolutionChain = await fetchCompleteEvolutionChain(pokemon.id);
+            // Filter out the current Pokemon to avoid duplicates
+            const evolutions = evolutionChain.filter(evolution => evolution.id !== pokemon.id);
+            results = [...results, ...evolutions];
+
+            // Sort by Pokemon ID to maintain consistent ordering
+            results.sort((a, b) => a.id - b.id);
+          } catch (evolutionError) {
+            console.warn(`Could not fetch evolution chain for ${pokemon.id}:`, evolutionError);
+          }
+        }
+
+        apiCache.set(cacheKey, results);
+        return results;
+      } catch (error) {
+        console.warn(`Direct API search failed for "${query}":`, error.message);
+        apiCache.set(cacheKey, []);
+        return [];
+      }
+    } else {
+      console.warn(`Skipping API call for invalid identifier: "${query}"`);
+      apiCache.set(cacheKey, []);
+      return [];
+    }
+  } catch (error) {
+    console.error("Search error:", error);
+    apiCache.set(cacheKey, []);
+    return [];
+  }
+}
+
+// Pokemon type Chinese names
+function getTypeChineseName(englishType) {
+  const typeMap = {
+    normal: "一般",
+    fire: "火",
+    water: "水",
+    electric: "電",
+    grass: "草",
+    ice: "冰",
+    fighting: "格鬥",
+    poison: "毒",
+    ground: "地面",
+    flying: "飛行",
+    psychic: "超能力",
+    bug: "蟲",
+    rock: "岩石",
+    ghost: "幽靈",
+    dragon: "龍",
+    dark: "惡",
+    steel: "鋼",
+    fairy: "妖精",
+  };
+
+  return typeMap[englishType.toLowerCase()] || englishType;
+}
+
+// Fetch evolution chain for a Pokemon
+export async function fetchEvolutionChain(pokemonId) {
+  const cacheKey = `evolution_${pokemonId}`;
+  
+  if (apiCache.has(cacheKey)) {
+    return apiCache.get(cacheKey);
+  }
+
+  try {
+    // First get the species data to find evolution chain URL
+    const speciesResponse = await fetch(`${POKE_API_BASE}/pokemon-species/${pokemonId}`);
+    if (!speciesResponse.ok) {
+      throw new Error(`Species not found: ${pokemonId}`);
+    }
+    
+    const speciesData = await speciesResponse.json();
+    const evolutionChainUrl = speciesData.evolution_chain.url;
+    
+    // Fetch the evolution chain
+    const evolutionResponse = await fetch(evolutionChainUrl);
+    if (!evolutionResponse.ok) {
+      throw new Error(`Evolution chain not found`);
+    }
+    
+    const evolutionData = await evolutionResponse.json();
+    const evolutionChain = parseEvolutionChain(evolutionData.chain);
+    
+    apiCache.set(cacheKey, evolutionChain);
+    return evolutionChain;
+  } catch (error) {
+    console.error(`Error fetching evolution chain for ${pokemonId}:`, error);
+    return [];
+  }
+}
+
+// Parse evolution chain data recursively
+function parseEvolutionChain(chainData) {
+  const evolutionChain = [];
+  
+  function processEvolution(currentEvolution, stage = 0) {
+    const pokemonName = currentEvolution.species.name;
+    const pokemonId = extractIdFromUrl(currentEvolution.species.url);
+    
+    // Get evolution details
+    const evolutionDetails = currentEvolution.evolution_details[0] || {};
+    const evolutionTrigger = evolutionDetails.trigger?.name || null;
+    const minLevel = evolutionDetails.min_level || null;
+    const item = evolutionDetails.item?.name || null;
+    const minHappiness = evolutionDetails.min_happiness || null;
+    const timeOfDay = evolutionDetails.time_of_day || null;
+    
+    const evolutionInfo = {
+      id: pokemonId,
+      name: pokemonName,
+      stage: stage,
+      evolutionTrigger,
+      minLevel,
+      item,
+      minHappiness,
+      timeOfDay,
+      // Will be populated when we fetch Pokemon data
+      chineseName: null,
+      englishName: null,
+      image: null
+    };
+    
+    evolutionChain.push(evolutionInfo);
+    
+    // Process next evolutions
+    if (currentEvolution.evolves_to && currentEvolution.evolves_to.length > 0) {
+      currentEvolution.evolves_to.forEach(nextEvolution => {
+        processEvolution(nextEvolution, stage + 1);
+      });
+    }
+  }
+  
+  processEvolution(chainData);
+  return evolutionChain;
+}
+
+// Helper function to extract ID from Pokemon species URL
+function extractIdFromUrl(url) {
+  const matches = url.match(/\/(\d+)\/$/);
+  return matches ? parseInt(matches[1]) : null;
+}
+
+// Get evolution requirements in Chinese
+export function getEvolutionRequirementText(evolutionInfo) {
+  if (!evolutionInfo.evolutionTrigger) {
+    return "基本型態";
+  }
+  
+  const requirements = [];
+  
+  switch (evolutionInfo.evolutionTrigger) {
+    case "level-up":
+      if (evolutionInfo.minLevel) {
+        requirements.push(`等級 ${evolutionInfo.minLevel}`);
+      }
+      if (evolutionInfo.minHappiness) {
+        requirements.push(`親密度 ${evolutionInfo.minHappiness}`);
+      }
+      if (evolutionInfo.timeOfDay) {
+        const timeText = evolutionInfo.timeOfDay === "day" ? "白天" : "夜晚";
+        requirements.push(timeText);
+      }
+      break;
+    case "use-item":
+      if (evolutionInfo.item) {
+        const itemText = getItemChineseName(evolutionInfo.item);
+        requirements.push(`使用 ${itemText}`);
+      }
+      break;
+    case "trade":
+      requirements.push("交換");
+      if (evolutionInfo.item) {
+        const itemText = getItemChineseName(evolutionInfo.item);
+        requirements.push(`攜帶 ${itemText}`);
+      }
+      break;
+    default:
+      requirements.push("特殊條件");
+  }
+  
+  return requirements.length > 0 ? requirements.join("，") : "進化條件";
+}
+
+// Get item Chinese name
+function getItemChineseName(itemName) {
+  const itemMap = {
+    "thunder-stone": "雷之石",
+    "fire-stone": "火之石",
+    "water-stone": "水之石",
+    "leaf-stone": "葉之石",
+    "moon-stone": "月之石",
+    "sun-stone": "日之石",
+    "shiny-stone": "光之石",
+    "dusk-stone": "暗之石",
+    "dawn-stone": "覺醒石",
+    "ice-stone": "冰之石",
+    "kings-rock": "王者之證",
+    "metal-coat": "金屬膜",
+    "dragon-scale": "龍之鱗片",
+    "up-grade": "升級資料",
+    "dubious-disc": "可疑修正檔",
+    "prism-scale": "美麗鱗片",
+    "reaper-cloth": "靈界之布",
+    "electirizer": "電力增強器",
+    "magmarizer": "熔岩增強器",
+    "protector": "護具",
+    "razor-claw": "銳利之爪",
+    "razor-fang": "銳利之牙"
+  };
+  
+  return itemMap[itemName] || itemName;
+}
+
+// Fetch complete evolution chain with Pokemon data
+export async function fetchCompleteEvolutionChain(pokemonId) {
+  try {
+    const evolutionChain = await fetchEvolutionChain(pokemonId);
+    
+    // Fetch Pokemon data for each evolution
+    const promises = evolutionChain.map(async (evolution) => {
+      try {
+        const pokemon = await fetchPokemonById(evolution.id);
+        return {
+          ...evolution,
+          chineseName: pokemon.chineseName,
+          englishName: pokemon.englishName,
+          image: pokemon.image,
+          types: pokemon.types
+        };
+      } catch (error) {
+        console.error(`Error fetching Pokemon data for evolution ${evolution.id}:`, error);
+        return {
+          ...evolution,
+          chineseName: `未知寶可夢 ${evolution.id}`,
+          englishName: evolution.name,
+          image: generatePlaceholderSprite(evolution.name),
+          types: []
+        };
+      }
+    });
+    
+    const completeEvolutionChain = await Promise.all(promises);
+    return completeEvolutionChain;
+  } catch (error) {
+    console.error(`Error fetching complete evolution chain for ${pokemonId}:`, error);
+    return [];
+  }
+}
+
+// Get type color for styling
+export function getTypeColor(typeName) {
+  const typeColors = {
+    normal: "#A8A878",
+    fire: "#F08030",
+    water: "#6890F0",
+    electric: "#F8D030",
+    grass: "#78C850",
+    ice: "#98D8D8",
+    fighting: "#C03028",
+    poison: "#A040A0",
+    ground: "#E0C068",
+    flying: "#A890F0",
+    psychic: "#F85888",
+    bug: "#A8B820",
+    rock: "#B8A038",
+    ghost: "#705898",
+    dragon: "#7038F8",
+    dark: "#705848",
+    steel: "#B8B8D0",
+    fairy: "#EE99AC",
+  };
+
+  return typeColors[typeName.toLowerCase()] || "#68A090";
+}
