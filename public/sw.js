@@ -1,5 +1,5 @@
 // Pokemon Dex Service Worker
-const CACHE_NAME = 'pokemon-dex-v1';
+const CACHE_NAME = 'pokemon-dex-v2';
 const POKEMON_DATA_CACHE = 'pokemon-data-v1';
 
 // Assets to cache immediately
@@ -7,7 +7,7 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/vite.svg'
+  '/pokemonBall.svg'
 ];
 
 // Pokemon data files to cache
