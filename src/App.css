@@ -50,15 +50,56 @@
 /* Classic Mac responsive adjustments */
 @media (max-width: 768px) {
   .app {
-    padding: 4px;
+    padding: 12px;
   }
   
   .container {
-    padding: 2px;
+    padding: 16px;
+    border-radius: 16px;
+    margin: 8px;
   }
   
   .window-content {
+    padding: 16px;
+  }
+  
+  .header {
+    padding: 16px 12px;
+    margin-bottom: 24px;
+  }
+  
+  .header h1 {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  
+  .header p {
+    font-size: 12px;
+  }
+  
+  .window-header {
+    height: 24px;
+  }
+  
+  .window-title {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
     padding: 8px;
+  }
+  
+  .container {
+    padding: 12px;
+    margin: 4px;
+    border-radius: 12px;
+  }
+  
+  .header {
+    padding: 12px 8px;
+    margin-bottom: 20px;
   }
   
   .header h1 {
@@ -66,14 +107,6 @@
   }
   
   .header p {
-    font-size: 10px;
-  }
-  
-  .window-header {
-    height: 18px;
-  }
-  
-  .window-title {
-    font-size: 10px;
+    font-size: 11px;
   }
 }
