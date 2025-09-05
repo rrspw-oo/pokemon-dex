@@ -108,6 +108,14 @@ export async function fetchPokemonById(idOrName) {
       originalImage:
         pokemon.sprites?.other?.["official-artwork"]?.front_default ||
         pokemon.sprites?.front_default,
+      // Add shiny sprite support
+      shinyImage:
+        pokemon.sprites?.other?.["official-artwork"]?.front_shiny ||
+        pokemon.sprites?.front_shiny,
+      hasShinySprite: !!(
+        pokemon.sprites?.other?.["official-artwork"]?.front_shiny ||
+        pokemon.sprites?.front_shiny
+      ),
       types: pokemon.types.map((type) => ({
         name: type.type.name,
         chinese: getTypeChineseName(type.type.name),
@@ -141,6 +149,9 @@ export async function fetchPokemonById(idOrName) {
       imageAlternatives: spriteData.alternatives || [], // Include alternatives even in error case
       isLocalSprite: false,
       hasLocalSprite: hasLocalSprite(),
+      // Add shiny sprite fallback for error cases
+      shinyImage: null,
+      hasShinySprite: false,
       types: [],
       height: 0,
       weight: 0,

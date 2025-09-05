@@ -9,11 +9,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['vite.svg'],
+      includeAssets: ['pokemonBall.svg', 'icons/*'],
       manifest: {
         name: 'Pokemon Dex React',
         short_name: 'PokeDex',
-        description: 'A comprehensive Pokemon database with Chinese and English names',
+        description: 'A comprehensive Pokemon database with Chinese and English names, featuring shiny Pokemon support',
         theme_color: '#3b82f6',
         background_color: '#ffffff',
         display: 'standalone',
@@ -21,14 +21,35 @@ export default defineConfig({
         start_url: '/pokemon-dex/',
         icons: [
           {
-            src: 'vite.svg',
+            src: 'pokemonBall.svg',
             sizes: '192x192',
-            type: 'image/svg+xml'
+            type: 'image/svg+xml',
+            purpose: 'any'
           },
           {
-            src: 'vite.svg',
+            src: 'pokemonBall.svg',
             sizes: '512x512',
-            type: 'image/svg+xml'
+            type: 'image/svg+xml',
+            purpose: 'any'
+          },
+          // Custom icons will be added here when user uploads them
+          {
+            src: 'icons/icon-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'icons/icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'icons/icon-192x192-maskable.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       }
