@@ -8,10 +8,18 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [failedUrls, setFailedUrls] = useState(new Set());
+  const [isShiny, setIsShiny] = useState(false);
 
   // Build fallback image chain
   const getImageChain = () => {
     const chain = [];
+    
+    // Use shiny images if shiny mode is enabled and available
+    if (isShiny && pokemon.hasShinySprite && pokemon.shinyImage) {
+      chain.push(pokemon.shinyImage);
+    }
+    
+    // Fallback to normal images
     if (pokemon.image) chain.push(pokemon.image);
     if (pokemon.imageFallback && pokemon.imageFallback !== pokemon.image) {
       chain.push(pokemon.imageFallback);
@@ -97,13 +105,32 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
     }
   };
 
+  const handleShinyToggle = (event) => {
+    event.stopPropagation(); // Prevent card click when toggling shiny
+    if (pokemon.hasShinySprite) {
+      setIsShiny(!isShiny);
+      setCurrentImageIndex(0); // Reset image index when switching modes
+      setImageError(false); // Reset error state
+      setFailedUrls(new Set()); // Reset failed URLs
+    }
+  };
+
   return (
     <div 
-      className="pokemon-card pokemon-card-pixel clickable" 
+      className={`pokemon-card pokemon-card-pixel clickable ${isShiny ? 'shiny' : ''}`}
       onClick={handleCardClick}
     >
       <div className="pokemon-header">
         <div className="pokemon-id">{formatId(pokemon.id)}</div>
+        {pokemon.hasShinySprite && (
+          <button 
+            className={`shiny-toggle ${isShiny ? 'active' : ''}`}
+            onClick={handleShinyToggle}
+            title={isShiny ? '切換至一般型態' : '切換至閃光型態'}
+          >
+            ✨
+          </button>
+        )}
         {pokemon.types && pokemon.types.length > 0 && (
           <div className="pokemon-types">
             {pokemon.types.map((type, index) => (
@@ -136,7 +163,7 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
           onError={handleImageError}
           onLoad={handleImageLoad}
           loading="lazy"
-          key={`${pokemon.id}-${currentImageIndex}-${imageError ? "error" : "loading"}`}
+          key={`${pokemon.id}-${currentImageIndex}-${imageError ? "error" : "loading"}-${isShiny ? "shiny" : "normal"}`}
         />
       </div>
 

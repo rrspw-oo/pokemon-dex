@@ -29,7 +29,8 @@ function SearchBox({ onSearch, isLoading }) {
     setQuery(value);
 
     // 提高最小字符數要求，避免過早觸發搜尋
-    if (value.length >= 2) { // 從 1 字符改為 2 字符
+    if (value.length >= 2) {
+      // 從 1 字符改為 2 字符
       debouncedSearch(value);
     } else if (value.length === 0) {
       onSearch(""); // Clear results immediately when input is empty
@@ -57,7 +58,7 @@ function SearchBox({ onSearch, isLoading }) {
             type="text"
             value={query}
             onChange={handleInputChange}
-            placeholder="輸入至少 2 個字符開始搜尋 (編號、名稱、屬性)"
+            placeholder="至少輸入 2 個字開始搜尋 (編號、名稱)"
             className="search-input"
             disabled={isLoading}
           />
@@ -76,7 +77,7 @@ function SearchBox({ onSearch, isLoading }) {
             className="search-button"
             disabled={isLoading || query.trim().length < 1}
           >
-            {isLoading ? "搜尋中..." : "搜尋"}
+            {isLoading ? "搜尋中..." : "GO"}
           </button>
         </div>
       </form>
