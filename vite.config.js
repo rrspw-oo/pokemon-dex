@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['pokemonBall.svg', 'icons/*'],
+      includeAssets: ['homeScreen-icon.svg', 'icons/*'],
       manifest: {
         name: 'Pokemon Dex React',
         short_name: 'PokeDex',
@@ -39,7 +39,7 @@ export default defineConfig({
             purpose: 'maskable'
           },
           {
-            src: 'pokemonBall.svg',
+            src: 'homeScreen-icon.svg',
             sizes: 'any',
             type: 'image/svg+xml',
             purpose: 'any'
