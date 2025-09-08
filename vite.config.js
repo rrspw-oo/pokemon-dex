@@ -21,19 +21,6 @@ export default defineConfig({
         start_url: '/pokemon-dex/',
         icons: [
           {
-            src: 'pokemonBall.svg',
-            sizes: '192x192',
-            type: 'image/svg+xml',
-            purpose: 'any'
-          },
-          {
-            src: 'pokemonBall.svg',
-            sizes: '512x512',
-            type: 'image/svg+xml',
-            purpose: 'any'
-          },
-          // Custom icons will be added here when user uploads them
-          {
             src: 'icons/icon-192x192.png',
             sizes: '192x192',
             type: 'image/png',
@@ -50,6 +37,12 @@ export default defineConfig({
             sizes: '192x192',
             type: 'image/png',
             purpose: 'maskable'
+          },
+          {
+            src: 'pokemonBall.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any'
           }
         ]
       }
