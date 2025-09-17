@@ -90,11 +90,6 @@ input {
   transition: border-color 0.2s ease;
 }
 
-input:focus {
-  outline: none;
-  border-color: #fb9426;
-}
-
 /* Utility classes */
 .sr-only {
   position: absolute;

@@ -159,8 +159,6 @@
 @media (orientation: portrait) and (max-width: 768px) {
   .pokemon-cards {
     gap: 12px;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
     justify-content: center;
   }
   
