@@ -58,7 +58,7 @@ function SearchBox({ onSearch, isLoading }) {
             type="text"
             value={query}
             onChange={handleInputChange}
-            placeholder="至少輸入 2 個字開始搜尋 (編號、名稱)"
+            placeholder="enter Pokemon's # or names"
             className="search-input"
             disabled={isLoading}
           />
@@ -68,16 +68,14 @@ function SearchBox({ onSearch, isLoading }) {
               onClick={clearSearch}
               className="clear-button"
               disabled={isLoading}
-            >
-              ✕
-            </button>
+            ></button>
           )}
           <button
             type="submit"
             className="search-button"
             disabled={isLoading || query.trim().length < 1}
           >
-            {isLoading ? "搜尋中..." : "GO"}
+            {isLoading ? "Catching..." : "GO"}
           </button>
         </div>
       </form>

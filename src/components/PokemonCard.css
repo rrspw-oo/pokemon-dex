@@ -4,11 +4,11 @@
   background: #ffffff;
   border: none;
   border-radius: 12px;
-  padding: 16px;
+  padding: 16px 16px 20px 16px;
   margin: 8px;
   min-width: 160px;
   width: auto;
-  height: 240px;
+  height: 270px;
   position: relative;
   font-family: 'Press Start 2P', 'Courier New', monospace;
   display: flex;
@@ -63,11 +63,13 @@
   text-align: center;
   margin-top: auto;
   flex-shrink: 0;
-  min-height: 50px;
+  min-height: 70px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   padding-top: 8px;
+  gap: 8px;
 }
 
 .pokemon-name-zh {
@@ -148,7 +150,8 @@
 }
 
 /* Enhanced handling for PokemonDB icon sprites with auto-cropping */
-.pokemon-image[src*="pokemondb.net"] {
+.pokemon-image[src*="pokemondb.net"],
+.pokemon-card.shiny .pokemon-image[src*="pokemondb.net"] {
   /* Consistent sizing for all PokemonDB sprites */
   width: 96px;
   height: 96px;
@@ -163,7 +166,8 @@
 }
 
 /* Specific optimization for scarlet-violet generation */
-.pokemon-image[src*="scarlet-violet"] {
+.pokemon-image[src*="scarlet-violet"],
+.pokemon-card.shiny .pokemon-image[src*="scarlet-violet"] {
   transform: scale(1.4);
   filter: 
     contrast(1.15) 
@@ -172,7 +176,8 @@
 }
 
 /* Fallback optimization for black-white generation */
-.pokemon-image[src*="black-white"] {
+.pokemon-image[src*="black-white"],
+.pokemon-card.shiny .pokemon-image[src*="black-white"] {
   transform: scale(1.5);
   filter: contrast(1.2) brightness(1.1);
 }
@@ -303,9 +308,9 @@
 /* Responsive design */
 @media (max-width: 480px) {
   .pokemon-card {
-    padding: 16px;
+    padding: 16px 16px 20px 16px;
     margin: 6px;
-    min-height: 260px;
+    height: 290px;
   }
   
   .pokemon-header {
@@ -351,12 +356,14 @@
   }
   
   .shiny-toggle {
-    top: 4px;
-    right: 4px;
-    width: 48px;
-    height: 48px;
-    font-size: 20px;
+    height: 32px;
+    font-size: 11px;
+    padding: 6px 16px;
+    /* 手機版觸控優化 */
+    min-height: 44px;
+    min-width: 44px;
   }
+  
   
   .type-badge {
     padding: 8px 10px;
@@ -381,32 +388,59 @@
   .pokemon-id {
     align-self: center;
   }
+  
+  /* 極小屏幕下的 shiny 按鈕調整 */
+  .shiny-toggle {
+    height: 28px;
+    font-size: 10px;
+    padding: 5px 12px;
+    /* 確保觸控區域足夠大 */
+    min-height: 40px;
+    min-width: 40px;
+  }
+  
 }
 
-/* Shiny toggle button styles */
+/* Shiny toggle button styles - 新的長方形設計 */
 .shiny-toggle {
-  background: none;
-  border: none;
-  font-size: 18px;
+  background: rgba(255, 243, 168, 0.4);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  font-size: 10px;
+  color: #d4af37;
+  font-weight: bold;
   cursor: pointer;
-  padding: 8px;
-  position: absolute;
-  top: -6px;
-  right: 36px;
-  opacity: 0.6;
+  padding: 6px 14px;
+  position: static;
+  opacity: 0.9;
   transition: all 0.2s ease;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  display: flex;
+  border-radius: 6px;
+  height: 26px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
+  /* 觸控優化 */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  /* 文字不可選擇 */
+  user-select: none;
+  -webkit-user-select: none;
+  white-space: nowrap;
 }
 
 .shiny-toggle:hover {
   opacity: 1;
   background-color: rgba(255, 215, 0, 0.2);
-  transform: scale(1.1);
+  border-color: rgba(255, 215, 0, 0.6);
+  transform: translateY(-1px);
+}
+
+/* 觸控反饋動畫 - 按下效果 */
+.shiny-toggle:active {
+  transform: translateY(0px);
+  transition: transform 0.1s ease;
+  background-color: rgba(255, 215, 0, 0.3);
+  border-color: rgba(255, 215, 0, 0.8);
 }
 
 .shiny-toggle.active {
@@ -449,6 +483,7 @@
     brightness(1.1)
     saturate(1.2)
     drop-shadow(0 0 8px rgba(255, 215, 0, 0.3));
+  /* 確保 shiny 圖片保持與一般圖片相同的 transform 屬性 */
   animation: subtleShine 3s ease-in-out infinite alternate;
 }
 
@@ -472,9 +507,9 @@
   }
   100% {
     filter: 
-      contrast(1.2) 
-      brightness(1.15)
-      saturate(1.3)
+      contrast(1.15) 
+      brightness(1.1)
+      saturate(1.2)
       drop-shadow(0 0 12px rgba(255, 215, 0, 0.5));
   }
 }

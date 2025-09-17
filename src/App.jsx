@@ -64,7 +64,6 @@ function App() {
     <div className="app">
       <div className="container">
         <header className="header">
-          <h1>寶可夢搜尋器</h1>
           <p>Pokemon Search Tool</p>
         </header>
         <SearchBox onSearch={handleSearch} isLoading={isLoading} />
