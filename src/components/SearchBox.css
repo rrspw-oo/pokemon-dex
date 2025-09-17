@@ -8,14 +8,12 @@
 
 .search-input-container {
   display: flex;
+  border-radius: 99px;
   max-width: 600px;
   margin: 0 auto;
   position: relative;
   background: #ffffff;
   border: 2px solid #666;
-  /* 復古方形設計 */
-  border-radius: 0;
-  /* 像素風格陰影 */
   box-shadow: 
     2px 2px 0px #999,
     4px 4px 0px #777;
@@ -116,6 +114,7 @@
   cursor: not-allowed;
   box-shadow: 1px 1px 0px #ccc;
   border-color: #ccc;
+  border-radius: 99px;
 }
 
 
@@ -124,16 +123,19 @@
   .search-input-container {
     max-width: 100%;
     margin: 0 16px;
+        border-radius: 99px;
   }
   
   .search-input {
     padding: 14px 16px;
-    font-size: 10px; /* Keep pixel font readable */
+    font-size: 10px; 
+    border-radius: 99px;
   }
   
   .search-button {
     padding: 16px 20px;
-    font-size: 10px; /* Smaller pixel font for mobile */
+    font-size: 10px; 
+    border-radius: 99px;
     min-width: 80px;
     min-height: 48px;
     box-shadow: 
@@ -160,6 +162,7 @@
     flex-direction: row;
     margin: 0 8px;
     border: 2px solid #999;
+        border-radius: 99px;
     box-shadow:
       1px 1px 0px #777,
       2px 2px 0px #555;
@@ -170,6 +173,7 @@
     background: #ffffff;
     padding: 16px;
     font-size: 8px;
+        border-radius: 99px;
   }
 
   .search-button {
@@ -177,6 +181,7 @@
     border: none;
     font-size: 9px;
     padding: 12px;
+    border-radius: 99px;
     box-shadow:
       1px 1px 0px #777,
       2px 2px 0px #555;
