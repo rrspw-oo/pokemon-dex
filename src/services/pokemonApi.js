@@ -642,6 +642,17 @@ export async function fetchCompleteEvolutionChain(pokemonId) {
           englishName: pokemon.englishName,
           image: pokemon.image,
           types: pokemon.types,
+          // Add shiny sprite support for evolution chain
+          shinyImage: pokemon.shinyImage,
+          hasShinySprite: pokemon.hasShinySprite,
+          imageFallback: pokemon.imageFallback,
+          imageAlternatives: pokemon.imageAlternatives,
+          isLocalSprite: pokemon.isLocalSprite,
+          hasLocalSprite: pokemon.hasLocalSprite,
+          originalImage: pokemon.originalImage,
+          height: pokemon.height,
+          weight: pokemon.weight,
+          stats: pokemon.stats,
         };
       } catch (error) {
         console.error(
@@ -654,6 +665,18 @@ export async function fetchCompleteEvolutionChain(pokemonId) {
           englishName: evolution.name,
           image: generatePlaceholderSprite(evolution.name),
           types: [],
+          // Add shiny sprite fallback for error cases
+          shinyImage: null,
+          hasShinySprite: false,
+          imageFallback: generatePlaceholderSprite(evolution.name),
+          imageAlternatives: [],
+          isLocalSprite: false,
+          hasLocalSprite: false,
+          originalImage: null,
+          height: 0,
+          weight: 0,
+          stats: [],
+          error: true,
         };
       }
     });

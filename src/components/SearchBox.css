@@ -128,7 +128,7 @@
   
   .search-input {
     padding: 14px 16px;
-    font-size: 12px; /* Keep pixel font readable */
+    font-size: 10px; /* Keep pixel font readable */
   }
   
   .search-button {
@@ -157,27 +157,29 @@
 
 @media (max-width: 480px) {
   .search-input-container {
-    flex-direction: column;
+    flex-direction: row;
     margin: 0 8px;
     border: 2px solid #999;
-    box-shadow: 
+    box-shadow:
       1px 1px 0px #777,
       2px 2px 0px #555;
   }
-  
+
   .search-input {
-    border-bottom: 1px solid #999;
+    border: none;
     background: #ffffff;
     padding: 16px;
-    font-size: 11px;
+    font-size: 8px;
   }
-  
+
   .search-button {
-    border-radius: 0;
-    border-top: 1px solid #999;
+    border-radius: 10px;
+    border: none;
     font-size: 9px;
     padding: 12px;
-    box-shadow: none;
+    box-shadow:
+      1px 1px 0px #777,
+      2px 2px 0px #555;
   }
   
   .clear-button {
