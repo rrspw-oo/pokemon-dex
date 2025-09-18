@@ -130,7 +130,7 @@ self.addEventListener('fetch', (event) => {
               
               return response;
             })
-            .catch(() => {
+            .catch((error) => {
               // If it's a navigation request, return cached index.html
               if (request.mode === 'navigate') {
                 return caches.match('/index.html');

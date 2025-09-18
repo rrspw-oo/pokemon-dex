@@ -20,7 +20,12 @@ const apiCache = new Map();
 ensureDataLoaded().catch(console.error);
 
 // Generate placeholder pixel sprite
-function generatePlaceholderSprite(pokemonName) {
+function generatePlaceholderSprite(pokemonName, isSearchError = false) {
+  // Use different image for search errors (Image #3 instead of Image #2)
+  if (isSearchError) {
+    return "/pokemonBall.svg"; // Replace Image #2 with Image #3 during search errors
+  }
+
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
     <svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" style="image-rendering: pixelated;">
       <rect width="64" height="64" fill="#e0e0e0" stroke="#999" stroke-width="1"/>
@@ -28,7 +33,7 @@ function generatePlaceholderSprite(pokemonName) {
       <circle cx="20" cy="24" r="3" fill="#333"/>
       <circle cx="44" cy="24" r="3" fill="#333"/>
       <rect x="28" y="32" width="8" height="4" fill="#666" rx="2"/>
-      <text x="32" y="52" text-anchor="middle" dominant-baseline="central" 
+      <text x="32" y="52" text-anchor="middle" dominant-baseline="central"
             font-family="monospace" font-size="8" fill="#666">
         ${pokemonName ? pokemonName.substring(0, 6) : "???"}
       </text>
@@ -137,7 +142,7 @@ export async function fetchPokemonById(idOrName) {
 
     const chineseName =
       getChineseNameSync(idOrName) || `未知寶可夢 (${idOrName})`;
-    const spriteData = getSpriteWithFallback(idOrName, chineseName);
+    const spriteData = getSpriteWithFallback(idOrName, chineseName, true);
 
     return {
       id: parseInt(idOrName) || 0,
@@ -217,7 +222,7 @@ export async function searchPokemon(query, includeEvolutions = false) {
       });
 
       const results = await Promise.all(promises);
-      let validResults = results.filter((result) => result !== null);
+      let validResults = results.filter((result) => result !== null && !result.error);
 
       if (validResults.length === 0) {
         throw new Error(`No forms found for ID ${id}`);
@@ -228,7 +233,7 @@ export async function searchPokemon(query, includeEvolutions = false) {
         try {
           const evolutionChain = await fetchCompleteEvolutionChain(id);
 
-          // Filter out current Pokemon forms to avoid duplicates
+          // Filter out current Pokemon forms to avoid duplicates and errors
           const currentFormNames = validResults.map(
             (r) => r.englishName?.toLowerCase() || r.name?.toLowerCase()
           );
@@ -236,7 +241,7 @@ export async function searchPokemon(query, includeEvolutions = false) {
             const evolutionName =
               evolution.englishName?.toLowerCase() ||
               evolution.name?.toLowerCase();
-            return !currentFormNames.includes(evolutionName);
+            return !currentFormNames.includes(evolutionName) && !evolution.error;
           });
 
           validResults = [...validResults, ...evolutions];
@@ -263,59 +268,66 @@ export async function searchPokemon(query, includeEvolutions = false) {
       const allFormsToFetch = [];
       const processedIds = new Set();
 
-      for (const match of nameMatches.slice(0, 20)) {
-        if (!processedIds.has(match.id)) {
-          processedIds.add(match.id);
+      // 並行處理species API呼叫以提升效能
+      const speciesPromises = nameMatches.slice(0, 20).map(async (match) => {
+        if (processedIds.has(match.id)) {
+          return null;
+        }
+        processedIds.add(match.id);
 
-          // Check if this is a multi-form Pokemon by finding all forms
-          try {
-            const speciesResponse = await fetch(
-              `${POKE_API_BASE}/pokemon-species/${match.id}`
+        try {
+          const speciesResponse = await fetch(
+            `${POKE_API_BASE}/pokemon-species/${match.id}`
+          );
+          if (speciesResponse.ok) {
+            const speciesData = await speciesResponse.json();
+            const forms = speciesData.varieties.map(
+              (variety) => variety.pokemon.name
             );
-            if (speciesResponse.ok) {
-              const speciesData = await speciesResponse.json();
-              const forms = speciesData.varieties.map(
-                (variety) => variety.pokemon.name
-              );
 
-              // If multiple forms exist, fetch all forms
-              if (forms.length > 1) {
-                forms.forEach((formName) => {
-                  allFormsToFetch.push({
-                    id: match.id,
-                    name: formName,
-                    isForm: true,
-                  });
-                });
-              } else {
-                // Single form, use the match directly
-                allFormsToFetch.push({
-                  id: match.id,
-                  name: match.en.toLowerCase(),
-                  isForm: false,
-                });
-              }
-            } else {
-              // Fallback to direct ID fetch
-              allFormsToFetch.push({
+            // If multiple forms exist, return all forms
+            if (forms.length > 1) {
+              return forms.map((formName) => ({
                 id: match.id,
-                name: match.id.toString(),
+                name: formName,
+                isForm: true,
+              }));
+            } else {
+              // Single form, use the match directly
+              return [{
+                id: match.id,
+                name: match.en.toLowerCase(),
                 isForm: false,
-              });
+              }];
             }
-          } catch (error) {
-            console.warn(
-              `Could not fetch species data for ${match.id}, using direct ID:`,
-              error
-            );
-            allFormsToFetch.push({
+          } else {
+            // Fallback to direct ID fetch
+            return [{
               id: match.id,
               name: match.id.toString(),
               isForm: false,
-            });
+            }];
           }
+        } catch (error) {
+          console.warn(
+            `Could not fetch species data for ${match.id}, using direct ID:`,
+            error
+          );
+          return [{
+            id: match.id,
+            name: match.id.toString(),
+            isForm: false,
+          }];
         }
-      }
+      });
+
+      const speciesResults = await Promise.all(speciesPromises);
+      // 扁平化結果並過濾null值
+      speciesResults.forEach(result => {
+        if (result) {
+          allFormsToFetch.push(...result);
+        }
+      });
 
       const promises = allFormsToFetch.map(async (formData) => {
         try {
@@ -330,7 +342,7 @@ export async function searchPokemon(query, includeEvolutions = false) {
       });
 
       const results = await Promise.all(promises);
-      const validResults = results.filter((result) => result !== null);
+      const validResults = results.filter((result) => result !== null && !result.error);
 
       // Deduplicate results by Chinese name and ID to avoid showing identical Pokemon
       const deduplicatedResults = [];
@@ -351,15 +363,16 @@ export async function searchPokemon(query, includeEvolutions = false) {
       let finalResults = deduplicatedResults;
 
       // If evolution forms are requested, add evolution chains for each result
-      if (includeEvolutions && deduplicatedResults.length > 0) {
+      // 限制進化鏈載入的數量以提升效能
+      if (includeEvolutions && deduplicatedResults.length > 0 && deduplicatedResults.length <= 3) {
         const evolutionPromises = deduplicatedResults.map(async (pokemon) => {
           try {
             const evolutionChain = await fetchCompleteEvolutionChain(
               pokemon.id
             );
-            // Filter out the current Pokemon to avoid duplicates
+            // Filter out the current Pokemon to avoid duplicates and errors
             return evolutionChain.filter(
-              (evolution) => evolution.id !== pokemon.id
+              (evolution) => evolution.id !== pokemon.id && !evolution.error
             );
           } catch (error) {
             console.error(
@@ -376,11 +389,11 @@ export async function searchPokemon(query, includeEvolutions = false) {
         // Combine original results with evolution forms
         const combinedResults = [...deduplicatedResults, ...allEvolutions];
 
-        // Remove duplicates again based on ID and name combination
+        // Remove duplicates again based on ID and name combination, and filter out errors
         const seenEvolutions = new Set();
         finalResults = combinedResults.filter((pokemon) => {
           const key = `${pokemon.id}-${pokemon.englishName || pokemon.name}`;
-          if (seenEvolutions.has(key)) {
+          if (seenEvolutions.has(key) || pokemon.error) {
             return false;
           }
           seenEvolutions.add(key);
@@ -399,6 +412,13 @@ export async function searchPokemon(query, includeEvolutions = false) {
     if (validatePokemonIdentifier(query)) {
       try {
         const pokemon = await fetchPokemonById(query);
+
+        // Filter out error Pokemon - return empty array if the main Pokemon has error
+        if (pokemon.error) {
+          apiCache.set(cacheKey, []);
+          return [];
+        }
+
         let results = [pokemon];
 
         // If evolution forms are requested, add evolution chain
@@ -407,9 +427,9 @@ export async function searchPokemon(query, includeEvolutions = false) {
             const evolutionChain = await fetchCompleteEvolutionChain(
               pokemon.id
             );
-            // Filter out the current Pokemon to avoid duplicates
+            // Filter out the current Pokemon to avoid duplicates and errors
             const evolutions = evolutionChain.filter(
-              (evolution) => evolution.id !== pokemon.id
+              (evolution) => evolution.id !== pokemon.id && !evolution.error
             );
             results = [...results, ...evolutions];
 
@@ -663,12 +683,12 @@ export async function fetchCompleteEvolutionChain(pokemonId) {
           ...evolution,
           chineseName: `未知寶可夢 ${evolution.id}`,
           englishName: evolution.name,
-          image: generatePlaceholderSprite(evolution.name),
+          image: generatePlaceholderSprite(evolution.name, true),
           types: [],
           // Add shiny sprite fallback for error cases
           shinyImage: null,
           hasShinySprite: false,
-          imageFallback: generatePlaceholderSprite(evolution.name),
+          imageFallback: generatePlaceholderSprite(evolution.name, true),
           imageAlternatives: [],
           isLocalSprite: false,
           hasLocalSprite: false,

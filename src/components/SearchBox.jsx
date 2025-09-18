@@ -1,28 +1,22 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import "./SearchBox.css";
 
 function SearchBox({ onSearch, isLoading }) {
   const [query, setQuery] = useState("");
+  const timeoutRef = useRef(null);
 
   // Debounce search to avoid too many API calls
-  const debounce = useCallback((func, wait) => {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  }, []);
+  const debouncedSearch = useCallback((searchQuery) => {
+    // Clear previous timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
-  const debouncedSearch = useCallback(
-    debounce((searchQuery) => {
+    // Set new timeout
+    timeoutRef.current = setTimeout(() => {
       onSearch(searchQuery);
-    }, 600), // 增加延遲時間到 600ms，給使用者更多時間輸入
-    [onSearch, debounce]
-  );
+    }, 300); // 降低延遲時間到 300ms，提升回應速度
+  }, [onSearch]);
 
   const handleInputChange = (e) => {
     const value = e.target.value;

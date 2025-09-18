@@ -2,17 +2,17 @@
 import { pokemonSpriteMappingService } from './pokemonSpriteMappingService.js';
 
 // Get PokemonDB sprite URL for Pokemon ID (replaces local sprites)
-export function getLocalSpritePath(pokemonId) {
+export function getLocalSpritePath() {
   // This function now returns null since we removed local sprites
   // All sprites will be served from PokemonDB
   return null;
 }
 
 // Get sprite URL with enhanced mapping service and fallback system
-export function getSpriteWithFallback(pokemonId, pokemonName) {
+export function getSpriteWithFallback(pokemonId, pokemonName, isSearchError = false) {
   // Use the enhanced sprite mapping service
   const spriteData = pokemonSpriteMappingService.getSpriteUrls(pokemonId, pokemonName);
-  
+
   console.log(`🎨 Generating sprite URLs for Pokemon ${pokemonId} (${pokemonName}):`, {
     originalName: pokemonName,
     processedName: spriteData.processedName,
@@ -20,26 +20,31 @@ export function getSpriteWithFallback(pokemonId, pokemonName) {
     fallbackUrl: spriteData.fallback,
     alternativesCount: spriteData.alternatives.length
   });
-  
+
   // Log specific info for problematic Pokemon
   if (pokemonId === 800 || pokemonName.toLowerCase().includes('necrozma')) {
     console.log(`🔍 Necrozma debug info:`, spriteData.debugInfo);
     console.log(`🔗 All URLs for Necrozma:`, spriteData.allUrls.map(u => u.url));
   }
-  
+
   return {
     primary: spriteData.primary,
     isLocal: false,
     fallback: spriteData.fallback,
     alternatives: spriteData.alternatives, // Pass through alternative URLs
-    placeholder: generatePixelPlaceholder(pokemonName),
+    placeholder: generatePixelPlaceholder(pokemonName, isSearchError),
     processedName: spriteData.processedName, // For debugging
     debugInfo: spriteData.debugInfo
   };
 }
 
 // Generate pixel-style placeholder
-function generatePixelPlaceholder(pokemonName) {
+function generatePixelPlaceholder(pokemonName, isSearchError = false) {
+  // Use different image for search errors (Image #3 instead of Image #2)
+  if (isSearchError) {
+    return "/pokemonBall.svg"; // Replace Image #2 with Image #3 during search errors
+  }
+
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
     <svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" style="image-rendering: pixelated;">
       <defs>

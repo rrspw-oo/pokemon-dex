@@ -9,14 +9,14 @@ export function initializePWA() {
     wb = new Workbox('/sw.js');
 
     // Handle service worker updates
-    wb.addEventListener('waiting', (event) => {
+    wb.addEventListener('waiting', () => {
       // Show update available message
       if (confirm('A new version is available. Update now?')) {
         wb.messageSkipWaiting();
       }
     });
 
-    wb.addEventListener('controlling', (event) => {
+    wb.addEventListener('controlling', () => {
       // Reload the page when new service worker takes control
       window.location.reload();
     });

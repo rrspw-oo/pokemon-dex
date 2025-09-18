@@ -95,17 +95,6 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
     return `#${id.toString().padStart(3, "0")}`;
   };
 
-  const formatStat = (statName) => {
-    const statMap = {
-      hp: "HP",
-      attack: "攻擊",
-      defense: "防禦",
-      "special-attack": "特攻",
-      "special-defense": "特防",
-      speed: "速度",
-    };
-    return statMap[statName] || statName;
-  };
 
   // Get basic pixel class for all Pokemon (no type-based effects)
   const getPixelClass = () => {
@@ -190,34 +179,6 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
       </div>
 
       <div className="pokemon-info">
-        {false && (
-          <div className="pokemon-stats">
-            <h4>基礎數值</h4>
-            <div className="stats-grid">
-              {pokemon.stats.map((stat, index) => (
-                <div key={index} className="stat-item">
-                  <span className="stat-name">{formatStat(stat.name)}</span>
-                  <div className="stat-bar-container">
-                    <div
-                      className="stat-bar"
-                      style={{
-                        width: `${Math.min((stat.value / 255) * 100, 100)}%`,
-                        backgroundColor:
-                          stat.value >= 100
-                            ? "#4CAF50"
-                            : stat.value >= 70
-                            ? "#FFC107"
-                            : "#FF5722",
-                      }}
-                    ></div>
-                    <span className="stat-value">{stat.value}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {pokemon.error && (
           <div className="error-info">
             <p>資料載入異常</p>
