@@ -23,18 +23,14 @@ export function initializePWA() {
 
     // Register the service worker
     wb.register().then((registration) => {
-      console.log('SW registered:', registration);
     }).catch((registrationError) => {
-      console.log('SW registration failed:', registrationError);
     });
   } else if ('serviceWorker' in navigator) {
     // Development mode - register our custom service worker
     navigator.serviceWorker.register('/sw.js')
       .then(registration => {
-        console.log('Custom SW registered:', registration);
       })
       .catch(error => {
-        console.error('Custom SW registration failed:', error);
       });
   }
 }
@@ -70,7 +66,6 @@ export async function getCacheStatus() {
 // Cache Pokemon data manually
 export async function cachePokemonData(data) {
   if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
-    console.warn('Service worker not available for caching');
     return false;
   }
 
@@ -130,7 +125,6 @@ export function setupNetworkMonitoring() {
     
     if (!wasOnline && isOnline) {
       // Came back online
-      console.log('Connection restored');
       // Trigger background sync if available
       if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
         navigator.serviceWorker.ready.then(registration => {
@@ -138,7 +132,6 @@ export function setupNetworkMonitoring() {
         });
       }
     } else if (wasOnline && !isOnline) {
-      console.log('Connection lost - working offline');
     }
   };
 

@@ -702,7 +702,6 @@ class PokemonSpriteMappingService {
   // Clear performance cache
   clearCache() {
     this.cache.clear();
-    console.log('🧹 Pokemon sprite mapping cache cleared');
   }
 
   // Get cache statistics

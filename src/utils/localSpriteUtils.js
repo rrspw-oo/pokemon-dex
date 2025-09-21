@@ -13,19 +13,7 @@ export function getSpriteWithFallback(pokemonId, pokemonName, isSearchError = fa
   // Use the enhanced sprite mapping service
   const spriteData = pokemonSpriteMappingService.getSpriteUrls(pokemonId, pokemonName);
 
-  console.log(`🎨 Generating sprite URLs for Pokemon ${pokemonId} (${pokemonName}):`, {
-    originalName: pokemonName,
-    processedName: spriteData.processedName,
-    primaryUrl: spriteData.primary,
-    fallbackUrl: spriteData.fallback,
-    alternativesCount: spriteData.alternatives.length
-  });
 
-  // Log specific info for problematic Pokemon
-  if (pokemonId === 800 || pokemonName.toLowerCase().includes('necrozma')) {
-    console.log(`🔍 Necrozma debug info:`, spriteData.debugInfo);
-    console.log(`🔗 All URLs for Necrozma:`, spriteData.allUrls.map(u => u.url));
-  }
 
   return {
     primary: spriteData.primary,

@@ -17,7 +17,7 @@ const POKE_API_BASE = "https://pokeapi.co/api/v2";
 const apiCache = new Map();
 
 // Initialize Pokemon data loading
-ensureDataLoaded().catch(console.error);
+ensureDataLoaded().catch(() => {});
 
 // Generate placeholder pixel sprite
 function generatePlaceholderSprite(pokemonName, isSearchError = false) {
@@ -58,16 +58,12 @@ function validatePokemonIdentifier(idOrName) {
 
   // Check if it's a valid Pokemon name (only letters, hyphens, and spaces)
   if (!/^[a-zA-Z\s\-.']+$/.test(identifier)) {
-    console.warn(`Invalid Pokemon identifier format: ${identifier}`);
     return false;
   }
 
   // Additional check for problematic characters
   const problematicChars = /[ㄅ-ㄭㄱ-ㅎㅏ-ㅣ가-힣一-龯]/;
   if (problematicChars.test(identifier)) {
-    console.warn(
-      `Pokemon identifier contains unsupported characters: ${identifier}`
-    );
     return false;
   }
 
@@ -138,7 +134,6 @@ export async function fetchPokemonById(idOrName) {
     apiCache.set(cacheKey, result);
     return result;
   } catch (error) {
-    console.error(`Error fetching Pokemon "${idOrName}":`, error.message);
 
     const chineseName =
       getChineseNameSync(idOrName) || `未知寶可夢 (${idOrName})`;
@@ -216,7 +211,6 @@ export async function searchPokemon(query, includeEvolutions = false) {
           pokemon.is_variant = formName !== "oricorio-baile"; // Mark non-baile as variants
           return pokemon;
         } catch (error) {
-          console.error(`Error fetching form ${formName}:`, error);
           return null;
         }
       });
@@ -249,10 +243,6 @@ export async function searchPokemon(query, includeEvolutions = false) {
           // Sort by Pokemon ID to maintain consistent ordering
           validResults.sort((a, b) => a.id - b.id);
         } catch (evolutionError) {
-          console.warn(
-            `Could not fetch evolution chain for ${id}:`,
-            evolutionError
-          );
         }
       }
 
@@ -309,10 +299,6 @@ export async function searchPokemon(query, includeEvolutions = false) {
             }];
           }
         } catch (error) {
-          console.warn(
-            `Could not fetch species data for ${match.id}, using direct ID:`,
-            error
-          );
           return [{
             id: match.id,
             name: match.id.toString(),
@@ -336,7 +322,6 @@ export async function searchPokemon(query, includeEvolutions = false) {
           pokemon.id = formData.id;
           return pokemon;
         } catch (error) {
-          console.error(`Error fetching Pokemon form ${formData.name}:`, error);
           return null;
         }
       });
@@ -354,9 +339,6 @@ export async function searchPokemon(query, includeEvolutions = false) {
           seen.add(key);
           deduplicatedResults.push(pokemon);
         } else {
-          console.log(
-            `Removing duplicate: ${pokemon.id} ${pokemon.chineseName} (${pokemon.englishName})`
-          );
         }
       }
 
@@ -375,10 +357,6 @@ export async function searchPokemon(query, includeEvolutions = false) {
               (evolution) => evolution.id !== pokemon.id && !evolution.error
             );
           } catch (error) {
-            console.error(
-              `Error fetching evolution chain for ${pokemon.id}:`,
-              error
-            );
             return [];
           }
         });
@@ -436,27 +414,20 @@ export async function searchPokemon(query, includeEvolutions = false) {
             // Sort by Pokemon ID to maintain consistent ordering
             results.sort((a, b) => a.id - b.id);
           } catch (evolutionError) {
-            console.warn(
-              `Could not fetch evolution chain for ${pokemon.id}:`,
-              evolutionError
-            );
           }
         }
 
         apiCache.set(cacheKey, results);
         return results;
       } catch (error) {
-        console.warn(`Direct API search failed for "${query}":`, error.message);
         apiCache.set(cacheKey, []);
         return [];
       }
     } else {
-      console.warn(`Skipping API call for invalid identifier: "${query}"`);
       apiCache.set(cacheKey, []);
       return [];
     }
   } catch (error) {
-    console.error("Search error:", error);
     apiCache.set(cacheKey, []);
     return [];
   }
@@ -520,7 +491,6 @@ export async function fetchEvolutionChain(pokemonId) {
     apiCache.set(cacheKey, evolutionChain);
     return evolutionChain;
   } catch (error) {
-    console.error(`Error fetching evolution chain for ${pokemonId}:`, error);
     return [];
   }
 }
@@ -675,10 +645,6 @@ export async function fetchCompleteEvolutionChain(pokemonId) {
           stats: pokemon.stats,
         };
       } catch (error) {
-        console.error(
-          `Error fetching Pokemon data for evolution ${evolution.id}:`,
-          error
-        );
         return {
           ...evolution,
           chineseName: `未知寶可夢 ${evolution.id}`,
@@ -704,10 +670,6 @@ export async function fetchCompleteEvolutionChain(pokemonId) {
     const completeEvolutionChain = await Promise.all(promises);
     return completeEvolutionChain;
   } catch (error) {
-    console.error(
-      `Error fetching complete evolution chain for ${pokemonId}:`,
-      error
-    );
     return [];
   }
 }
@@ -736,4 +698,119 @@ export function getTypeColor(typeName) {
   };
 
   return typeColors[typeName.toLowerCase()] || "#68A090";
+}
+
+// Search Pokemon forms and variants for a specific Pokemon ID
+export async function searchPokemonForms(pokemonId) {
+  const cacheKey = `forms_${pokemonId}`;
+
+  // Check cache first
+  if (apiCache.has(cacheKey)) {
+    return apiCache.get(cacheKey);
+  }
+
+  try {
+    await ensureDataLoaded();
+
+    const id = parseInt(pokemonId);
+    const results = [];
+    const seenEntries = new Set();
+
+    // Step 1: Get evolution chain
+    try {
+      const evolutionChain = await fetchCompleteEvolutionChain(id);
+
+      for (const evolution of evolutionChain) {
+        if (!evolution.error && !seenEntries.has(evolution.id)) {
+          seenEntries.add(evolution.id);
+          results.push(evolution);
+        }
+      }
+    } catch (evolutionError) {
+      // Evolution chain fetch failed, continue with variants
+    }
+
+    // Step 2: Get API variants from PokeAPI species for the specific Pokemon
+    try {
+      const speciesResponse = await fetch(`${POKE_API_BASE}/pokemon-species/${id}`);
+      if (speciesResponse.ok) {
+        const speciesData = await speciesResponse.json();
+        const varieties = speciesData.varieties || [];
+
+        for (const variety of varieties) {
+          try {
+            const variantPokemon = await fetchPokemonById(variety.pokemon.name);
+
+            // Skip if Pokemon data has error flag
+            if (variantPokemon.error) {
+              continue;
+            }
+
+            // Override ID to maintain consistency
+            variantPokemon.id = id;
+            variantPokemon.is_api_variant = true;
+
+            // Use existing sprite system for API variants
+            const variantName = variety.pokemon.name;
+            const spriteData = getSpriteWithFallback(variantPokemon.id, variantName);
+
+            variantPokemon.image = spriteData.primary;
+            variantPokemon.imageFallback = spriteData.fallback;
+            variantPokemon.imageAlternatives = spriteData.alternatives;
+            variantPokemon.isLocalSprite = spriteData.isLocal;
+
+
+            // Check if this variant is already in results
+            const exists = results.find(r =>
+              r.id === variantPokemon.id &&
+              r.englishName === variantPokemon.englishName
+            );
+
+            if (!exists) {
+              results.push(variantPokemon);
+            }
+          } catch (variantError) {
+            // Variant fetch failed, continue with next
+          }
+        }
+      }
+    } catch (apiError) {
+      // API species fetch failed, continue with current results
+    }
+
+    apiCache.set(cacheKey, results);
+    return results;
+
+  } catch (error) {
+    // Fallback: try to get at least the base Pokemon
+    try {
+      const basePokemon = await fetchPokemonById(pokemonId.toString());
+      const fallbackResult = [basePokemon];
+      apiCache.set(cacheKey, fallbackResult);
+      return fallbackResult;
+    } catch (fallbackError) {
+      apiCache.set(cacheKey, []);
+      return [];
+    }
+  }
+}
+
+// Get search suggestions for autocomplete (minimal implementation)
+export async function getPokemonSearchSuggestions(query, maxSuggestions = 5) {
+  try {
+    await ensureDataLoaded();
+
+    // Use the existing searchPokemonNamesSync function for suggestions
+    const { getSearchSuggestions, isValidSearchQuery } = await import('../utils/pokemonNamesHelper.js');
+
+    // Validate the search query
+    if (!isValidSearchQuery || !isValidSearchQuery(query)) {
+      return [];
+    }
+
+    // Get suggestions from the helper
+    return getSearchSuggestions ? getSearchSuggestions(query, maxSuggestions) : [];
+  } catch (error) {
+    return [];
+  }
 }

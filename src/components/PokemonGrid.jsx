@@ -14,13 +14,23 @@ const PokemonGrid = memo(function PokemonGrid({ pokemon, onPokemonClick }) {
   return (
     <div className="pokemon-grid">
       <div className="pokemon-cards">
-        {pokemon.map((poke) => (
-          <PokemonCard 
-            key={`${poke.id}-${poke.name}`} 
-            pokemon={poke} 
-            onClick={onPokemonClick}
-          />
-        ))}
+        {pokemon.map((poke, index) => {
+          // Create a more robust unique key that accounts for variants and evolution sources
+          const totalStats = poke.total_stats || poke.stats?.reduce((sum, stat) => sum + stat.value, 0) || 0;
+          const isVariant = poke.is_variant || false;
+          const variantId = isVariant ? 'variant' : 'base';
+          const nameKey = poke.name || poke.englishName || `pokemon-${poke.id}`;
+
+          const uniqueKey = `${poke.id}-${nameKey}-${totalStats}-${variantId}-${index}`;
+
+          return (
+            <PokemonCard
+              key={uniqueKey}
+              pokemon={poke}
+              onClick={onPokemonClick}
+            />
+          );
+        })}
       </div>
     </div>
   );
