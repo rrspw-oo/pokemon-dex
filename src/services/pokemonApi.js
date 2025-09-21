@@ -101,8 +101,8 @@ export async function fetchPokemonById(idOrName) {
       name: pokemon.name,
       chineseName: chineseName,
       englishName: englishName,
-      image: spriteData.primary,
-      imageFallback: spriteData.fallback,
+      image: pokemon.sprites?.other?.["official-artwork"]?.front_default || spriteData.primary,
+      imageFallback: pokemon.sprites?.front_default || spriteData.fallback,
       imageAlternatives: spriteData.alternatives, // Pass through alternative URLs
       isLocalSprite: spriteData.isLocal,
       hasLocalSprite: hasLocalSprite(),
@@ -754,8 +754,18 @@ export async function searchPokemonForms(pokemonId) {
             const variantName = variety.pokemon.name;
             const spriteData = getSpriteWithFallback(variantPokemon.id, variantName);
 
-            variantPokemon.image = spriteData.primary;
-            variantPokemon.imageFallback = spriteData.fallback;
+            // Check if this is a mega/gmax special form
+            const isMegaOrGmax = variantName.includes('-mega') || variantName.includes('-gmax');
+
+            if (isMegaOrGmax) {
+              // For mega/gmax, prioritize PokeAPI official artwork like in fetchPokemonById
+              variantPokemon.image = variantPokemon.originalImage || spriteData.primary;
+              variantPokemon.imageFallback = variantPokemon.sprites?.front_default || spriteData.fallback;
+            } else {
+              // For other forms, use existing sprite system logic
+              variantPokemon.image = spriteData.primary;
+              variantPokemon.imageFallback = spriteData.fallback;
+            }
             variantPokemon.imageAlternatives = spriteData.alternatives;
             variantPokemon.isLocalSprite = spriteData.isLocal;
 
