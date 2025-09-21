@@ -627,24 +627,50 @@ export function getSearchSuggestions(query, maxSuggestions = 5) {
   const lowerQuery = query.toLowerCase();
   const suggestions = [];
 
+  // Check if query is numeric (Pokemon ID search)
+  const isNumericQuery = /^\d+$/.test(query);
+
   // Search through Pokemon data
   Object.entries(pokemonData.pokemon).forEach(([id, names]) => {
     const zhName = names.zh.toLowerCase();
     const enName = names.en.toLowerCase();
+    const pokemonId = parseInt(id);
 
-    // Check if query matches start of any name (prioritize starts-with matches)
-    const zhStartsWith = zhName.startsWith(lowerQuery);
-    const enStartsWith = enName.startsWith(lowerQuery);
-    const zhIncludes = zhName.includes(lowerQuery);
-    const enIncludes = enName.includes(lowerQuery);
+    let matchFound = false;
+    let score = 0;
 
-    if (zhStartsWith || enStartsWith || zhIncludes || enIncludes) {
+    // Handle numeric query (Pokemon ID search)
+    if (isNumericQuery) {
+      const queryId = parseInt(query);
+      if (pokemonId === queryId) {
+        // Exact ID match - highest priority
+        matchFound = true;
+        score = 20;
+      } else if (id.startsWith(query)) {
+        // ID starts with query (e.g., "1" matches "10", "100")
+        matchFound = true;
+        score = 15;
+      }
+    } else {
+      // Handle name-based search (existing logic)
+      const zhStartsWith = zhName.startsWith(lowerQuery);
+      const enStartsWith = enName.startsWith(lowerQuery);
+      const zhIncludes = zhName.includes(lowerQuery);
+      const enIncludes = enName.includes(lowerQuery);
+
+      if (zhStartsWith || enStartsWith || zhIncludes || enIncludes) {
+        matchFound = true;
+        score = (zhStartsWith || enStartsWith) ? 10 : 5; // Prioritize starts-with matches
+      }
+    }
+
+    if (matchFound) {
       const suggestion = {
-        id: parseInt(id),
-        text: zhStartsWith || zhIncludes ? names.zh : names.en,
+        id: pokemonId,
+        text: isNumericQuery ? `#${id.padStart(3, '0')} ${names.zh}` : (zhName.includes(lowerQuery) ? names.zh : names.en),
         chineseName: names.zh,
         englishName: names.en,
-        score: (zhStartsWith || enStartsWith) ? 10 : 5 // Prioritize starts-with matches
+        score: score
       };
 
       suggestions.push(suggestion);

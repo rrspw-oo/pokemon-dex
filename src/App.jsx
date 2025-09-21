@@ -92,10 +92,18 @@ function App() {
     }
   };
 
+  const handleHeaderClick = () => {
+    // Clear all search state and refresh the page
+    setSearchResults([]);
+    setError(null);
+    setSearchCache(new Map());
+    setIsLoading(false);
+  };
+
   return (
     <div className="app">
       <div className="container">
-        <header className="header">
+        <header className="header" onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
           <p>Pokemon Search Tool</p>
         </header>
         <SearchBox onSearch={handleSearch} isLoading={isLoading} />
