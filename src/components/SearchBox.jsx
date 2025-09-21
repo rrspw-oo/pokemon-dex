@@ -13,6 +13,7 @@ function SearchBox({ onSearch, isLoading }) {
   const suggestionsTimeoutRef = useRef(null);
   const inputRef = useRef(null);
   const containerRef = useRef(null);
+  const isSelectingSuggestionRef = useRef(false);
 
   // 搜尋功能（現在只在提交和選擇建議時使用）
   const performSearch = useCallback((searchQuery) => {
@@ -85,12 +86,21 @@ function SearchBox({ onSearch, isLoading }) {
 
   // 處理建議點擊
   const handleSuggestionClick = (suggestion) => {
+    // Set flag to prevent focus handler from retriggering suggestions
+    isSelectingSuggestionRef.current = true;
+
     // Use englishName or id for search instead of formatted text
     const searchTerm = suggestion.englishName || suggestion.id?.toString() || suggestion.text;
     setQuery(searchTerm);
+    setSuggestions([]); // Clear suggestions array to prevent retrigger
     setShowSuggestions(false);
     setSelectedSuggestionIndex(-1);
     performSearch(searchTerm);
+
+    // Reset flag after a short delay
+    setTimeout(() => {
+      isSelectingSuggestionRef.current = false;
+    }, 200);
   };
 
   // 處理鍵盤導航
@@ -133,7 +143,8 @@ function SearchBox({ onSearch, isLoading }) {
 
   // 處理輸入框焦點
   const handleInputFocus = () => {
-    if (query.length >= 1 && suggestions.length > 0) {
+    // Don't show suggestions if we're in the middle of selecting one
+    if (!isSelectingSuggestionRef.current && query.length >= 1 && suggestions.length > 0) {
       setShowSuggestions(true);
     }
   };
