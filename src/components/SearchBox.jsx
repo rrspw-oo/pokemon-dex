@@ -85,10 +85,12 @@ function SearchBox({ onSearch, isLoading }) {
 
   // 處理建議點擊
   const handleSuggestionClick = (suggestion) => {
-    setQuery(suggestion.text);
+    // Use englishName or id for search instead of formatted text
+    const searchTerm = suggestion.englishName || suggestion.id?.toString() || suggestion.text;
+    setQuery(searchTerm);
     setShowSuggestions(false);
     setSelectedSuggestionIndex(-1);
-    performSearch(suggestion.text);
+    performSearch(searchTerm);
   };
 
   // 處理鍵盤導航
