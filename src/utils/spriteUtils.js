@@ -249,13 +249,23 @@ const specialNameMappings = {
   'flapple-gmax': 'flapple-gmax',
   'appletun-gmax': 'appletun-gmax',
   'sandaconda-gmax': 'sandaconda-gmax',
-  'toxapex-gmax': 'toxapex-gmax',
+  'toxtricity-gmax': 'toxtricity-gmax',
   'centiskorch-gmax': 'centiskorch-gmax',
   'hatterene-gmax': 'hatterene-gmax',
   'grimmsnarl-gmax': 'grimmsnarl-gmax',
   'alcremie-gmax': 'alcremie-gmax',
   'copperajah-gmax': 'copperajah-gmax',
   'duraludon-gmax': 'duraludon-gmax',
+
+  // DLC Gigantamax Pokemon forms
+  'venusaur-gmax': 'venusaur-gmax',
+  'blastoise-gmax': 'blastoise-gmax',
+  'rillaboom-gmax': 'rillaboom-gmax',
+  'cinderace-gmax': 'cinderace-gmax',
+  'inteleon-gmax': 'inteleon-gmax',
+  'urshifu-single-strike-gmax': 'urshifu-single-strike-gmax',
+  'urshifu-rapid-strike-gmax': 'urshifu-rapid-strike-gmax',
+  'melmetal-gmax': 'melmetal-gmax',
 
   // Eternatus forms
   'eternatus': 'eternatus',
@@ -327,11 +337,12 @@ export function processDatabaseFormName(name) {
   }
 
   // Handle Gigantamax Pokemon forms
-  if (processedName.includes('gmax') || processedName.includes('gigantamax')) {
+  if (processedName.includes('gmax') || processedName.includes('gigantamax') || processedName.includes('dynamax')) {
     // Convert various Gigantamax formats to standard format
     // Examples: "charizard-gmax", "charizard gigantamax", "gigantamax charizard"
     let gmaxName = processedName
       .replace(/gigantamax/g, 'gmax') // Normalize to gmax
+      .replace(/dynamax/g, 'gmax') // Also handle dynamax -> gmax
       .replace(/gmax\s+/g, 'gmax-') // "gmax charizard" -> "gmax-charizard"
       .replace(/\s+gmax/g, '-gmax') // "charizard gmax" -> "charizard-gmax"
       .replace(/\s+/g, '-') // Replace remaining spaces with hyphens
@@ -351,7 +362,7 @@ export function processDatabaseFormName(name) {
   }
 
   // Handle Eternamax forms
-  if (processedName.includes('eternamax')) {
+  if (processedName.includes('eternamax') || (processedName.includes('eternatus') && processedName.includes('max'))) {
     return 'eternatus-eternamax';
   }
 
@@ -449,20 +460,20 @@ export function applySpecialNameMappings(name) {
 export function getOptimizedSpriteUrl(pokemonName, pokemonId) {
   // Use enhanced database form name processing
   const processedSlug = processDatabaseFormName(pokemonName);
-  
+
   // For latest generation sprites (preferred)
   const modernUrl = `https://img.pokemondb.net/sprites/scarlet-violet/icon/${processedSlug}.png`;
-  
+
   // For classic pixel art (fallback)
   const classicUrl = `https://img.pokemondb.net/sprites/black-white/icon/${processedSlug}.png`;
-  
+
   // Additional fallback with different generations
   const alternativeUrls = [
     `https://img.pokemondb.net/sprites/sword-shield/icon/${processedSlug}.png`,
     `https://img.pokemondb.net/sprites/sun-moon/icon/${processedSlug}.png`,
     `https://img.pokemondb.net/sprites/x-y/icon/${processedSlug}.png`
   ];
-  
+
   // If we have an ID, also try ID-based URLs as final fallback
   if (pokemonId) {
     alternativeUrls.push(
@@ -470,7 +481,7 @@ export function getOptimizedSpriteUrl(pokemonName, pokemonId) {
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/${pokemonId}.png`
     );
   }
-  
+
   return {
     primary: modernUrl,
     fallback: classicUrl,
