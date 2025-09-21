@@ -68,7 +68,6 @@ async function loadPokemonData() {
     try {
       pokemonData = transformPokemonData(completePokemonDatabase);
     } catch (error) {
-      console.error("Error loading Pokemon data:", error);
       // Fallback to empty data structure
       pokemonData = {
         version: "2.0.0",
@@ -541,9 +540,6 @@ export async function searchPokemonNames(query) {
 
 export function getChineseNameSync(pokemonId, englishName) {
   if (!pokemonData?.pokemon) {
-    console.warn(
-      "Pokemon data not loaded. Use async version or call ensureDataLoaded() first."
-    );
     return englishName || "未知寶可夢";
   }
 
@@ -562,9 +558,6 @@ export function getChineseNameSync(pokemonId, englishName) {
 
 export function getEnglishNameSync(pokemonId) {
   if (!pokemonData?.pokemon) {
-    console.warn(
-      "Pokemon data not loaded. Use async version or call ensureDataLoaded() first."
-    );
     return "Unknown Pokemon";
   }
   return pokemonData.pokemon[pokemonId]?.en || "Unknown Pokemon";
@@ -572,9 +565,6 @@ export function getEnglishNameSync(pokemonId) {
 
 export function searchPokemonNamesSync(query) {
   if (!pokemonData?.pokemon) {
-    console.warn(
-      "Pokemon data not loaded. Use async version or call ensureDataLoaded() first."
-    );
     return [];
   }
 
@@ -613,7 +603,60 @@ export function getLastUpdated() {
   return pokemonData?.lastUpdated;
 }
 
+// Search validation function for autocomplete
+export function isValidSearchQuery(query) {
+  if (!query || typeof query !== 'string') return false;
+
+  const trimmedQuery = query.trim();
+  if (trimmedQuery.length === 0) return false;
+
+  // Allow basic alphanumeric characters and common Pokemon name characters
+  return /^[a-zA-Z0-9\u4e00-\u9fff\s\-''♂♀.]+$/.test(trimmedQuery);
+}
+
+// Get search suggestions for autocomplete
+export function getSearchSuggestions(query, maxSuggestions = 5) {
+  if (!pokemonData?.pokemon) {
+    return [];
+  }
+
+  if (!isValidSearchQuery(query)) {
+    return [];
+  }
+
+  const lowerQuery = query.toLowerCase();
+  const suggestions = [];
+
+  // Search through Pokemon data
+  Object.entries(pokemonData.pokemon).forEach(([id, names]) => {
+    const zhName = names.zh.toLowerCase();
+    const enName = names.en.toLowerCase();
+
+    // Check if query matches start of any name (prioritize starts-with matches)
+    const zhStartsWith = zhName.startsWith(lowerQuery);
+    const enStartsWith = enName.startsWith(lowerQuery);
+    const zhIncludes = zhName.includes(lowerQuery);
+    const enIncludes = enName.includes(lowerQuery);
+
+    if (zhStartsWith || enStartsWith || zhIncludes || enIncludes) {
+      const suggestion = {
+        id: parseInt(id),
+        text: zhStartsWith || zhIncludes ? names.zh : names.en,
+        chineseName: names.zh,
+        englishName: names.en,
+        score: (zhStartsWith || enStartsWith) ? 10 : 5 // Prioritize starts-with matches
+      };
+
+      suggestions.push(suggestion);
+    }
+  });
+
+  // Sort by score (higher is better) and limit results
+  suggestions.sort((a, b) => b.score - a.score);
+  return suggestions.slice(0, maxSuggestions);
+}
+
 // Auto-load data when module is imported
 if (typeof window !== "undefined") {
-  ensureDataLoaded().catch(console.error);
+  ensureDataLoaded().catch(() => {});
 }

@@ -1,5 +1,6 @@
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { getTypeColor } from "../services/pokemonApi";
+import { getChineseName } from "../utils/pokemonNamesHelper";
 import "./PokemonCard.css";
 import "../styles/pixelEffects.css";
 
@@ -9,6 +10,28 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [failedUrls, setFailedUrls] = useState(new Set());
   const [isShiny, setIsShiny] = useState(false);
+  const [resolvedChineseName, setResolvedChineseName] = useState(pokemon.chineseName);
+
+  // Fallback name resolution when Chinese name is missing or equals English name
+  useEffect(() => {
+    const needsResolution = !pokemon.chineseName ||
+                          pokemon.chineseName === pokemon.englishName ||
+                          pokemon.chineseName === pokemon.name ||
+                          pokemon.chineseName === "未知寶可夢";
+
+    if (needsResolution) {
+
+      getChineseName(pokemon.id, pokemon.englishName || pokemon.name)
+        .then(resolvedName => {
+          if (resolvedName && resolvedName !== pokemon.englishName && resolvedName !== pokemon.name) {
+            setResolvedChineseName(resolvedName);
+          } else {
+          }
+        })
+        .catch(error => {
+        });
+    }
+  }, [pokemon.id, pokemon.chineseName, pokemon.englishName, pokemon.name]);
 
   // Build fallback image chain
   const getImageChain = () => {
@@ -37,10 +60,6 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
     const failedUrl = event.target.src;
     const imageChain = getImageChain();
 
-    console.warn(
-      `Image failed to load for Pokemon ${pokemon.id} (${pokemon.englishName}):`,
-      failedUrl
-    );
 
     // Track failed URL
     setFailedUrls((prev) => new Set([...prev, failedUrl]));
@@ -48,17 +67,8 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
     // Try next image in chain
     if (currentImageIndex < imageChain.length - 1) {
       setCurrentImageIndex((prev) => prev + 1);
-      console.log(
-        `Trying fallback image ${currentImageIndex + 1}/${
-          imageChain.length
-        } for Pokemon ${pokemon.id}`
-      );
     } else {
       // All images failed
-      console.error(
-        `All images failed for Pokemon ${pokemon.id} (${pokemon.englishName}). Failed URLs:`,
-        Array.from(failedUrls)
-      );
       setImageError(true);
       setImageLoaded(true);
     }
@@ -66,10 +76,6 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
 
   const handleImageLoad = () => {
     const loadedUrl = getCurrentImageUrl();
-    console.log(
-      `Successfully loaded image for Pokemon ${pokemon.id} (${pokemon.englishName}):`,
-      loadedUrl
-    );
     setImageLoaded(true);
   };
 
@@ -149,7 +155,7 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
         )}
         <img
           src={getCurrentImageUrl()}
-          alt={`${pokemon.chineseName} (${pokemon.englishName})`}
+          alt={`${resolvedChineseName} (${pokemon.englishName})`}
           className={`pokemon-image ${
             imageLoaded ? "loaded" : ""
           } ${getPixelClass()} ${
@@ -165,7 +171,7 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
       </div>
 
       <div className="pokemon-names">
-        <h3 className="pokemon-name-zh">{pokemon.chineseName}</h3>
+        <h3 className="pokemon-name-zh">{resolvedChineseName}</h3>
         <p className="pokemon-name-en">{pokemon.englishName}</p>
         {pokemon.hasShinySprite && (
           <button
