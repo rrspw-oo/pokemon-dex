@@ -13,8 +13,72 @@ import {
 
 const POKE_API_BASE = "https://pokeapi.co/api/v2";
 
-// Cache for API responses
-const apiCache = new Map();
+// Enhanced cache with size limits and LRU eviction
+class LRUCache {
+  constructor(maxSize = 100) {
+    this.maxSize = maxSize;
+    this.cache = new Map();
+  }
+
+  get(key) {
+    if (this.cache.has(key)) {
+      // Move to end (most recently used)
+      const value = this.cache.get(key);
+      this.cache.delete(key);
+      this.cache.set(key, value);
+      return value;
+    }
+    return undefined;
+  }
+
+  set(key, value) {
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    } else if (this.cache.size >= this.maxSize) {
+      // Remove least recently used (first item)
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+    this.cache.set(key, value);
+  }
+
+  has(key) {
+    return this.cache.has(key);
+  }
+
+  clear() {
+    this.cache.clear();
+  }
+
+  size() {
+    return this.cache.size;
+  }
+}
+
+// Cache for API responses with size limit
+const apiCache = new LRUCache(100);
+
+// Request coalescing to prevent duplicate API calls
+const pendingRequests = new Map();
+
+// Helper function for request coalescing
+async function coalesceRequest(key, requestFn) {
+  if (pendingRequests.has(key)) {
+    return pendingRequests.get(key);
+  }
+
+  const promise = requestFn();
+  pendingRequests.set(key, promise);
+
+  try {
+    const result = await promise;
+    pendingRequests.delete(key);
+    return result;
+  } catch (error) {
+    pendingRequests.delete(key);
+    throw error;
+  }
+}
 
 // Initialize Pokemon data loading
 ensureDataLoaded().catch(() => {});
@@ -82,7 +146,9 @@ export async function fetchPokemonById(idOrName) {
     return apiCache.get(cacheKey);
   }
 
-  try {
+  // Use request coalescing to prevent duplicate API calls
+  return coalesceRequest(cacheKey, async () => {
+    try {
     const sanitizedId = idOrName.toString().toLowerCase().trim();
     const response = await fetch(`${POKE_API_BASE}/pokemon/${sanitizedId}`);
     if (!response.ok) {
@@ -160,14 +226,15 @@ export async function fetchPokemonById(idOrName) {
       errorMessage: `無法載入寶可夢資料: ${error.message}`,
       spriteDebugInfo: spriteData.debugInfo,
     };
-  }
+    }
+  });
 }
 
 // Search Pokemon by query (supports Chinese, English, and ID with forms and evolution chains)
-export async function searchPokemon(query, includeEvolutions = false) {
+export async function searchPokemon(query, includeEvolutions = false, maxResults = 20) {
   if (!query || query.length < 1) return [];
 
-  const cacheKey = `search_${query}_${includeEvolutions}`;
+  const cacheKey = `search_${query}_${includeEvolutions}_${maxResults}`;
 
   if (apiCache.has(cacheKey)) {
     return apiCache.get(cacheKey);
@@ -258,8 +325,8 @@ export async function searchPokemon(query, includeEvolutions = false) {
       const allFormsToFetch = [];
       const processedIds = new Set();
 
-      // 並行處理species API呼叫以提升效能
-      const speciesPromises = nameMatches.slice(0, 20).map(async (match) => {
+      // 並行處理species API呼叫以提升效能，限制處理數量
+      const speciesPromises = nameMatches.slice(0, Math.min(maxResults, 15)).map(async (match) => {
         if (processedIds.has(match.id)) {
           return null;
         }
@@ -342,12 +409,12 @@ export async function searchPokemon(query, includeEvolutions = false) {
         }
       }
 
-      let finalResults = deduplicatedResults;
+      let finalResults = deduplicatedResults.slice(0, maxResults);
 
       // If evolution forms are requested, add evolution chains for each result
       // 限制進化鏈載入的數量以提升效能
-      if (includeEvolutions && deduplicatedResults.length > 0 && deduplicatedResults.length <= 3) {
-        const evolutionPromises = deduplicatedResults.map(async (pokemon) => {
+      if (includeEvolutions && finalResults.length > 0 && finalResults.length <= 3) {
+        const evolutionPromises = finalResults.map(async (pokemon) => {
           try {
             const evolutionChain = await fetchCompleteEvolutionChain(
               pokemon.id
@@ -365,7 +432,7 @@ export async function searchPokemon(query, includeEvolutions = false) {
         const allEvolutions = evolutionResults.flat();
 
         // Combine original results with evolution forms
-        const combinedResults = [...deduplicatedResults, ...allEvolutions];
+        const combinedResults = [...finalResults, ...allEvolutions];
 
         // Remove duplicates again based on ID and name combination, and filter out errors
         const seenEvolutions = new Set();
@@ -378,8 +445,9 @@ export async function searchPokemon(query, includeEvolutions = false) {
           return true;
         });
 
-        // Sort by Pokemon ID to maintain consistent ordering
+        // Sort by Pokemon ID to maintain consistent ordering and limit final results
         finalResults.sort((a, b) => a.id - b.id);
+        finalResults = finalResults.slice(0, maxResults);
       }
 
       apiCache.set(cacheKey, finalResults);

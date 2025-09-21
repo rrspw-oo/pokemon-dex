@@ -1,8 +1,22 @@
 import { memo } from "react";
 import PokemonCard from "./PokemonCard";
+import PokemonCardSkeleton from "./PokemonCardSkeleton";
 import "./PokemonGrid.css";
 
-const PokemonGrid = memo(function PokemonGrid({ pokemon, onPokemonClick }) {
+const PokemonGrid = memo(function PokemonGrid({ pokemon, onPokemonClick, isLoading = false }) {
+  // Show skeleton cards during loading
+  if (isLoading) {
+    return (
+      <div className="pokemon-grid">
+        <div className="pokemon-cards">
+          {Array.from({ length: 8 }, (_, index) => (
+            <PokemonCardSkeleton key={`skeleton-${index}`} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (!pokemon || pokemon.length === 0) {
     return (
       <div className="pokemon-grid-empty">

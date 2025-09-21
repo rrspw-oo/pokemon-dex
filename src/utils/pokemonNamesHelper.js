@@ -2,9 +2,7 @@
 // Provides the same API as the original pokemonNames.js
 
 let pokemonData = null;
-
-// Import the complete Pokemon database
-import completePokemonDatabase from "../data/complete_pokemon_database.json";
+let dataLoadingPromise = null;
 
 // Transform complete database to name-focused structure
 function transformPokemonData(completeDatabase) {
@@ -62,12 +60,15 @@ function transformPokemonData(completeDatabase) {
   };
 }
 
-// Lazy load the JSON data
+// Lazy load the JSON data with dynamic import
 async function loadPokemonData() {
   if (!pokemonData) {
     try {
+      // Dynamic import for better bundle splitting
+      const { default: completePokemonDatabase } = await import("../data/complete_pokemon_database.json");
       pokemonData = transformPokemonData(completePokemonDatabase);
     } catch (error) {
+      console.warn('Failed to load Pokemon database:', error);
       // Fallback to empty data structure
       pokemonData = {
         version: "2.0.0",
@@ -112,9 +113,6 @@ export const pokemonNames = new Proxy(
     },
   }
 );
-
-// Initialize data loading
-let dataLoadingPromise = null;
 
 // Ensure data is loaded before using other functions
 export async function ensureDataLoaded() {

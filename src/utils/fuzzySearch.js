@@ -177,21 +177,27 @@ export function sortSearchResults(results) {
   });
 }
 
-// 增強的搜尋建議生成器
+// 增強的搜尋建議生成器 - 優化版本，支持早期終止
 export function generateSearchSuggestions(query, pokemonData, maxSuggestions = 5) {
   if (!query || query.length < 1) return [];
 
   const suggestions = [];
   const seen = new Set();
+  let perfectMatches = 0;
 
-  // 遍歷所有 Pokemon 數據
-  pokemonData.forEach(pokemon => {
+  // 遍歷所有 Pokemon 數據，但在找到足夠的高質量匹配時提早退出
+  for (const pokemon of pokemonData) {
+    // 如果已經找到足夠的建議且有足夠的高分匹配，提早退出
+    if (suggestions.length >= maxSuggestions * 2 && perfectMatches >= maxSuggestions) {
+      break;
+    }
+
     const { chineseName, englishName, id } = pokemon;
 
     // 檢查中文名稱匹配
-    if (chineseName) {
+    if (chineseName && !seen.has(chineseName)) {
       const zhMatch = fuzzyMatch(query, chineseName, 0.4);
-      if (zhMatch.matched && !seen.has(chineseName)) {
+      if (zhMatch.matched) {
         suggestions.push({
           text: chineseName,
           type: 'chinese',
@@ -200,13 +206,15 @@ export function generateSearchSuggestions(query, pokemonData, maxSuggestions = 5
           id: id
         });
         seen.add(chineseName);
+
+        if (zhMatch.score >= 0.9) perfectMatches++;
       }
     }
 
     // 檢查英文名稱匹配
-    if (englishName) {
+    if (englishName && !seen.has(englishName)) {
       const enMatch = fuzzyMatch(query, englishName, 0.4);
-      if (enMatch.matched && !seen.has(englishName)) {
+      if (enMatch.matched) {
         suggestions.push({
           text: englishName,
           type: 'english',
@@ -215,9 +223,11 @@ export function generateSearchSuggestions(query, pokemonData, maxSuggestions = 5
           id: id
         });
         seen.add(englishName);
+
+        if (enMatch.score >= 0.9) perfectMatches++;
       }
     }
-  });
+  }
 
   // 按分數排序並限制數量
   return suggestions
