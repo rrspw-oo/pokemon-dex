@@ -182,6 +182,54 @@ const specialNameMappings = {
   'hakamo-o': 'hakamo-o',
   'kommo-o': 'kommo-o',
   
+  // Mega Pokemon forms
+  'charizard-mega-x': 'charizard-mega-x',
+  'charizard-mega-y': 'charizard-mega-y',
+  'venusaur-mega': 'venusaur-mega',
+  'blastoise-mega': 'blastoise-mega',
+  'alakazam-mega': 'alakazam-mega',
+  'gengar-mega': 'gengar-mega',
+  'kangaskhan-mega': 'kangaskhan-mega',
+  'pinsir-mega': 'pinsir-mega',
+  'gyarados-mega': 'gyarados-mega',
+  'aerodactyl-mega': 'aerodactyl-mega',
+  'mewtwo-mega-x': 'mewtwo-mega-x',
+  'mewtwo-mega-y': 'mewtwo-mega-y',
+  'ampharos-mega': 'ampharos-mega',
+  'scizor-mega': 'scizor-mega',
+  'heracross-mega': 'heracross-mega',
+  'houndoom-mega': 'houndoom-mega',
+  'tyranitar-mega': 'tyranitar-mega',
+  'blaziken-mega': 'blaziken-mega',
+  'gardevoir-mega': 'gardevoir-mega',
+  'mawile-mega': 'mawile-mega',
+  'aggron-mega': 'aggron-mega',
+  'medicham-mega': 'medicham-mega',
+  'manectric-mega': 'manectric-mega',
+  'banette-mega': 'banette-mega',
+  'absol-mega': 'absol-mega',
+  'garchomp-mega': 'garchomp-mega',
+  'lucario-mega': 'lucario-mega',
+  'abomasnow-mega': 'abomasnow-mega',
+  'beedrill-mega': 'beedrill-mega',
+  'pidgeot-mega': 'pidgeot-mega',
+  'slowbro-mega': 'slowbro-mega',
+  'steelix-mega': 'steelix-mega',
+  'sceptile-mega': 'sceptile-mega',
+  'swampert-mega': 'swampert-mega',
+  'sableye-mega': 'sableye-mega',
+  'altaria-mega': 'altaria-mega',
+  'glalie-mega': 'glalie-mega',
+  'salamence-mega': 'salamence-mega',
+  'metagross-mega': 'metagross-mega',
+  'latias-mega': 'latias-mega',
+  'latios-mega': 'latios-mega',
+  'rayquaza-mega': 'rayquaza-mega',
+  'lopunny-mega': 'lopunny-mega',
+  'gallade-mega': 'gallade-mega',
+  'audino-mega': 'audino-mega',
+  'diancie-mega': 'diancie-mega',
+
   // Regional forms
   'alolan': function(name) {
     return `${pokemonNameToSlug(name.replace('alolan', '').trim())}-alola`;
@@ -204,9 +252,32 @@ export function processDatabaseFormName(name) {
   // Clean and normalize the name
   let processedName = name.toLowerCase()
     .replace(/['']/g, '') // Remove apostrophes
-    .replace(/[:.]/g, '') // Remove colons and periods  
+    .replace(/[:.]/g, '') // Remove colons and periods
     .replace(/\s+/g, ' ') // Normalize spaces
     .trim();
+
+  // Handle Mega Pokemon forms first (before parentheses processing)
+  if (processedName.includes('mega')) {
+    // Convert various Mega formats to standard format
+    // Examples: "charizard-mega-x", "charizard mega x", "mega charizard x"
+    let megaName = processedName
+      .replace(/mega\s+/g, 'mega-') // "mega charizard" -> "mega-charizard"
+      .replace(/\s+mega/g, '-mega') // "charizard mega" -> "charizard-mega"
+      .replace(/\s+/g, '-') // Replace remaining spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+
+    // Move mega to the end if it's at the beginning
+    if (megaName.startsWith('mega-')) {
+      const parts = megaName.split('-');
+      if (parts[0] === 'mega' && parts.length > 1) {
+        // "mega-charizard-x" -> "charizard-mega-x"
+        megaName = parts.slice(1).join('-') + '-mega';
+      }
+    }
+
+    return megaName;
+  }
 
   // Handle parentheses forms (common in database)
   // Convert "Pokemon(Form Name)" to "pokemon-form-name"
