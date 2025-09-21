@@ -35,6 +35,7 @@ function SearchBox({ onSearch, isLoading }) {
       setSuggestions(newSuggestions);
       setShowSuggestions(newSuggestions.length > 0);
     } catch (error) {
+      console.warn('Search suggestions error:', error);
       setSuggestions([]);
       setShowSuggestions(false);
     } finally {

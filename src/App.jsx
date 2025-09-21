@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import SearchBox from "./components/SearchBox";
 import PokemonGrid from "./components/PokemonGrid";
 import Footer from "./components/Footer";
@@ -6,11 +6,49 @@ import { searchPokemon, searchPokemonForms } from "./services/pokemonApi";
 import "./App.css";
 import "./styles/pixelEffects.css";
 
+// LRU Cache implementation for app-level caching
+class LRUCache {
+  constructor(maxSize = 50) {
+    this.maxSize = maxSize;
+    this.cache = new Map();
+  }
+
+  get(key) {
+    if (this.cache.has(key)) {
+      const value = this.cache.get(key);
+      this.cache.delete(key);
+      this.cache.set(key, value);
+      return value;
+    }
+    return undefined;
+  }
+
+  set(key, value) {
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    } else if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+    this.cache.set(key, value);
+  }
+
+  has(key) {
+    return this.cache.has(key);
+  }
+
+  clear() {
+    this.cache.clear();
+  }
+}
+
 function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchCache, setSearchCache] = useState(new Map());
   const [error, setError] = useState(null);
+
+  // Use memoized LRU cache for better memory management
+  const searchCache = useMemo(() => new LRUCache(50), []);
 
   const handleSearch = async (query) => {
     if (!query || query.length < 1) {
@@ -34,18 +72,15 @@ function App() {
       const results = await searchPokemon(query.trim(), true);
 
       // 儲存緩存
-      setSearchCache((prevCache) => {
-        const newCache = new Map(prevCache);
-        newCache.set(query, results);
-        return newCache;
-      });
+      searchCache.set(query, results);
 
       setSearchResults(results);
 
       if (results.length === 0) {
         setError(`找不到包含 "${query}" 的寶可夢`);
       }
-    } catch (err) {
+    } catch (error) {
+      console.warn('Search error:', error);
       setError("搜尋時發生錯誤，請稍後再試");
       setSearchResults([]);
     } finally {
@@ -72,19 +107,15 @@ function App() {
       const forms = await searchPokemonForms(pokemon.id);
 
       // 儲存緩存
-      setSearchCache((prevCache) => {
-        const newCache = new Map(prevCache);
-        newCache.set(cacheKey, forms);
-        return newCache;
-      });
+      searchCache.set(cacheKey, forms);
 
       setSearchResults(forms);
 
       if (forms.length === 0) {
         setError(`找不到 ${pokemon.chineseName} 的型態資料`);
-      } else {
       }
-    } catch (err) {
+    } catch (error) {
+      console.warn('Pokemon forms error:', error);
       setError(`載入 ${pokemon.chineseName} 型態時發生錯誤，請稍後再試`);
       setSearchResults([]);
     } finally {
@@ -96,7 +127,7 @@ function App() {
     // Clear all search state and refresh the page
     setSearchResults([]);
     setError(null);
-    setSearchCache(new Map());
+    searchCache.clear();
     setIsLoading(false);
   };
 
@@ -115,6 +146,7 @@ function App() {
         <PokemonGrid
           pokemon={searchResults}
           onPokemonClick={handlePokemonClick}
+          isLoading={isLoading}
         />
         <Footer />
       </div>

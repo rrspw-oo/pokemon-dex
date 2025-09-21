@@ -51,7 +51,25 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: undefined
+        manualChunks: {
+          'pokemon-data': ['./src/data/complete_pokemon_database.json'],
+          'pokemon-utils': [
+            './src/utils/pokemonNamesHelper.js',
+            './src/utils/fuzzySearch.js',
+            './src/utils/spriteUtils.js',
+            './src/utils/localSpriteUtils.js'
+          ],
+          'pokemon-api': ['./src/services/pokemonApi.js']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000,
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
       }
     }
   },

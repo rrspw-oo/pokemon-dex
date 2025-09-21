@@ -1,0 +1,124 @@
+.pokemon-card-skeleton {
+  background: #f5f5f5;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  width: 100%;
+  max-width: 200px;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.skeleton-image {
+  width: 120px;
+  height: 120px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  margin: 0 auto 16px;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeleton-image {
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200px 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+.skeleton-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-id {
+  height: 16px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  width: 60px;
+  margin: 0 auto;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200px 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+.skeleton-name {
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  width: 80%;
+  margin: 0 auto;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200px 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+.skeleton-name-en {
+  height: 16px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  width: 70%;
+  margin: 0 auto;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200px 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+.skeleton-types {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.skeleton-type {
+  height: 24px;
+  width: 60px;
+  background: #e0e0e0;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200px 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+/* Stagger animation delays for a more natural effect */
+.skeleton-id {
+  animation-delay: 0s;
+}
+
+.skeleton-name {
+  animation-delay: 0.1s;
+}
+
+.skeleton-name-en {
+  animation-delay: 0.2s;
+}
+
+.skeleton-type:nth-child(1) {
+  animation-delay: 0.3s;
+}
+
+.skeleton-type:nth-child(2) {
+  animation-delay: 0.4s;
+}
