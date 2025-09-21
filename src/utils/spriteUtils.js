@@ -230,6 +230,53 @@ const specialNameMappings = {
   'audino-mega': 'audino-mega',
   'diancie-mega': 'diancie-mega',
 
+  // Gigantamax Pokemon forms
+  'charizard-gmax': 'charizard-gmax',
+  'butterfree-gmax': 'butterfree-gmax',
+  'pikachu-gmax': 'pikachu-gmax',
+  'meowth-gmax': 'meowth-gmax',
+  'machamp-gmax': 'machamp-gmax',
+  'gengar-gmax': 'gengar-gmax',
+  'kingler-gmax': 'kingler-gmax',
+  'lapras-gmax': 'lapras-gmax',
+  'eevee-gmax': 'eevee-gmax',
+  'snorlax-gmax': 'snorlax-gmax',
+  'garbodor-gmax': 'garbodor-gmax',
+  'corviknight-gmax': 'corviknight-gmax',
+  'orbeetle-gmax': 'orbeetle-gmax',
+  'drednaw-gmax': 'drednaw-gmax',
+  'coalossal-gmax': 'coalossal-gmax',
+  'flapple-gmax': 'flapple-gmax',
+  'appletun-gmax': 'appletun-gmax',
+  'sandaconda-gmax': 'sandaconda-gmax',
+  'toxapex-gmax': 'toxapex-gmax',
+  'centiskorch-gmax': 'centiskorch-gmax',
+  'hatterene-gmax': 'hatterene-gmax',
+  'grimmsnarl-gmax': 'grimmsnarl-gmax',
+  'alcremie-gmax': 'alcremie-gmax',
+  'copperajah-gmax': 'copperajah-gmax',
+  'duraludon-gmax': 'duraludon-gmax',
+
+  // Eternatus forms
+  'eternatus': 'eternatus',
+  'eternatus-eternamax': 'eternatus-eternamax',
+
+  // Special Pikachu forms
+  'pikachu-original-cap': 'pikachu-original-cap',
+  'pikachu-hoenn-cap': 'pikachu-hoenn-cap',
+  'pikachu-sinnoh-cap': 'pikachu-sinnoh-cap',
+  'pikachu-unova-cap': 'pikachu-unova-cap',
+  'pikachu-kalos-cap': 'pikachu-kalos-cap',
+  'pikachu-alola-cap': 'pikachu-alola-cap',
+  'pikachu-partner-cap': 'pikachu-partner-cap',
+  'pikachu-world-cap': 'pikachu-world-cap',
+  'pikachu-phd': 'pikachu-phd',
+  'pikachu-pop-star': 'pikachu-pop-star',
+  'pikachu-rock-star': 'pikachu-rock-star',
+  'pikachu-belle': 'pikachu-belle',
+  'pikachu-cosplay': 'pikachu-cosplay',
+  'pikachu-libre': 'pikachu-libre',
+
   // Regional forms
   'alolan': function(name) {
     return `${pokemonNameToSlug(name.replace('alolan', '').trim())}-alola`;
@@ -277,6 +324,35 @@ export function processDatabaseFormName(name) {
     }
 
     return megaName;
+  }
+
+  // Handle Gigantamax Pokemon forms
+  if (processedName.includes('gmax') || processedName.includes('gigantamax')) {
+    // Convert various Gigantamax formats to standard format
+    // Examples: "charizard-gmax", "charizard gigantamax", "gigantamax charizard"
+    let gmaxName = processedName
+      .replace(/gigantamax/g, 'gmax') // Normalize to gmax
+      .replace(/gmax\s+/g, 'gmax-') // "gmax charizard" -> "gmax-charizard"
+      .replace(/\s+gmax/g, '-gmax') // "charizard gmax" -> "charizard-gmax"
+      .replace(/\s+/g, '-') // Replace remaining spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+
+    // Move gmax to the end if it's at the beginning
+    if (gmaxName.startsWith('gmax-')) {
+      const parts = gmaxName.split('-');
+      if (parts[0] === 'gmax' && parts.length > 1) {
+        // "gmax-charizard" -> "charizard-gmax"
+        gmaxName = parts.slice(1).join('-') + '-gmax';
+      }
+    }
+
+    return gmaxName;
+  }
+
+  // Handle Eternamax forms
+  if (processedName.includes('eternamax')) {
+    return 'eternatus-eternamax';
   }
 
   // Handle parentheses forms (common in database)
