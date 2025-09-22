@@ -13,6 +13,7 @@ This Pokemon Dex application features a unique **pixel-style search box** combin
 - **Pixel Shadow Effects**: Multi-layered box shadows creating 3D depth
 - **Press Start 2P Font**: Authentic pixel font for input and button text
 - **Classic Button Style**: Raised button appearance with pixel-perfect shadows
+- **Quick Reset**: Click "Pokemon Search Tool" title to completely reset search state
 
 ### Modern Dropdown Suggestions
 
@@ -35,6 +36,7 @@ This Pokemon Dex application features a unique **pixel-style search box** combin
   - Clicks a suggestion
   - Presses Enter
   - Clicks the "GO" button
+- **Quick Reset**: Click the title to clear all search state and input
 - **Fuzzy Matching**: Intelligent search with spelling error tolerance
 - **Debounced Suggestions**: 200ms delay for optimal performance
 
@@ -134,6 +136,7 @@ npm run typecheck
 4. **Bilingual Support**: Chinese and English Pokemon names
 5. **Accessibility**: Proper ARIA labels and keyboard navigation
 6. **Performance**: Debounced search with intelligent caching
+7. **State Management**: Complete reset functionality via title interaction
 
 ## 🎮 Testing the Experience
 
@@ -141,6 +144,7 @@ npm run typecheck
 2. **See dropdown appear**: Modern rounded dropdown with suggestions
 3. **Navigate with arrows**: Smooth keyboard navigation
 4. **Select suggestion**: Click or Enter to search
-5. **Appreciate separation**: Notice the clean 8px gap between components
+5. **Reset everything**: Click "Pokemon Search Tool" title to clear all state
+6. **Appreciate separation**: Notice the clean 8px gap between components
 
 This design successfully combines the nostalgia of retro gaming with the efficiency of modern web interfaces!f

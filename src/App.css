@@ -33,6 +33,15 @@
   color: #666;
   font-size: 12px;
   margin: 0;
+  transition: color 0.2s ease;
+}
+
+.header:hover p {
+  color: #bfdc00;
+}
+
+.header:active p {
+  color: #bfdc00;
 }
 
 .error-message {
