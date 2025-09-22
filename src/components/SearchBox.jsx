@@ -1,9 +1,9 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import SearchSuggestions from "./SearchSuggestions";
 import { getPokemonSearchSuggestions } from "../services/pokemonApi";
 import "./SearchBox.css";
 
-function SearchBox({ onSearch, isLoading }) {
+function SearchBox({ onSearch, isLoading, resetKey }) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -15,10 +15,29 @@ function SearchBox({ onSearch, isLoading }) {
   const containerRef = useRef(null);
   const isSelectingSuggestionRef = useRef(false);
 
+  // Handle reset from parent component
+  useEffect(() => {
+    if (resetKey) {
+      setQuery("");
+      setSuggestions([]);
+      setShowSuggestions(false);
+      setSelectedSuggestionIndex(-1);
+
+      // Clear any pending timeouts
+      if (suggestionsTimeoutRef.current) {
+        clearTimeout(suggestionsTimeoutRef.current);
+        suggestionsTimeoutRef.current = null;
+      }
+    }
+  }, [resetKey]);
+
   // 搜尋功能（現在只在提交和選擇建議時使用）
-  const performSearch = useCallback((searchQuery) => {
-    onSearch(searchQuery);
-  }, [onSearch]);
+  const performSearch = useCallback(
+    (searchQuery) => {
+      onSearch(searchQuery);
+    },
+    [onSearch]
+  );
 
   // 獲取搜尋建議
   const fetchSuggestions = useCallback(async (searchQuery) => {
@@ -35,7 +54,7 @@ function SearchBox({ onSearch, isLoading }) {
       setSuggestions(newSuggestions);
       setShowSuggestions(newSuggestions.length > 0);
     } catch (error) {
-      console.warn('Search suggestions error:', error);
+      console.warn("Search suggestions error:", error);
       setSuggestions([]);
       setShowSuggestions(false);
     } finally {
@@ -44,15 +63,18 @@ function SearchBox({ onSearch, isLoading }) {
   }, []);
 
   // 防抖獲取建議
-  const debouncedFetchSuggestions = useCallback((searchQuery) => {
-    if (suggestionsTimeoutRef.current) {
-      clearTimeout(suggestionsTimeoutRef.current);
-    }
+  const debouncedFetchSuggestions = useCallback(
+    (searchQuery) => {
+      if (suggestionsTimeoutRef.current) {
+        clearTimeout(suggestionsTimeoutRef.current);
+      }
 
-    suggestionsTimeoutRef.current = setTimeout(() => {
-      fetchSuggestions(searchQuery);
-    }, 200); // 建議獲取延遲較短
-  }, [fetchSuggestions]);
+      suggestionsTimeoutRef.current = setTimeout(() => {
+        fetchSuggestions(searchQuery);
+      }, 200); // 建議獲取延遲較短
+    },
+    [fetchSuggestions]
+  );
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -91,7 +113,8 @@ function SearchBox({ onSearch, isLoading }) {
     isSelectingSuggestionRef.current = true;
 
     // Use englishName or id for search instead of formatted text
-    const searchTerm = suggestion.englishName || suggestion.id?.toString() || suggestion.text;
+    const searchTerm =
+      suggestion.englishName || suggestion.id?.toString() || suggestion.text;
     setQuery(searchTerm);
     setSuggestions([]); // Clear suggestions array to prevent retrigger
     setShowSuggestions(false);
@@ -109,21 +132,24 @@ function SearchBox({ onSearch, isLoading }) {
     if (!showSuggestions || suggestions.length === 0) return;
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setSelectedSuggestionIndex(prev =>
+        setSelectedSuggestionIndex((prev) =>
           prev < suggestions.length - 1 ? prev + 1 : prev
         );
         break;
 
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
-        setSelectedSuggestionIndex(prev => prev > 0 ? prev - 1 : -1);
+        setSelectedSuggestionIndex((prev) => (prev > 0 ? prev - 1 : -1));
         break;
 
-      case 'Enter':
+      case "Enter":
         e.preventDefault();
-        if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
+        if (
+          selectedSuggestionIndex >= 0 &&
+          suggestions[selectedSuggestionIndex]
+        ) {
           handleSuggestionClick(suggestions[selectedSuggestionIndex]);
         } else if (query.trim()) {
           performSearch(query.trim());
@@ -131,7 +157,7 @@ function SearchBox({ onSearch, isLoading }) {
         }
         break;
 
-      case 'Escape':
+      case "Escape":
         setShowSuggestions(false);
         setSelectedSuggestionIndex(-1);
         inputRef.current?.blur();
@@ -145,7 +171,11 @@ function SearchBox({ onSearch, isLoading }) {
   // 處理輸入框焦點
   const handleInputFocus = () => {
     // Don't show suggestions if we're in the middle of selecting one
-    if (!isSelectingSuggestionRef.current && query.length >= 1 && suggestions.length > 0) {
+    if (
+      !isSelectingSuggestionRef.current &&
+      query.length >= 1 &&
+      suggestions.length > 0
+    ) {
       setShowSuggestions(true);
     }
   };
@@ -170,7 +200,7 @@ function SearchBox({ onSearch, isLoading }) {
             onKeyDown={handleKeyDown}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
-            placeholder="enter Pokemon's # or names"
+            placeholder=" # or names"
             className="search-input"
             disabled={isLoading}
             autoComplete="off"

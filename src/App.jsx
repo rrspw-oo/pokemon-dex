@@ -46,6 +46,7 @@ function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [resetKey, setResetKey] = useState(0);
 
   // Use memoized LRU cache for better memory management
   const searchCache = useMemo(() => new LRUCache(50), []);
@@ -124,11 +125,14 @@ function App() {
   };
 
   const handleHeaderClick = () => {
-    // Clear all search state and refresh the page
+    // Clear all search state and reset SearchBox
     setSearchResults([]);
     setError(null);
     searchCache.clear();
     setIsLoading(false);
+
+    // Trigger SearchBox reset by updating resetKey
+    setResetKey(prev => prev + 1);
   };
 
   return (
@@ -137,7 +141,7 @@ function App() {
         <header className="header" onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
           <p>Pokemon Search Tool</p>
         </header>
-        <SearchBox onSearch={handleSearch} isLoading={isLoading} />
+        <SearchBox onSearch={handleSearch} isLoading={isLoading} resetKey={resetKey} />
         {error && (
           <div className="error-message">
             <p>{error}</p>
