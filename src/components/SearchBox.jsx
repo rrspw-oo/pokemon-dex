@@ -50,7 +50,7 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
     setIsFetchingSuggestions(true);
 
     try {
-      const newSuggestions = await getPokemonSearchSuggestions(searchQuery, 5);
+      const newSuggestions = await getPokemonSearchSuggestions(searchQuery, 50);
       setSuggestions(newSuggestions);
       setShowSuggestions(newSuggestions.length > 0);
     } catch (error) {

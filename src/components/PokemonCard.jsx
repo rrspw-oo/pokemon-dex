@@ -4,7 +4,7 @@ import { getChineseName } from "../utils/pokemonNamesHelper";
 import "./PokemonCard.css";
 import "../styles/pixelEffects.css";
 
-const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
+const PokemonCard = memo(function PokemonCard({ pokemon, onClick, index = 0 }) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -160,10 +160,12 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick }) {
             imageLoaded ? "loaded" : ""
           } ${getPixelClass()} ${
             pokemon.isLocalSprite ? "local-sprite" : "external-sprite"
+          } ${
+            isShiny && !pokemon.hasPixelShiny ? "pixelate-fallback" : ""
           }`}
           onError={handleImageError}
           onLoad={handleImageLoad}
-          loading="lazy"
+          loading={index < 8 ? "eager" : "lazy"}
           key={`${pokemon.id}-${currentImageIndex}-${
             imageError ? "error" : "loading"
           }-${isShiny ? "shiny" : "normal"}`}

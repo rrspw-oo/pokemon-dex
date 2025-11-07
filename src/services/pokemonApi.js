@@ -167,7 +167,9 @@ export async function fetchPokemonById(idOrName) {
       name: pokemon.name,
       chineseName: chineseName,
       englishName: englishName,
-      image: pokemon.sprites?.other?.["official-artwork"]?.front_default || spriteData.primary,
+      image: pokemon.sprites?.versions?.["generation-viii"]?.icons?.front_default ||
+             pokemon.sprites?.other?.["official-artwork"]?.front_default ||
+             spriteData.primary,
       imageFallback: pokemon.sprites?.front_default || spriteData.fallback,
       imageAlternatives: spriteData.alternatives, // Pass through alternative URLs
       isLocalSprite: spriteData.isLocal,
@@ -177,11 +179,19 @@ export async function fetchPokemonById(idOrName) {
         pokemon.sprites?.front_default,
       // Add shiny sprite support
       shinyImage:
+        pokemon.sprites?.versions?.["generation-vii"]?.["ultra-sun-ultra-moon"]?.front_shiny ||
+        pokemon.sprites?.versions?.["generation-viii"]?.icons?.front_shiny ||
         pokemon.sprites?.other?.["official-artwork"]?.front_shiny ||
         pokemon.sprites?.front_shiny,
       hasShinySprite: !!(
+        pokemon.sprites?.versions?.["generation-vii"]?.["ultra-sun-ultra-moon"]?.front_shiny ||
+        pokemon.sprites?.versions?.["generation-viii"]?.icons?.front_shiny ||
         pokemon.sprites?.other?.["official-artwork"]?.front_shiny ||
         pokemon.sprites?.front_shiny
+      ),
+      hasPixelShiny: !!(
+        pokemon.sprites?.versions?.["generation-vii"]?.["ultra-sun-ultra-moon"]?.front_shiny ||
+        pokemon.sprites?.versions?.["generation-viii"]?.icons?.front_shiny
       ),
       types: pokemon.types.map((type) => ({
         name: type.type.name,
@@ -230,7 +240,11 @@ export async function fetchPokemonById(idOrName) {
   });
 }
 
-export async function searchPokemon(query, includeEvolutions = false, maxResults = 10) {
+export async function searchPokemon(query, includeEvolutions = false, maxResults = null) {
+  // Auto-adjust maxResults based on query length
+  if (maxResults === null) {
+    maxResults = query.length === 1 ? 100 : 10;
+  }
   if (!query || query.length < 1) return [];
 
   const cacheKey = `search_${query}_${includeEvolutions}_${maxResults}`;
@@ -336,9 +350,12 @@ export async function searchPokemon(query, includeEvolutions = false, maxResults
           );
           if (speciesResponse.ok) {
             const speciesData = await speciesResponse.json();
-            const forms = speciesData.varieties.map(
-              (variety) => variety.pokemon.name
-            );
+            const forms = speciesData.varieties
+              .map((variety) => variety.pokemon.name)
+              .filter((formName) => {
+                const specialForms = ['-totem', '-starter', '-battle-bond'];
+                return !specialForms.some(form => formName.includes(form));
+              });
 
             // If multiple forms exist, return all forms
             if (forms.length > 1) {
@@ -347,8 +364,15 @@ export async function searchPokemon(query, includeEvolutions = false, maxResults
                 name: formName,
                 isForm: true,
               }));
+            } else if (forms.length === 1) {
+              // Single form
+              return [{
+                id: match.id,
+                name: forms[0],
+                isForm: false,
+              }];
             } else {
-              // Single form, use the match directly
+              // No valid forms after filtering, use English name
               return [{
                 id: match.id,
                 name: match.en.toLowerCase(),
@@ -805,7 +829,14 @@ export async function searchPokemonForms(pokemonId) {
 
         for (const variety of varieties) {
           try {
-            const variantPokemon = await fetchPokemonById(variety.pokemon.name);
+            const variantName = variety.pokemon.name;
+
+            const specialForms = ['-totem', '-starter', '-battle-bond'];
+            if (specialForms.some(form => variantName.includes(form))) {
+              continue;
+            }
+
+            const variantPokemon = await fetchPokemonById(variantName);
 
             // Skip if Pokemon data has error flag
             if (variantPokemon.error) {
@@ -817,7 +848,6 @@ export async function searchPokemonForms(pokemonId) {
             variantPokemon.is_api_variant = true;
 
             // Use existing sprite system for API variants
-            const variantName = variety.pokemon.name;
             const spriteData = getSpriteWithFallback(variantPokemon.id, variantName);
 
             // Check if this is a mega/gmax special form

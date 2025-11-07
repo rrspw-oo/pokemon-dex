@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import "./SearchSuggestions.css";
 
 function SearchSuggestions({
@@ -11,8 +11,13 @@ function SearchSuggestions({
   isLoading = false
 }) {
   const suggestionRefs = useRef([]);
+  const containerRef = useRef(null);
+  const [displayCount, setDisplayCount] = useState(5);
 
-  // 當選中項目改變時，滾動到可見區域
+  useEffect(() => {
+    setDisplayCount(5);
+  }, [suggestions]);
+
   useEffect(() => {
     if (selectedIndex >= 0 && suggestionRefs.current[selectedIndex]) {
       suggestionRefs.current[selectedIndex].scrollIntoView({
@@ -21,6 +26,21 @@ function SearchSuggestions({
       });
     }
   }, [selectedIndex]);
+
+  const loadMoreSuggestions = useCallback(() => {
+    setDisplayCount(prev => Math.min(prev + 5, suggestions.length));
+  }, [suggestions.length]);
+
+  const handleScroll = useCallback((e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    const threshold = 50;
+
+    if (scrollHeight - scrollTop - clientHeight < threshold) {
+      if (displayCount < suggestions.length) {
+        loadMoreSuggestions();
+      }
+    }
+  }, [displayCount, suggestions.length, loadMoreSuggestions]);
 
   if (!isVisible || (!suggestions.length && !isLoading)) {
     return null;
@@ -42,8 +62,16 @@ function SearchSuggestions({
 
   // 移除類型圖示，採用更簡潔的設計
 
+  const displayedSuggestions = suggestions.slice(0, displayCount);
+  const hasMore = displayCount < suggestions.length;
+
   return (
-    <div className="search-suggestions" data-visible={isVisible}>
+    <div
+      className="search-suggestions"
+      data-visible={isVisible}
+      ref={containerRef}
+      onScroll={handleScroll}
+    >
       {isLoading && (
         <div className="suggestion-item loading">
           <div className="suggestion-spinner"></div>
@@ -51,7 +79,7 @@ function SearchSuggestions({
         </div>
       )}
 
-      {suggestions.map((suggestion, index) => (
+      {displayedSuggestions.map((suggestion, index) => (
         <div
           key={`${suggestion.text}-${suggestion.id || index}`}
           ref={el => suggestionRefs.current[index] = el}
@@ -80,6 +108,14 @@ function SearchSuggestions({
           </div>
         </div>
       ))}
+
+      {hasMore && !isLoading && (
+        <div className="suggestions-load-more">
+          <button onClick={loadMoreSuggestions} type="button">
+            Load More ({suggestions.length - displayCount} more)
+          </button>
+        </div>
+      )}
 
       {!isLoading && suggestions.length === 0 && query && (
         <div className="suggestion-item no-results">
