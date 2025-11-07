@@ -12,9 +12,30 @@
     2px 2px 0px #777,
     4px 4px 0px #555;
   z-index: 1000;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
   font-family: system-ui, -apple-system, sans-serif;
+  scrollbar-width: thin;
+  scrollbar-color: #333 #e0e0e0;
+}
+
+.search-suggestions::-webkit-scrollbar {
+  width: 8px;
+}
+
+.search-suggestions::-webkit-scrollbar-track {
+  background: #e0e0e0;
+  border-radius: 0 10px 10px 0;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb {
+  background: #333;
+  border: 1px solid #e0e0e0;
+  border-radius: 0;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 .suggestion-item {
@@ -155,7 +176,7 @@
 @media (max-width: 768px) {
   .search-suggestions {
     border-radius: 16px;
-    max-height: 280px;
+    max-height: 60vh;
     top: calc(100% + 8px);
   }
 
@@ -185,7 +206,7 @@
 @media (max-width: 480px) {
   .search-suggestions {
     border-radius: 20px;
-    max-height: 240px;
+    max-height: 60vh;
     left: -8px;
     right: -8px;
     top: calc(100% + 8px);
@@ -228,3 +249,38 @@
 }
 
 /* 移除黑暗模式，保持白色背景 */
+
+.suggestions-load-more {
+  padding: 12px;
+  text-align: center;
+  border-top: 1px solid #e0e0e0;
+  background: #f5f5f5;
+  position: sticky;
+  bottom: 0;
+  border-radius: 0 0 10px 10px;
+}
+
+.suggestions-load-more button {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 10px;
+  padding: 8px 16px;
+  background: #e8e8e8;
+  color: #333;
+  border: 1px solid #999;
+  border-radius: 0;
+  box-shadow: 1px 1px 0px #777;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  min-height: 36px;
+}
+
+.suggestions-load-more button:hover {
+  background: #d0d0d0;
+  transform: translateY(-1px);
+  box-shadow: 2px 2px 0px #777;
+}
+
+.suggestions-load-more button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}

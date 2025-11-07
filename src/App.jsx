@@ -44,6 +44,8 @@ class LRUCache {
 
 function App() {
   const [searchResults, setSearchResults] = useState([]);
+  const [allResults, setAllResults] = useState([]);
+  const [displayCount, setDisplayCount] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [resetKey, setResetKey] = useState(0);
@@ -54,13 +56,18 @@ function App() {
   const handleSearch = async (query) => {
     if (!query || query.length < 1) {
       setSearchResults([]);
+      setAllResults([]);
+      setDisplayCount(5);
       setError(null);
       return;
     }
 
     // 檢查緩存
     if (searchCache.has(query)) {
-      setSearchResults(searchCache.get(query));
+      const cachedResults = searchCache.get(query);
+      setAllResults(cachedResults);
+      setSearchResults(cachedResults.slice(0, 5));
+      setDisplayCount(5);
       setError(null);
       return;
     }
@@ -74,7 +81,9 @@ function App() {
       // 儲存緩存
       searchCache.set(query, results);
 
-      setSearchResults(results);
+      setAllResults(results);
+      setSearchResults(results.slice(0, 5));
+      setDisplayCount(5);
 
       if (results.length === 0) {
         setError(`找不到包含 "${query}" 的寶可夢`);
@@ -83,9 +92,16 @@ function App() {
       console.warn('Search error:', error);
       setError("搜尋時發生錯誤，請稍後再試");
       setSearchResults([]);
+      setAllResults([]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLoadMore = () => {
+    const newDisplayCount = displayCount + 5;
+    setDisplayCount(newDisplayCount);
+    setSearchResults(allResults.slice(0, newDisplayCount));
   };
 
   const handlePokemonClick = async (pokemon) => {
@@ -126,6 +142,8 @@ function App() {
   const handleHeaderClick = () => {
     // Clear all search state and reset SearchBox
     setSearchResults([]);
+    setAllResults([]);
+    setDisplayCount(5);
     setError(null);
     searchCache.clear();
     setIsLoading(false);
@@ -150,6 +168,10 @@ function App() {
           pokemon={searchResults}
           onPokemonClick={handlePokemonClick}
           isLoading={isLoading}
+          onLoadMore={handleLoadMore}
+          hasMore={allResults.length > displayCount}
+          totalCount={allResults.length}
+          displayCount={displayCount}
         />
         <Footer />
       </div>

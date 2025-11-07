@@ -3,7 +3,15 @@ import PokemonCard from "./PokemonCard";
 import PokemonCardSkeleton from "./PokemonCardSkeleton";
 import "./PokemonGrid.css";
 
-const PokemonGrid = memo(function PokemonGrid({ pokemon, onPokemonClick, isLoading = false }) {
+const PokemonGrid = memo(function PokemonGrid({
+  pokemon,
+  onPokemonClick,
+  isLoading = false,
+  onLoadMore,
+  hasMore = false,
+  totalCount = 0,
+  displayCount = 0
+}) {
   // Show skeleton cards during loading
   if (isLoading) {
     return (
@@ -42,10 +50,22 @@ const PokemonGrid = memo(function PokemonGrid({ pokemon, onPokemonClick, isLoadi
               key={uniqueKey}
               pokemon={poke}
               onClick={onPokemonClick}
+              index={index}
             />
           );
         })}
       </div>
+
+      {hasMore && (
+        <div className="load-more-container">
+          <div className="load-more-info">
+            已載入 {displayCount} / 總共 {totalCount} 筆
+          </div>
+          <button className="load-more-button" onClick={onLoadMore}>
+            LOAD MORE
+          </button>
+        </div>
+      )}
     </div>
   );
 });

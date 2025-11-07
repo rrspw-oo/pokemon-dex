@@ -190,9 +190,18 @@
   /* Ensure consistent pixel art rendering across browsers */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: -webkit-crisp-edges;
-  image-rendering: -moz-crisp-edges;  
+  image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
   image-rendering: pixelated;
+}
+
+/* CSS pixelate fallback for shiny sprites without pixel versions */
+.pokemon-image.pixelate-fallback {
+  image-rendering: pixelated;
+  filter:
+    contrast(1.25)
+    brightness(1.1)
+    saturate(1.3);
 }
 
 .pokemon-info {

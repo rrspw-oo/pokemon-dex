@@ -202,3 +202,63 @@
     gap: 12px;
   }
 }
+
+.load-more-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 20px;
+}
+
+.load-more-info {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
+.load-more-button {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 12px;
+  padding: 12px 24px;
+  background: #ffffff;
+  color: #333;
+  border: 2px solid #333;
+  border-radius: 0;
+  box-shadow:
+    2px 2px 0px #777,
+    4px 4px 0px #555;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  line-height: 1.5;
+}
+
+.load-more-button:hover {
+  transform: translate(1px, 1px);
+  box-shadow:
+    1px 1px 0px #777,
+    2px 2px 0px #555;
+}
+
+.load-more-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .load-more-container {
+    margin-top: 24px;
+    padding: 16px;
+  }
+
+  .load-more-info {
+    font-size: 10px;
+  }
+
+  .load-more-button {
+    font-size: 10px;
+    padding: 10px 20px;
+  }
+}
