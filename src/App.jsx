@@ -69,8 +69,7 @@ function App() {
     setError(null);
 
     try {
-      // 調用 searchPokemon，預設顯示進化鏈
-      const results = await searchPokemon(query.trim(), true);
+      const results = await searchPokemon(query.trim(), false);
 
       // 儲存緩存
       searchCache.set(query, results);
