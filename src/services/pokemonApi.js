@@ -230,8 +230,7 @@ export async function fetchPokemonById(idOrName) {
   });
 }
 
-// Search Pokemon by query (supports Chinese, English, and ID with forms and evolution chains)
-export async function searchPokemon(query, includeEvolutions = false, maxResults = 20) {
+export async function searchPokemon(query, includeEvolutions = false, maxResults = 10) {
   if (!query || query.length < 1) return [];
 
   const cacheKey = `search_${query}_${includeEvolutions}_${maxResults}`;
@@ -325,8 +324,7 @@ export async function searchPokemon(query, includeEvolutions = false, maxResults
       const allFormsToFetch = [];
       const processedIds = new Set();
 
-      // 並行處理species API呼叫以提升效能，限制處理數量
-      const speciesPromises = nameMatches.slice(0, Math.min(maxResults, 15)).map(async (match) => {
+      const speciesPromises = nameMatches.slice(0, Math.min(maxResults, 5)).map(async (match) => {
         if (processedIds.has(match.id)) {
           return null;
         }

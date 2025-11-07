@@ -15746,7 +15746,6 @@
     },
     "is_variant": false
   },
-
   {
     "id": 712,
     "name_en": "Bergmite",
@@ -16108,7 +16107,7 @@
   {
     "id": 725,
     "name_en": "Litten",
-    "name_zh_tw": "狙射樹梟",
+    "name_zh_tw": "火斑喵",
     "types": [
       "Fire"
     ],
@@ -16587,7 +16586,6 @@
     "name_zh_tw": "鬃岩狼人(黃昏)",
     "is_variant": false
   },
-
   {
     "id": 746,
     "name_en": "Wishiwashi(solo)",
@@ -21821,7 +21819,6 @@
       "sp_defense": 45,
       "speed": 80
     },
-
     "is_variant": false
   },
   {
@@ -22016,7 +22013,7 @@
   },
   {
     "id": 1010,
-  "name_en": "Iron Leaves",
+    "name_en": "Iron Leaves",
     "name_zh_tw": "鐵斑葉",
     "types": [
       "Grass",
@@ -22074,7 +22071,7 @@
   {
     "id": 1013,
     "name_en": "Sinistcha",
-    "name_zh_tw": "来悲粗茶",
+    "name_zh_tw": "來悲粗茶",
     "types": [
       "Grass",
       "Ghost"
