@@ -1,0 +1,61 @@
+/* Basic Pixel Art Rendering - No Effects, Original Colors Only */
+
+/* Base pixel art rendering without effects */
+.pixel-art,
+.pixel-fire,
+.pixel-water,
+.pixel-electric,
+.pixel-grass,
+.pixel-ice,
+.pixel-fighting,
+.pixel-poison,
+.pixel-ground,
+.pixel-flying,
+.pixel-psychic,
+.pixel-bug,
+.pixel-rock,
+.pixel-ghost,
+.pixel-dragon,
+.pixel-dark,
+.pixel-steel,
+.pixel-fairy,
+.pixel-normal {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+/* Simple pixel spinner for loading - no effects */
+.pixel-spinner {
+  image-rendering: pixelated;
+  animation: simpleRotate 2s linear infinite;
+}
+
+@keyframes simpleRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Basic loading spinner without effects */
+.loading-spinner-pixel img {
+  image-rendering: pixelated;
+  animation: simpleRotate 2s linear infinite;
+}
+
+/* Fallback pixel spinner without effects */
+.loading-spinner-pixel-fallback {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ccc;
+  border-top: 4px solid #667eea;
+  border-radius: 0;
+  animation: simpleRotate 1s linear infinite;
+  margin: 0 auto 20px;
+  image-rendering: pixelated;
+}

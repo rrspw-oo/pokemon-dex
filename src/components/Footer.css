@@ -1,0 +1,77 @@
+.footer {
+  text-align: center;
+  padding: 30px 20px 20px;
+  margin-top: 50px;
+  border-top: 2px solid #e5e5e5;
+}
+
+.footer-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.copyright {
+  font-size: 10px;
+  color: #333;
+  margin: 0 0 10px 0;
+  background: linear-gradient(45deg, #bfbfbf, #dfdfdf);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+
+
+/* Hover effect for the entire footer */
+.footer:hover .copyright {
+  background:#bfdc00;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: all 0.3s ease;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .footer {
+    padding: 25px 15px 15px;
+    margin-top: 40px;
+  }
+  
+  .copyright {
+    font-size: 12px;
+  }
+  
+  .subtitle {
+    font-size: 13px;
+  }
+  
+  .powered-by {
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 20px 10px 10px;
+    margin-top: 30px;
+  }
+  
+  .copyright {
+    font-size: 10px;
+    margin-bottom: 8px;
+  }
+  
+  .subtitle {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .footer-links {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+  
+  .powered-by {
+    font-size: 8px;
+  }
+}
