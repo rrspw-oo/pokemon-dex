@@ -9,11 +9,33 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
+  const [caretPosition, setCaretPosition] = useState(0);
+  const [showCaret, setShowCaret] = useState(false);
 
   const suggestionsTimeoutRef = useRef(null);
   const inputRef = useRef(null);
   const containerRef = useRef(null);
   const isSelectingSuggestionRef = useRef(false);
+  const measureSpanRef = useRef(null);
+
+  // Update caret position
+  const updateCaretPosition = useCallback(() => {
+    if (!inputRef.current || !measureSpanRef.current) return;
+
+    const input = inputRef.current;
+    const cursorPos = input.selectionStart || 0;
+    const textBeforeCursor = query.substring(0, cursorPos);
+
+    measureSpanRef.current.textContent = textBeforeCursor;
+    const textWidth = measureSpanRef.current.offsetWidth;
+
+    setCaretPosition(16 + textWidth);
+  }, [query]);
+
+  // Update caret position when query changes
+  useEffect(() => {
+    updateCaretPosition();
+  }, [query, updateCaretPosition]);
 
   // Handle reset from parent component
   useEffect(() => {
@@ -22,6 +44,7 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
       setSuggestions([]);
       setShowSuggestions(false);
       setSelectedSuggestionIndex(-1);
+      setShowCaret(false);
 
       // Clear any pending timeouts
       if (suggestionsTimeoutRef.current) {
@@ -192,15 +215,42 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
     <div className="search-box" ref={containerRef}>
       <form onSubmit={handleSubmit} className="search-form">
         <div className="search-input-container">
+          <span
+            ref={measureSpanRef}
+            style={{
+              position: "absolute",
+              visibility: "hidden",
+              whiteSpace: "pre",
+              fontFamily: "Press Start 2P, Courier New, monospace",
+              fontSize: "14px",
+            }}
+          />
+
+          {showCaret && (
+            <div
+              className="pixel-caret"
+              style={{ left: `${caretPosition}px` }}
+            />
+          )}
+
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            onFocus={handleInputFocus}
-            onBlur={handleInputBlur}
-            placeholder=" # or names"
+            onFocus={() => {
+              handleInputFocus();
+              setShowCaret(true);
+              updateCaretPosition();
+            }}
+            onBlur={() => {
+              handleInputBlur();
+              setShowCaret(false);
+            }}
+            onClick={updateCaretPosition}
+            onKeyUp={updateCaretPosition}
+            placeholder={showCaret ? "" : " # or names"}
             className="search-input"
             disabled={isLoading}
             autoComplete="off"
