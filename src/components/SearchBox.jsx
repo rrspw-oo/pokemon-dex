@@ -204,6 +204,8 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
   };
 
   const handleInputBlur = (e) => {
+    if (!e) return;
+
     const relatedTarget = e.relatedTarget;
 
     if (relatedTarget) {
