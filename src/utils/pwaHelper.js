@@ -8,16 +8,11 @@ export function initializePWA() {
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
     wb = new Workbox('/sw.js');
 
-    // Handle service worker updates
     wb.addEventListener('waiting', () => {
-      // Show update available message
-      if (confirm('A new version is available. Update now?')) {
-        wb.messageSkipWaiting();
-      }
+      wb.messageSkipWaiting();
     });
 
     wb.addEventListener('controlling', () => {
-      // Reload the page when new service worker takes control
       window.location.reload();
     });
 

@@ -203,8 +203,13 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
     }
   };
 
-  const handleInputBlur = () => {
-    // 延遲隱藏建議，讓點擊事件能夠觸發
+  const handleInputBlur = (e) => {
+    if (e.relatedTarget && e.relatedTarget.type === 'submit') {
+      setShowSuggestions(false);
+      setSelectedSuggestionIndex(-1);
+      return;
+    }
+
     setTimeout(() => {
       setShowSuggestions(false);
       setSelectedSuggestionIndex(-1);
@@ -271,6 +276,8 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
             type="submit"
             className="search-button"
             disabled={isLoading || query.trim().length < 1}
+            onMouseDown={(e) => e.preventDefault()}
+            onTouchStart={(e) => e.preventDefault()}
           >
             {isLoading ? "Catching..." : "GO"}
           </button>
