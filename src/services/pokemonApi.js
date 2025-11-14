@@ -1,4 +1,3 @@
-// Pokemon API service for fetching Pokemon data
 import {
   getChineseNameSync,
   getChineseName,
@@ -10,6 +9,9 @@ import {
   getSpriteWithFallback,
   hasLocalSprite,
 } from "../utils/localSpriteUtils";
+import {
+  searchCustomPokemon,
+} from "../data/customPokemon";
 
 const POKE_API_BASE = "https://pokeapi.co/api/v2";
 
@@ -241,11 +243,34 @@ export async function fetchPokemonById(idOrName) {
 }
 
 export async function searchPokemon(query, includeEvolutions = false, maxResults = null) {
-  // Auto-adjust maxResults based on query length
   if (maxResults === null) {
     maxResults = query.length === 1 ? 100 : 10;
   }
   if (!query || query.length < 1) return [];
+
+  const customResults = searchCustomPokemon(query);
+  if (customResults.length > 0) {
+    return customResults.map(customPokemon => ({
+      id: customPokemon.id,
+      name: customPokemon.name_en,
+      englishName: customPokemon.name_en,
+      chineseName: customPokemon.name_zh_tw,
+      types: customPokemon.types.map(type => ({
+        name: type.toLowerCase(),
+        chinese: getTypeChineseName(type.toLowerCase()),
+      })),
+      stats: customPokemon.stats,
+      total_stats: customPokemon.total_stats,
+      image: customPokemon.image,
+      shinyImage: customPokemon.shinyImage,
+      gmaxImage: customPokemon.gmaxImage,
+      hasShinySprite: customPokemon.hasShinySprite,
+      hasGmaxForm: customPokemon.hasGmaxForm,
+      is_variant: customPokemon.is_variant,
+      is_custom: true,
+      error: false,
+    }));
+  }
 
   const cacheKey = `search_${query}_${includeEvolutions}_${maxResults}`;
 
@@ -254,7 +279,6 @@ export async function searchPokemon(query, includeEvolutions = false, maxResults
   }
 
   try {
-    // Ensure Pokemon data is loaded
     await ensureDataLoaded();
 
     // If query is a number, fetch all forms for that ID

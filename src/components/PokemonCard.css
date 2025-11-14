@@ -90,8 +90,8 @@
 .pokemon-image-container {
   position: relative;
   text-align: center;
-  height: 100px;
-  width: 100px;
+  height: 120px;
+  width: 120px;
   margin: 0 auto 12px auto;
   display: flex;
   align-items: center;
@@ -122,8 +122,8 @@
 }
 
 .pokemon-image {
-  width: 96px;
-  height: 96px;
+  width: 115px;
+  height: 115px;
   opacity: 0;
   transition: opacity 0.3s ease;
   /* Pixel art rendering */
@@ -410,52 +410,95 @@
   
 }
 
-/* Shiny toggle button styles - 新的長方形設計 */
-.shiny-toggle {
-  background: rgba(255, 243, 168, 0.4);
-  border: 1px solid rgba(255, 215, 0, 0.5);
+.form-toggles {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.shiny-toggle,
+.gmax-toggle {
   font-size: 10px;
-  color: #d4af37;
   font-weight: bold;
   cursor: pointer;
-  padding: 6px 14px;
+  padding: 0 14px;
   position: static;
   opacity: 0.9;
   transition: all 0.2s ease;
   border-radius: 6px;
   height: 26px;
+  min-height: 26px;
+  max-height: 26px;
+  min-width: 60px;
+  line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  /* 觸控優化 */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  /* 文字不可選擇 */
   user-select: none;
   -webkit-user-select: none;
   white-space: nowrap;
+  box-sizing: border-box;
+  vertical-align: middle;
 }
 
-.shiny-toggle:hover {
+.shiny-toggle {
+  background: rgba(255, 243, 168, 0.4);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  color: #d4af37;
+}
+
+.gmax-toggle {
+  background: rgba(168, 243, 255, 0.4);
+  border: 1px solid rgba(0, 191, 255, 0.5);
+  color: #0099cc;
+}
+
+.shiny-toggle:hover,
+.gmax-toggle:hover {
   opacity: 1;
-  background-color: rgba(255, 215, 0, 0.2);
-  border-color: rgba(255, 215, 0, 0.6);
   transform: translateY(-1px);
 }
 
-/* 觸控反饋動畫 - 按下效果 */
-.shiny-toggle:active {
+.shiny-toggle:hover {
+  background-color: rgba(255, 215, 0, 0.2);
+  border-color: rgba(255, 215, 0, 0.6);
+}
+
+.gmax-toggle:hover {
+  background-color: rgba(0, 191, 255, 0.2);
+  border-color: rgba(0, 191, 255, 0.6);
+}
+
+.shiny-toggle:active,
+.gmax-toggle:active {
   transform: translateY(0px);
   transition: transform 0.1s ease;
+}
+
+.shiny-toggle:active {
   background-color: rgba(255, 215, 0, 0.3);
   border-color: rgba(255, 215, 0, 0.8);
+}
+
+.gmax-toggle:active {
+  background-color: rgba(0, 191, 255, 0.3);
+  border-color: rgba(0, 191, 255, 0.8);
 }
 
 .shiny-toggle.active {
   opacity: 1;
   background-color: rgba(255, 215, 0, 0.3);
   animation: shinyGlow 2s ease-in-out infinite alternate;
+}
+
+.gmax-toggle.active {
+  opacity: 1;
+  background-color: rgba(0, 191, 255, 0.3);
+  animation: gmaxGlow 2s ease-in-out infinite alternate;
 }
 
 /* Shiny card effects */
@@ -503,6 +546,15 @@
   }
   100% {
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+  }
+}
+
+@keyframes gmaxGlow {
+  0% {
+    box-shadow: 0 0 5px rgba(0, 191, 255, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
   }
 }
 

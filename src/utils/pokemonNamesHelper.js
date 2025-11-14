@@ -1,5 +1,4 @@
-// Pokemon names helper for JSON data
-// Provides the same API as the original pokemonNames.js
+import { searchCustomPokemon } from '../data/customPokemon';
 
 let pokemonData = null;
 let dataLoadingPromise = null;
@@ -614,6 +613,17 @@ export function isValidSearchQuery(query) {
 
 // Get search suggestions for autocomplete
 export function getSearchSuggestions(query, maxSuggestions = 5) {
+  const customResults = searchCustomPokemon(query);
+  if (customResults.length > 0) {
+    return customResults.map(custom => ({
+      id: custom.id,
+      text: `#${custom.id.toString().padStart(6, '0')} ${custom.name_zh_tw}`,
+      chineseName: custom.name_zh_tw,
+      englishName: custom.name_en,
+      score: 100
+    }));
+  }
+
   if (!pokemonData?.pokemon) {
     return [];
   }
@@ -625,7 +635,6 @@ export function getSearchSuggestions(query, maxSuggestions = 5) {
   const lowerQuery = query.toLowerCase();
   const suggestions = [];
 
-  // Check if query is numeric (Pokemon ID search)
   const isNumericQuery = /^\d+$/.test(query);
 
   // Search through Pokemon data
