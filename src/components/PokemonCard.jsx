@@ -185,7 +185,11 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick, index = 0 }) {
 
       <div className="pokemon-names">
         <h3 className="pokemon-name-zh">{resolvedChineseName}</h3>
-        {!pokemon.is_custom && <p className="pokemon-name-en">{pokemon.englishName}</p>}
+        {!pokemon.is_custom && (
+          <p className="pokemon-name-en">
+            {pokemon.englishName.replace(/-/g, ' ')}
+          </p>
+        )}
         <div className="form-toggles">
           {pokemon.hasShinySprite && (
             <button
