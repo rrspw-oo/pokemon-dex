@@ -204,16 +204,20 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
   };
 
   const handleInputBlur = (e) => {
-    if (e.relatedTarget && e.relatedTarget.type === 'submit') {
-      setShowSuggestions(false);
-      setSelectedSuggestionIndex(-1);
+    const relatedTarget = e.relatedTarget;
+
+    if (relatedTarget &&
+        (relatedTarget.type === 'submit' ||
+         relatedTarget.classList.contains('search-button'))) {
       return;
     }
 
     setTimeout(() => {
-      setShowSuggestions(false);
-      setSelectedSuggestionIndex(-1);
-    }, 150);
+      if (!isSelectingSuggestionRef.current) {
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+      }
+    }, 200);
   };
 
   return (
@@ -276,8 +280,9 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
             type="submit"
             className="search-button"
             disabled={isLoading || query.trim().length < 1}
-            onMouseDown={(e) => e.preventDefault()}
-            onTouchStart={(e) => e.preventDefault()}
+            onPointerDown={(e) => {
+              e.currentTarget.focus();
+            }}
           >
             {isLoading ? "Catching..." : "GO"}
           </button>
