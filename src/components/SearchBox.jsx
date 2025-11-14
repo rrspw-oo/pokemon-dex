@@ -206,10 +206,15 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
   const handleInputBlur = (e) => {
     const relatedTarget = e.relatedTarget;
 
-    if (relatedTarget &&
-        (relatedTarget.type === 'submit' ||
-         relatedTarget.classList.contains('search-button'))) {
-      return;
+    if (relatedTarget) {
+      try {
+        if (relatedTarget.type === 'submit' ||
+            relatedTarget.classList?.contains('search-button')) {
+          return;
+        }
+      } catch (err) {
+        // Ignore classList errors on some mobile browsers
+      }
     }
 
     setTimeout(() => {

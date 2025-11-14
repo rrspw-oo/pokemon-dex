@@ -615,13 +615,7 @@ export function isValidSearchQuery(query) {
 export function getSearchSuggestions(query, maxSuggestions = 5) {
   const customResults = searchCustomPokemon(query);
   if (customResults.length > 0) {
-    return customResults.map(custom => ({
-      id: custom.id,
-      text: `#${custom.id.toString().padStart(6, '0')} ${custom.name_zh_tw}`,
-      chineseName: custom.name_zh_tw,
-      englishName: custom.name_en,
-      score: 100
-    }));
+    return [];
   }
 
   if (!pokemonData?.pokemon) {
