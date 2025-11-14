@@ -107,7 +107,7 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick, index = 0 }) {
   };
 
   const handleCardClick = () => {
-    if (onClick) {
+    if (onClick && !pokemon.is_custom) {
       onClick(pokemon);
     }
   };
@@ -136,9 +136,9 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick, index = 0 }) {
 
   return (
     <div
-      className={`pokemon-card pokemon-card-pixel clickable ${
-        isShiny ? "shiny" : ""
-      }`}
+      className={`pokemon-card pokemon-card-pixel ${
+        !pokemon.is_custom ? "clickable" : ""
+      } ${isShiny ? "shiny" : ""}`}
       onClick={handleCardClick}
     >
       <div className="pokemon-header">
