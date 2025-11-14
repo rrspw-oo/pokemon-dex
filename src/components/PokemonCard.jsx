@@ -10,6 +10,7 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick, index = 0 }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [failedUrls, setFailedUrls] = useState(new Set());
   const [isShiny, setIsShiny] = useState(false);
+  const [isGmax, setIsGmax] = useState(false);
   const [resolvedChineseName, setResolvedChineseName] = useState(pokemon.chineseName);
 
   // Fallback name resolution when Chinese name is missing or equals English name
@@ -33,25 +34,23 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick, index = 0 }) {
     }
   }, [pokemon.id, pokemon.chineseName, pokemon.englishName, pokemon.name]);
 
-  // Build fallback image chain
   const getImageChain = () => {
     const chain = [];
 
-    // Use shiny images if shiny mode is enabled and available
-    if (isShiny && pokemon.hasShinySprite && pokemon.shinyImage) {
+    if (isGmax && pokemon.hasGmaxForm && pokemon.gmaxImage) {
+      chain.push(pokemon.gmaxImage);
+    } else if (isShiny && pokemon.hasShinySprite && pokemon.shinyImage) {
       chain.push(pokemon.shinyImage);
-    }
-
-    // Fallback to normal images
-    if (pokemon.image) chain.push(pokemon.image);
-    if (pokemon.imageFallback && pokemon.imageFallback !== pokemon.image) {
-      chain.push(pokemon.imageFallback);
-    }
-    // Add any alternative URLs if available
-    if (pokemon.imageAlternatives) {
-      pokemon.imageAlternatives.forEach((url) => {
-        if (!chain.includes(url)) chain.push(url);
-      });
+    } else {
+      if (pokemon.image) chain.push(pokemon.image);
+      if (pokemon.imageFallback && pokemon.imageFallback !== pokemon.image) {
+        chain.push(pokemon.imageFallback);
+      }
+      if (pokemon.imageAlternatives) {
+        pokemon.imageAlternatives.forEach((url) => {
+          if (!chain.includes(url)) chain.push(url);
+        });
+      }
     }
     return chain;
   };
@@ -114,12 +113,24 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick, index = 0 }) {
   };
 
   const handleShinyToggle = (event) => {
-    event.stopPropagation(); // Prevent card click when toggling shiny
+    event.stopPropagation();
     if (pokemon.hasShinySprite) {
       setIsShiny(!isShiny);
-      setCurrentImageIndex(0); // Reset image index when switching modes
-      setImageError(false); // Reset error state
-      setFailedUrls(new Set()); // Reset failed URLs
+      setIsGmax(false);
+      setCurrentImageIndex(0);
+      setImageError(false);
+      setFailedUrls(new Set());
+    }
+  };
+
+  const handleGmaxToggle = (event) => {
+    event.stopPropagation();
+    if (pokemon.hasGmaxForm) {
+      setIsGmax(!isGmax);
+      setIsShiny(false);
+      setCurrentImageIndex(0);
+      setImageError(false);
+      setFailedUrls(new Set());
     }
   };
 
@@ -174,16 +185,27 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick, index = 0 }) {
 
       <div className="pokemon-names">
         <h3 className="pokemon-name-zh">{resolvedChineseName}</h3>
-        <p className="pokemon-name-en">{pokemon.englishName}</p>
-        {pokemon.hasShinySprite && (
-          <button
-            className={`shiny-toggle ${isShiny ? "active" : ""}`}
-            onClick={handleShinyToggle}
-            title={isShiny ? "切換至一般型態" : "切換至閃光型態"}
-          >
-            Shiny
-          </button>
-        )}
+        {!pokemon.is_custom && <p className="pokemon-name-en">{pokemon.englishName}</p>}
+        <div className="form-toggles">
+          {pokemon.hasShinySprite && (
+            <button
+              className={`shiny-toggle ${isShiny ? "active" : ""}`}
+              onClick={handleShinyToggle}
+              title={isShiny ? "切換至一般型態" : "切換至閃光型態"}
+            >
+              Shiny
+            </button>
+          )}
+          {pokemon.hasGmaxForm && (
+            <button
+              className={`gmax-toggle ${isGmax ? "active" : ""}`}
+              onClick={handleGmaxToggle}
+              title={isGmax ? "切換至一般型態" : "切換至超極巨化型態"}
+            >
+              G-MAX
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="pokemon-info">

@@ -26,3 +26,6 @@ dist-ssr
 # Exclude markdown files in docs folder
 docs/*.md
 docs/**/*.md
+
+# Custom content - private Pokemon
+src/customContent/
