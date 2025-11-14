@@ -8,7 +8,7 @@
   margin: 8px;
   min-width: 160px;
   width: 160px;
-  height: 270px;
+  height: 300px;
   position: relative;
   font-family: 'Press Start 2P', 'Courier New', monospace;
   display: flex;
@@ -325,12 +325,24 @@
   .pokemon-card {
     padding: 16px 16px 20px 16px;
     margin: 6px;
-    height: 290px;
+    height: 340px;
   }
   
   .pokemon-header {
-    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
     margin-bottom: 12px;
+    height: auto;
+  }
+
+  .pokemon-id {
+    width: 100%;
+  }
+
+  .pokemon-types {
+    justify-content: flex-start;
+    width: 100%;
   }
   
   .pokemon-name-zh {
