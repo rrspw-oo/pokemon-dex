@@ -274,14 +274,19 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
               onClick={clearSearch}
               className="clear-button"
               disabled={isLoading}
+              onTouchStart={(e) => e.stopPropagation()}
             ></button>
           )}
           <button
             type="submit"
             className="search-button"
             disabled={isLoading || query.trim().length < 1}
-            onPointerDown={(e) => {
-              e.currentTarget.focus();
+            onClick={(e) => {
+              e.preventDefault();
+              if (query.trim()) {
+                performSearch(query.trim());
+                setShowSuggestions(false);
+              }
             }}
           >
             {isLoading ? "Catching..." : "GO"}
