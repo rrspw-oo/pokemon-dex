@@ -4,19 +4,21 @@
   background: #ffffff;
   border: none;
   border-radius: 12px;
-  padding: 16px 16px 20px 16px;
+  padding: 16px 12px 20px 12px;
   margin: 8px;
   min-width: 160px;
-  width: auto;
+  width: 160px;
   height: 270px;
   position: relative;
   font-family: 'Press Start 2P', 'Courier New', monospace;
   display: flex;
   flex-direction: column;
-  box-shadow: 
+  box-shadow:
     0 4px 6px rgba(0, 0, 0, 0.07),
     0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .pokemon-card:hover {
@@ -68,8 +70,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding-top: 8px;
-  gap: 8px;
+  padding: 8px 0 0 0;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .pokemon-name-zh {
@@ -82,9 +87,9 @@
 
 .pokemon-name-en {
   margin: 4px 0 0 0;
-  font-size: 12px;
+  font-size: 10px;
   color: #666;
-  text-transform: capitalize;;
+  text-transform: capitalize;
 }
 
 .pokemon-image-container {
@@ -212,14 +217,14 @@
   display: flex;
   gap: 4px;
   justify-content: flex-end;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: flex-start;
-  max-width: 120px;
+  max-width: 100%;
 }
 
 .type-badge {
   color: #fff;
-  padding: 6px 8px;
+  padding: 6px 6px;
   font-size: 9px;
   text-transform: uppercase;
   white-space: nowrap;
@@ -228,7 +233,8 @@
   text-align: center;
   font-weight: bold;
   line-height: 1.2;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
 }
 
 .pokemon-measurements {
@@ -412,30 +418,36 @@
 
 .form-toggles {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 4px;
+  margin-top: 6px;
   flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0 4px;
 }
 
 .shiny-toggle,
 .gmax-toggle {
-  font-size: 10px;
+  font-size: 7px;
   font-weight: bold;
   cursor: pointer;
-  padding: 0 14px;
+  padding: 0 5px;
   position: static;
   opacity: 0.9;
   transition: all 0.2s ease;
-  border-radius: 6px;
-  height: 26px;
-  min-height: 26px;
-  max-height: 26px;
-  min-width: 60px;
+  border-radius: 4px;
+  height: 18px;
+  min-height: 18px;
+  max-height: 18px;
+  min-width: 38px;
+  max-width: 48px;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -443,6 +455,7 @@
   white-space: nowrap;
   box-sizing: border-box;
   vertical-align: middle;
+  flex-shrink: 1;
 }
 
 .shiny-toggle {
