@@ -568,6 +568,7 @@ function getTypeChineseName(englishType) {
     dark: "惡",
     steel: "鋼",
     fairy: "妖精",
+    meow: "喵",
   };
 
   return typeMap[englishType.toLowerCase()] || englishType;
@@ -809,6 +810,7 @@ export function getTypeColor(typeName) {
     dark: "#705848",
     steel: "#B8B8D0",
     fairy: "#EE99AC",
+    meow: "#FF69B4",
   };
 
   return typeColors[typeName.toLowerCase()] || "#68A090";

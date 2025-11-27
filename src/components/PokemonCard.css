@@ -141,13 +141,20 @@
   object-fit: cover;
   object-position: center;
   /* Auto-crop white space using CSS filters and clipping */
-  filter: 
-    contrast(1.1) 
+  filter:
+    contrast(1.1)
     brightness(1.05)
     drop-shadow(0 0 0 transparent);
   /* Crop white padding by scaling and centering */
   transform: scale(1.2);
   transform-origin: center;
+}
+
+/* Custom Pokemon images (local sprites from customContent) */
+.pokemon-image.local-sprite {
+  width: 125px;
+  height: 125px;
+  transform: scale(1.0);
 }
 
 .pokemon-image.loaded {
