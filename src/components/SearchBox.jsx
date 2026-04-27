@@ -62,55 +62,42 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
     [onSearch]
   );
 
-  // 獲取搜尋建議
-  const fetchSuggestions = useCallback(async (searchQuery) => {
+  const fetchSuggestions = useCallback((searchQuery) => {
     if (!searchQuery || searchQuery.length < 1) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
     }
-
-    setIsFetchingSuggestions(true);
-
-    try {
-      const newSuggestions = await getPokemonSearchSuggestions(searchQuery, 50);
+    const result = getPokemonSearchSuggestions(searchQuery, 8);
+    const apply = (newSuggestions) => {
       setSuggestions(newSuggestions);
       setShowSuggestions(newSuggestions.length > 0);
-    } catch (error) {
-      console.warn("Search suggestions error:", error);
-      setSuggestions([]);
-      setShowSuggestions(false);
-    } finally {
-      setIsFetchingSuggestions(false);
+    };
+    if (result && typeof result.then === "function") {
+      setIsFetchingSuggestions(true);
+      result
+        .then(apply)
+        .catch(() => {
+          setSuggestions([]);
+          setShowSuggestions(false);
+        })
+        .finally(() => setIsFetchingSuggestions(false));
+    } else {
+      apply(result || []);
     }
   }, []);
-
-  // 防抖獲取建議
-  const debouncedFetchSuggestions = useCallback(
-    (searchQuery) => {
-      if (suggestionsTimeoutRef.current) {
-        clearTimeout(suggestionsTimeoutRef.current);
-      }
-
-      suggestionsTimeoutRef.current = setTimeout(() => {
-        fetchSuggestions(searchQuery);
-      }, 200); // 建議獲取延遲較短
-    },
-    [fetchSuggestions]
-  );
 
   const handleInputChange = (e) => {
     const value = e.target.value;
     setQuery(value);
-    setSelectedSuggestionIndex(-1); // 重置選中項目
+    setSelectedSuggestionIndex(-1);
 
     if (value.length === 0) {
-      onSearch(""); // Clear results immediately when input is empty
+      onSearch("");
       setSuggestions([]);
       setShowSuggestions(false);
-    } else if (value.length >= 1) {
-      // 只獲取建議，不立即搜尋
-      debouncedFetchSuggestions(value);
+    } else {
+      fetchSuggestions(value);
     }
   };
 
