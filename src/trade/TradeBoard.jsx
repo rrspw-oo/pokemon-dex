@@ -19,7 +19,7 @@ function spriteUrl(id) {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 }
 
-export default function TradeBoard({ onBack, onCreate }) {
+export default function TradeBoard({ onCreate }) {
   const [listings, setListings] = useState([]);
   const [search, setSearch] = useState("");
   const [region, setRegion] = useState(null);
@@ -64,10 +64,7 @@ export default function TradeBoard({ onBack, onCreate }) {
   return (
     <div className="trade-board">
       <div className="trade-board__topbar">
-        <button type="button" className="trade-board__back" onClick={onBack}>
-          {"<"} DEX
-        </button>
-        <div className="trade-board__brand">TRADE BOARD</div>
+        <div className="trade-board__brand">GLOBAL TRADE BOARD</div>
         {session ? (
           <div className="trade-board__session">
             <span className="trade-board__email">{session.email}</span>

@@ -3,10 +3,21 @@
 .app {
   min-height: 100vh;
   background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 50%, #c0c0c0 100%);
-  padding: 20px;
-  font-family: 'Press Start 2P', 'Courier New', monospace;
+  padding: 0 0 20px 0;
+  font-family: 'Press Start 2P', 'PingFang TC', 'Microsoft JhengHei', 'Courier New', monospace;
   font-size: 12px;
   line-height: 1.6;
+}
+
+.route-loading {
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 24px;
+  text-align: center;
+  font-family: 'Press Start 2P', 'PingFang TC', 'Microsoft JhengHei', 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #555;
 }
 
 .container {
