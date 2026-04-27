@@ -88,10 +88,13 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'pokemon-data': ['./src/data/complete_pokemon_database.json'],
+          'pokemon-data': [
+            './src/data/complete_pokemon_database.json',
+            './src/data/evolution_chains.json'
+          ],
           'pokemon-utils': [
-            './src/utils/pokemonNamesHelper.js',
-            './src/utils/fuzzySearch.js',
+            './src/utils/searchIndex.js',
+            './src/utils/evolutionIndex.js',
             './src/utils/spriteUtils.js',
             './src/utils/localSpriteUtils.js'
           ],

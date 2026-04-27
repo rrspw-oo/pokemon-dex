@@ -1,6 +1,5 @@
-import { memo, useState, useEffect } from "react";
+import { memo, useState } from "react";
 import { getTypeColor } from "../services/pokemonApi";
-import { getChineseName } from "../utils/pokemonNamesHelper";
 import "./PokemonCard.css";
 import "../styles/pixelEffects.css";
 
@@ -11,28 +10,7 @@ const PokemonCard = memo(function PokemonCard({ pokemon, onClick, index = 0 }) {
   const [failedUrls, setFailedUrls] = useState(new Set());
   const [isShiny, setIsShiny] = useState(false);
   const [isGmax, setIsGmax] = useState(false);
-  const [resolvedChineseName, setResolvedChineseName] = useState(pokemon.chineseName);
-
-  // Fallback name resolution when Chinese name is missing or equals English name
-  useEffect(() => {
-    const needsResolution = !pokemon.chineseName ||
-                          pokemon.chineseName === pokemon.englishName ||
-                          pokemon.chineseName === pokemon.name ||
-                          pokemon.chineseName === "未知寶可夢";
-
-    if (needsResolution) {
-
-      getChineseName(pokemon.id, pokemon.englishName || pokemon.name)
-        .then(resolvedName => {
-          if (resolvedName && resolvedName !== pokemon.englishName && resolvedName !== pokemon.name) {
-            setResolvedChineseName(resolvedName);
-          } else {
-          }
-        })
-        .catch(error => {
-        });
-    }
-  }, [pokemon.id, pokemon.chineseName, pokemon.englishName, pokemon.name]);
+  const resolvedChineseName = pokemon.chineseName;
 
   const getImageChain = () => {
     const chain = [];
