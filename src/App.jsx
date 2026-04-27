@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
 import SearchBox from "./components/SearchBox";
 import PokemonGrid from "./components/PokemonGrid";
+import EvolutionLineage from "./components/EvolutionLineage";
 import Footer from "./components/Footer";
-import { searchPokemon, searchPokemonForms } from "./services/pokemonApi";
+import { searchPokemon, searchPokemonForms, fetchEvolutionChain } from "./services/pokemonApi";
 import "./App.css";
 import "./styles/pixelEffects.css";
 
@@ -49,8 +50,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [resetKey, setResetKey] = useState(0);
+  const [evolutionChain, setEvolutionChain] = useState([]);
+  const [focusedId, setFocusedId] = useState(null);
 
-  // Use memoized LRU cache for better memory management
   const searchCache = useMemo(() => new LRUCache(50), []);
 
   const handleSearch = async (query) => {
@@ -74,11 +76,12 @@ function App() {
 
     setIsLoading(true);
     setError(null);
+    setEvolutionChain([]);
+    setFocusedId(null);
 
     try {
       const results = await searchPokemon(query.trim(), false);
 
-      // 儲存緩存
       searchCache.set(query, results);
 
       setAllResults(results);
@@ -105,10 +108,12 @@ function App() {
   };
 
   const handlePokemonClick = async (pokemon) => {
-
     const cacheKey = `forms_evos_${pokemon.id}`;
+    setFocusedId(pokemon.id);
 
-    // 檢查緩存
+    const chain = await fetchEvolutionChain(pokemon.id);
+    setEvolutionChain(chain);
+
     if (searchCache.has(cacheKey)) {
       setSearchResults(searchCache.get(cacheKey));
       setError(null);
@@ -119,12 +124,8 @@ function App() {
     setError(null);
 
     try {
-      // 搜尋該寶可夢的所有型態和進化鏈
       const forms = await searchPokemonForms(pokemon.id);
-
-      // 儲存緩存
       searchCache.set(cacheKey, forms);
-
       setSearchResults(forms);
 
       if (forms.length === 0) {
@@ -139,6 +140,10 @@ function App() {
     }
   };
 
+  const handleLineageSelect = (id) => {
+    handlePokemonClick({ id, chineseName: `#${id}` });
+  };
+
   const handleHeaderClick = () => {
     // Clear all search state and reset SearchBox
     setSearchResults([]);
@@ -147,8 +152,9 @@ function App() {
     setError(null);
     searchCache.clear();
     setIsLoading(false);
+    setEvolutionChain([]);
+    setFocusedId(null);
 
-    // Trigger SearchBox reset by updating resetKey
     setResetKey(prev => prev + 1);
   };
 
@@ -164,6 +170,11 @@ function App() {
             <p>{error}</p>
           </div>
         )}
+        <EvolutionLineage
+          chain={evolutionChain}
+          currentId={focusedId}
+          onSelect={handleLineageSelect}
+        />
         <PokemonGrid
           pokemon={searchResults}
           onPokemonClick={handlePokemonClick}
