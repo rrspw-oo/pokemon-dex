@@ -95,29 +95,28 @@
 }
 
 .pokemon-id {
-  font-size: 14px;
+  font-size: 10px;
   color: #374151;
-  font-weight: 700;
-  min-width: 48px;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
-  letter-spacing: -0.5px;
+  min-width: 56px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  letter-spacing: 1px;
 }
 
 .pokemon-name-chinese {
-  font-size: 16px;
-  font-weight: 400;
+  font-size: 11px;
   color: #111827;
-  font-family: 'Press Start 2P', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  line-height: 1.3;
+  font-family: 'Press Start 2P', 'PingFang TC', 'Microsoft JhengHei', monospace;
+  line-height: 1.6;
+  letter-spacing: 1px;
 }
 
 .pokemon-name-english {
-  font-size: 14px;
+  font-size: 8px;
   color: #6b7280;
-  font-style: italic;
-  font-weight: 400;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.4;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  line-height: 1.6;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 /* 移除不需要的舊樣式 */
