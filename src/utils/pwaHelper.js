@@ -1,33 +1,26 @@
-// PWA helper utilities
 import { Workbox } from 'workbox-window';
 
+const SW_URL = `${import.meta.env.BASE_URL}sw.js`;
+
 let wb;
+let reloading = false;
 
-// Initialize PWA
 export function initializePWA() {
-  if ('serviceWorker' in navigator && import.meta.env.PROD) {
-    wb = new Workbox('/sw.js');
+  if (!('serviceWorker' in navigator) || !import.meta.env.PROD) return;
 
-    wb.addEventListener('waiting', () => {
-      wb.messageSkipWaiting();
-    });
+  wb = new Workbox(SW_URL, { scope: import.meta.env.BASE_URL });
 
-    wb.addEventListener('controlling', () => {
-      window.location.reload();
-    });
+  wb.addEventListener('waiting', () => {
+    wb.messageSkipWaiting();
+  });
 
-    // Register the service worker
-    wb.register().then((registration) => {
-    }).catch((registrationError) => {
-    });
-  } else if ('serviceWorker' in navigator) {
-    // Development mode - register our custom service worker
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-      })
-      .catch(error => {
-      });
-  }
+  wb.addEventListener('controlling', () => {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
+
+  wb.register().catch(() => {});
 }
 
 // Check if app is running as PWA
