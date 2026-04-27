@@ -16,6 +16,18 @@ export const LISTING_STATUS = {
   REMOVED: "removed",
 };
 
+export const INTEREST_STATUS = {
+  PENDING: "pending",
+  REVEALED: "revealed",
+  DECLINED: "declined",
+};
+
+export const FILTER_SIDE = {
+  ANY: "any",
+  HAS: "has",
+  WANTS: "wants",
+};
+
 export function emptyListing() {
   return {
     id: null,

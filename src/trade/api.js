@@ -1,8 +1,24 @@
-import { LISTING_STATUS, emptyListing, isMatch } from "./types";
+import { LISTING_STATUS, INTEREST_STATUS, FILTER_SIDE, emptyListing, isMatch } from "./types";
 import { HAS_SUPABASE, supabase } from "./supabaseClient";
 
 const STORAGE_KEY = "pokemon-dex.trade.listings.v1";
 const SESSION_KEY = "pokemon-dex.trade.session.v1";
+const PROFILE_KEY = "pokemon-dex.trade.profiles.v1";
+const INTEREST_KEY = "pokemon-dex.trade.interests.v1";
+
+function loadCollection(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+function persistCollection(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+}
 
 function loadAll() {
   try {
@@ -187,7 +203,13 @@ export async function signOut() {
   localStorage.removeItem(SESSION_KEY);
 }
 
-export async function listListings({ search = "", region = null, limit = 50 } = {}) {
+export async function listListings({
+  search = "",
+  region = null,
+  pokemonId = null,
+  side = FILTER_SIDE.ANY,
+  limit = 50,
+} = {}) {
   if (HAS_SUPABASE) {
     let q = supabase
       .from("listings")
@@ -196,6 +218,11 @@ export async function listListings({ search = "", region = null, limit = 50 } = 
       .order("created_at", { ascending: false })
       .limit(limit);
     if (region) q = q.eq("region", region);
+    if (pokemonId && side === FILTER_SIDE.HAS) q = q.eq("have_pokemon_id", pokemonId);
+    if (pokemonId && side === FILTER_SIDE.WANTS) q = q.eq("want_pokemon_id", pokemonId);
+    if (pokemonId && side === FILTER_SIDE.ANY) {
+      q = q.or(`have_pokemon_id.eq.${pokemonId},want_pokemon_id.eq.${pokemonId}`);
+    }
     if (search) {
       const s = `%${search}%`;
       q = q.or(`have_pokemon_name.ilike.${s},want_pokemon_name.ilike.${s},note.ilike.${s}`);
@@ -209,6 +236,13 @@ export async function listListings({ search = "", region = null, limit = 50 } = 
   const qs = (search || "").toLowerCase().trim();
   let out = all;
   if (region) out = out.filter((l) => l.region === region);
+  if (pokemonId) {
+    out = out.filter((l) => {
+      if (side === FILTER_SIDE.HAS) return l.have.pokemonId === pokemonId;
+      if (side === FILTER_SIDE.WANTS) return l.want.pokemonId === pokemonId;
+      return l.have.pokemonId === pokemonId || l.want.pokemonId === pokemonId;
+    });
+  }
   if (qs) {
     out = out.filter((l) => {
       const blob = `${l.have.pokemonName} ${l.want.pokemonName} ${l.note}`.toLowerCase();
@@ -217,6 +251,44 @@ export async function listListings({ search = "", region = null, limit = 50 } = 
   }
   out.sort((a, b) => b.createdAt - a.createdAt);
   return out.slice(0, limit);
+}
+
+export async function listListingsMatchingMe() {
+  const session = await getSession();
+  if (!session || session.pending) return [];
+  const mine = await getMyListings();
+  if (mine.length === 0) return [];
+  if (HAS_SUPABASE) {
+    const results = [];
+    for (const m of mine) {
+      if (!m.have.pokemonId || !m.want.pokemonId) continue;
+      const { data, error } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("status", LISTING_STATUS.OPEN)
+        .neq("user_id", session.userId)
+        .eq("have_pokemon_id", m.want.pokemonId)
+        .eq("want_pokemon_id", m.have.pokemonId);
+      if (error) throw new Error(error.message);
+      for (const row of data || []) results.push(rowToListing(row));
+    }
+    const seen = new Set();
+    return results.filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true)));
+  }
+  await delay();
+  const all = loadAll().filter((l) => l.status === LISTING_STATUS.OPEN);
+  const seen = new Set();
+  const out = [];
+  for (const m of mine) {
+    for (const l of all) {
+      if (l.userId === session.userId) continue;
+      if (isMatch(m, l) && !seen.has(l.id)) {
+        seen.add(l.id);
+        out.push(l);
+      }
+    }
+  }
+  return out;
 }
 
 export async function findMatchesFor(listing) {
@@ -296,4 +368,170 @@ export async function getMyListings() {
     return (data || []).map(rowToListing);
   }
   return loadAll().filter((l) => l.userId === session.userId);
+}
+
+export async function getProfile(userId) {
+  if (!userId) return null;
+  if (HAS_SUPABASE) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) return null;
+    return data
+      ? {
+          userId: data.user_id,
+          handle: data.handle,
+          trainerCode: data.trainer_code,
+          region: data.region,
+          languages: data.languages || [],
+        }
+      : null;
+  }
+  const profiles = loadCollection(PROFILE_KEY, {});
+  return profiles[userId] || null;
+}
+
+export async function upsertMyProfile(input) {
+  const session = await getSession();
+  if (!session || session.pending) throw new Error("not_authenticated");
+  if (HAS_SUPABASE) {
+    const row = {
+      user_id: session.userId,
+      handle: input.handle,
+      trainer_code: input.trainerCode,
+      region: input.region,
+      languages: input.languages || [],
+      updated_at: new Date().toISOString(),
+    };
+    const { data, error } = await supabase
+      .from("profiles")
+      .upsert(row, { onConflict: "user_id" })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return {
+      userId: data.user_id,
+      handle: data.handle,
+      trainerCode: data.trainer_code,
+      region: data.region,
+      languages: data.languages || [],
+    };
+  }
+  await delay();
+  const profiles = loadCollection(PROFILE_KEY, {});
+  const profile = {
+    userId: session.userId,
+    handle: input.handle,
+    trainerCode: input.trainerCode,
+    region: input.region,
+    languages: input.languages || [],
+  };
+  profiles[session.userId] = profile;
+  persistCollection(PROFILE_KEY, profiles);
+  return profile;
+}
+
+export async function expressInterest(listing, message = "") {
+  const session = await getSession();
+  if (!session || session.pending) throw new Error("not_authenticated");
+  if (session.userId === listing.userId) throw new Error("own_listing");
+  if (HAS_SUPABASE) {
+    const row = {
+      listing_id: listing.id,
+      from_user_id: session.userId,
+      to_user_id: listing.userId,
+      status: INTEREST_STATUS.PENDING,
+      message,
+    };
+    const { data, error } = await supabase
+      .from("interests")
+      .upsert(row, { onConflict: "listing_id,from_user_id" })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+  await delay();
+  const list = loadCollection(INTEREST_KEY, []);
+  const existing = list.findIndex(
+    (i) => i.listing_id === listing.id && i.from_user_id === session.userId
+  );
+  const now = Date.now();
+  const interest = {
+    id: existing >= 0 ? list[existing].id : `i-${now}-${Math.random().toString(36).slice(2, 6)}`,
+    listing_id: listing.id,
+    from_user_id: session.userId,
+    to_user_id: listing.userId,
+    status: INTEREST_STATUS.PENDING,
+    message,
+    created_at: existing >= 0 ? list[existing].created_at : now,
+    updated_at: now,
+  };
+  if (existing >= 0) list[existing] = interest;
+  else list.push(interest);
+  persistCollection(INTEREST_KEY, list);
+  return interest;
+}
+
+export async function respondToInterest(interestId, status) {
+  const session = await getSession();
+  if (!session || session.pending) throw new Error("not_authenticated");
+  if (HAS_SUPABASE) {
+    const { data, error } = await supabase
+      .from("interests")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("id", interestId)
+      .eq("to_user_id", session.userId)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+  await delay();
+  const list = loadCollection(INTEREST_KEY, []);
+  const idx = list.findIndex((i) => i.id === interestId && i.to_user_id === session.userId);
+  if (idx === -1) throw new Error("not_found");
+  list[idx] = { ...list[idx], status, updated_at: Date.now() };
+  persistCollection(INTEREST_KEY, list);
+  return list[idx];
+}
+
+export async function getMyInterests() {
+  const session = await getSession();
+  if (!session || session.pending) return { sent: [], received: [] };
+  if (HAS_SUPABASE) {
+    const [sentRes, recvRes] = await Promise.all([
+      supabase
+        .from("interests")
+        .select("*")
+        .eq("from_user_id", session.userId)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("interests")
+        .select("*")
+        .eq("to_user_id", session.userId)
+        .order("created_at", { ascending: false }),
+    ]);
+    return {
+      sent: sentRes.data || [],
+      received: recvRes.data || [],
+    };
+  }
+  await delay();
+  const list = loadCollection(INTEREST_KEY, []);
+  return {
+    sent: list.filter((i) => i.from_user_id === session.userId),
+    received: list.filter((i) => i.to_user_id === session.userId),
+  };
+}
+
+export async function countUnreadMatches() {
+  const session = await getSession();
+  if (!session || session.pending) return 0;
+  const matches = await listListingsMatchingMe();
+  const { received } = await getMyInterests();
+  const pendingIncoming = received.filter((i) => i.status === INTEREST_STATUS.PENDING).length;
+  return matches.length + pendingIncoming;
 }

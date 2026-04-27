@@ -253,6 +253,177 @@
   border: 2px dashed #aaa;
 }
 
+.trade-board__notice {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: #f0fff0;
+  border: 2px solid #2a7;
+  font-size: 10px;
+  color: #060;
+}
+
+.trade-board__inbox {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #fff7c2;
+  border: 2px solid #333;
+  box-shadow: 2px 2px 0 #c9a300;
+}
+
+.trade-board__inbox-title {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #7a5a00;
+  margin-bottom: 8px;
+}
+
+.trade-board__inbox-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trade-board__inbox-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: #fff;
+  border: 2px solid #333;
+  font-size: 10px;
+}
+
+.trade-board__inbox-from {
+  flex: 1;
+  min-width: 180px;
+}
+
+.trade-board__inbox-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.trade-board__inbox-revealed {
+  flex-basis: 100%;
+  margin-top: 4px;
+  padding: 6px 8px;
+  background: #fff7c2;
+  border: 1px dashed #c9a300;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #4a3a00;
+}
+
+.trade-board__btn {
+  font-family: inherit;
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  border: 2px solid #333;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #777;
+  background: #fff;
+}
+
+.trade-board__btn--accept {
+  background: #c2ffc8;
+  box-shadow: 2px 2px 0 #2a7;
+}
+
+.trade-board__btn--decline {
+  background: #ffd6d6;
+  box-shadow: 2px 2px 0 #c00;
+}
+
+.trade-board__side {
+  display: flex;
+  gap: 0;
+  border: 2px solid #333;
+  box-shadow: 2px 2px 0 #777;
+}
+
+.trade-board__side-btn {
+  font-family: inherit;
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 8px 10px;
+  background: #fff;
+  border: 0;
+  border-right: 2px dashed #999;
+  cursor: pointer;
+  color: #555;
+}
+
+.trade-board__side-btn:last-child { border-right: 0; }
+.trade-board__side-btn.is-active {
+  background: #fff7c2;
+  color: #000;
+  box-shadow: inset 0 -3px 0 #c9a300;
+}
+.trade-board__side-btn:disabled {
+  background: #f0f0f0;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.trade-board__matches {
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 2px solid #333;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #777;
+}
+.trade-board__matches.is-active {
+  background: #c2ffc8;
+  box-shadow: 2px 2px 0 #2a7;
+}
+.trade-board__matches:disabled {
+  background: #eee;
+  color: #888;
+  cursor: not-allowed;
+  box-shadow: 2px 2px 0 #aaa;
+}
+
+.trade-card__cta {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.trade-card__interest-btn {
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 8px 14px;
+  background: #fff7c2;
+  border: 2px solid #333;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #c9a300;
+}
+.trade-card__interest-btn:disabled {
+  background: #eee;
+  color: #888;
+  cursor: not-allowed;
+  box-shadow: 2px 2px 0 #aaa;
+}
+
+.trade-card__interest-status {
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  background: #eef;
+  border: 1px solid #99c;
+  color: #226;
+}
+
 @media (max-width: 600px) {
   .trade-board__brand { font-size: 11px; }
   .trade-board__signin input { width: 120px; }

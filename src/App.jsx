@@ -1,9 +1,10 @@
-import { lazy, Suspense, useState, useMemo } from "react";
+import { lazy, Suspense, useEffect, useState, useMemo } from "react";
 import SearchBox from "./components/SearchBox";
 import PokemonGrid from "./components/PokemonGrid";
 import TopNav from "./components/TopNav";
 import Footer from "./components/Footer";
 import { searchPokemon, searchPokemonForms } from "./services/pokemonApi";
+import { countUnreadMatches } from "./trade/api";
 import "./App.css";
 import "./styles/pixelEffects.css";
 
@@ -53,8 +54,24 @@ function App() {
   const [error, setError] = useState(null);
   const [resetKey, setResetKey] = useState(0);
   const [view, setView] = useState("dex");
+  const [tradeBadge, setTradeBadge] = useState(0);
 
   const searchCache = useMemo(() => new LRUCache(50), []);
+
+  useEffect(() => {
+    let alive = true;
+    const tick = () => {
+      countUnreadMatches()
+        .then((n) => alive && setTradeBadge(n))
+        .catch(() => {});
+    };
+    tick();
+    const id = setInterval(tick, 30000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [view]);
 
   const handleSearch = async (query) => {
     if (!query || query.length < 1) {
@@ -149,10 +166,10 @@ function App() {
 
   return (
     <div className="app">
-      <TopNav view={view} onChange={setView} tradeBadge={0} />
+      <TopNav view={view} onChange={setView} tradeBadge={tradeBadge} />
       {view === "trade" ? (
         <Suspense fallback={<div className="route-loading">loading trade board...</div>}>
-          <TradeBoard onCreate={() => {}} />
+          <TradeBoard />
         </Suspense>
       ) : (
         <DexView
