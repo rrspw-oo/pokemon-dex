@@ -79,17 +79,20 @@
 
 .pokemon-name-zh {
   margin: 0;
-  font-size: 14px;
+  font-family: 'Press Start 2P', 'PingFang TC', 'Microsoft JhengHei', monospace;
+  font-size: 11px;
   color: #000;
-  line-height: 1.4;
-  font-weight: bold;
+  line-height: 1.6;
+  letter-spacing: 1px;
 }
 
 .pokemon-name-en {
   margin: 4px 0 0 0;
-  font-size: 10px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 8px;
   color: #666;
-  text-transform: capitalize;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .pokemon-image-container {
@@ -355,12 +358,12 @@
   }
   
   .pokemon-name-zh {
-    font-size: 14px;
-    line-height: 1.3;
+    font-size: 10px;
+    line-height: 1.6;
   }
-  
+
   .pokemon-name-en {
-    font-size: 12px;
+    font-size: 8px;
   }
   
   .pokemon-image-container {
