@@ -1,0 +1,260 @@
+.trade-board {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px;
+  font-family: 'Press Start 2P', 'PingFang TC', 'Microsoft JhengHei', 'Courier New', monospace;
+  letter-spacing: 1px;
+  color: #222;
+}
+
+.trade-board__topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.trade-board__back {
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 8px 12px;
+  background: #e8e8e8;
+  border: 2px solid #333;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #777;
+}
+
+.trade-board__back:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #777;
+}
+
+.trade-board__brand {
+  flex: 1;
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-align: center;
+}
+
+.trade-board__session {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+}
+
+.trade-board__email {
+  color: #555;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trade-board__signout,
+.trade-board__signin button {
+  font-family: inherit;
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  background: #fff;
+  border: 2px solid #333;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #777;
+}
+
+.trade-board__signin {
+  display: flex;
+  gap: 6px;
+}
+
+.trade-board__signin input {
+  font-family: inherit;
+  font-size: 10px;
+  padding: 6px 8px;
+  border: 2px solid #333;
+  outline: none;
+  background: #fff;
+  width: 180px;
+  letter-spacing: 1px;
+}
+
+.trade-board__error {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: #fff0f0;
+  border: 2px solid #c00;
+  font-size: 10px;
+  color: #900;
+}
+
+.trade-board__filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.trade-board__search {
+  flex: 1;
+  min-width: 220px;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 10px 14px;
+  border: 2px solid #333;
+  outline: none;
+  background: #fff;
+  box-shadow: 2px 2px 0 #777;
+}
+
+.trade-board__region {
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 10px 12px;
+  border: 2px solid #333;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #777;
+}
+
+.trade-board__post {
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 10px 16px;
+  background: #fff7c2;
+  border: 2px solid #333;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #c9a300;
+}
+
+.trade-board__post:disabled {
+  background: #eee;
+  color: #888;
+  cursor: not-allowed;
+  box-shadow: 2px 2px 0 #aaa;
+}
+
+.trade-board__count {
+  margin-bottom: 8px;
+  font-size: 9px;
+  color: #555;
+}
+
+.trade-board__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.trade-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 4px;
+  padding: 12px;
+  background: #fff;
+  border: 2px solid #333;
+  box-shadow: 2px 2px 0 #777, 4px 4px 0 #555;
+}
+
+.trade-card__side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 4px;
+}
+
+.trade-card__side-label {
+  font-size: 8px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.trade-card__side--have .trade-card__side-label { color: #2a7; }
+.trade-card__side--want .trade-card__side-label { color: #c70; }
+
+.trade-card__sprite {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.trade-card__name {
+  font-size: 10px;
+  margin-top: 4px;
+  word-break: break-word;
+}
+
+.trade-card__meta {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+
+.trade-card__chip {
+  font-size: 8px;
+  padding: 3px 6px;
+  background: #eef;
+  border: 1px solid #99c;
+  letter-spacing: 1px;
+}
+
+.trade-card__chip--shiny {
+  background: #fff7c2;
+  border-color: #c9a300;
+  color: #7a5a00;
+}
+
+.trade-card__arrow {
+  align-self: center;
+  font-size: 16px;
+  color: #555;
+}
+
+.trade-card__footer {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #999;
+  font-size: 8px;
+  color: #555;
+}
+
+.trade-card__note {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  font-size: 9px;
+  line-height: 1.5;
+  color: #444;
+  word-break: break-word;
+}
+
+.trade-board__empty {
+  margin-top: 24px;
+  padding: 24px;
+  text-align: center;
+  font-size: 11px;
+  color: #666;
+  border: 2px dashed #aaa;
+}
+
+@media (max-width: 600px) {
+  .trade-board__brand { font-size: 11px; }
+  .trade-board__signin input { width: 120px; }
+  .trade-board__list { grid-template-columns: 1fr; }
+}
