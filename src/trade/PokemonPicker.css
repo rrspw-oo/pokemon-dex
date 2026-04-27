@@ -1,0 +1,118 @@
+.poke-picker {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+  font-family: 'Press Start 2P', 'PingFang TC', 'Microsoft JhengHei', 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+.poke-picker__input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 10px 14px;
+  border: 2px solid #333;
+  outline: none;
+  background: #fff;
+  box-shadow: 2px 2px 0 #777;
+  box-sizing: border-box;
+}
+
+.poke-picker__chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 6px;
+  background: #fff7c2;
+  border: 2px solid #333;
+  box-shadow: 2px 2px 0 #c9a300;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.poke-picker__chip-sprite {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+.poke-picker__chip-name {
+  flex: 1;
+  font-size: 11px;
+  letter-spacing: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.poke-picker__chip-clear {
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 4px 8px;
+  background: #fff;
+  border: 1px solid #333;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.poke-picker__list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  background: #fff;
+  border: 2px solid #333;
+  box-shadow: 2px 2px 0 #777, 4px 4px 0 #555;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.poke-picker__item {
+  display: grid;
+  grid-template-columns: 36px 48px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.poke-picker__item.is-active,
+.poke-picker__item:hover {
+  background: #fff7c2;
+}
+
+.poke-picker__item-sprite {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.poke-picker__item-id {
+  font-size: 9px;
+  color: #555;
+}
+
+.poke-picker__item-name {
+  font-size: 11px;
+  color: #000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.poke-picker__item-en {
+  font-size: 8px;
+  color: #777;
+  text-transform: uppercase;
+}
