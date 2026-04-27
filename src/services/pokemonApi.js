@@ -1,6 +1,7 @@
 import { search as indexSearch, suggest as indexSuggest, getById } from "../utils/searchIndex";
 import { getSpriteWithFallback, hasLocalSprite } from "../utils/localSpriteUtils";
 import { searchCustomPokemon } from "../data/customPokemon";
+import { getEvolutionChainForSpecies, describeEvolution } from "../utils/evolutionIndex";
 
 const TYPE_ZH = {
   normal: "一般", fire: "火", water: "水", electric: "電", grass: "草",
@@ -108,8 +109,25 @@ export function searchPokemon(query, _includeEvolutions = false, maxResults = 50
 }
 
 export function searchPokemonForms(pokemonId) {
-  const entries = getById(pokemonId);
-  return Promise.resolve(entries.map(buildPokemon));
+  const id = Number(pokemonId);
+  const seen = new Set();
+  const out = [];
+  const pushEntries = (entries) => {
+    for (const e of entries) {
+      const key = `${e.id}-${e.name_en}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(buildPokemon(e));
+    }
+  };
+  pushEntries(getById(id));
+  const chain = getEvolutionChainForSpecies(id);
+  for (const node of chain) {
+    if (node.id === id) continue;
+    pushEntries(getById(node.id));
+  }
+  out.sort((a, b) => a.id - b.id || (a.is_variant ? 1 : 0) - (b.is_variant ? 1 : 0));
+  return Promise.resolve(out);
 }
 
 export function fetchPokemonById(idOrName) {
@@ -129,14 +147,48 @@ export function getPokemonSearchSuggestions(query, maxSuggestions = 8) {
   return Promise.resolve(indexSuggest(query, maxSuggestions));
 }
 
-export function getEvolutionRequirementText() {
-  return "";
+export function getEvolutionRequirementText(node) {
+  return describeEvolution(node);
 }
 
-export function fetchEvolutionChain() {
-  return Promise.resolve([]);
+function buildEvolutionEntry(node) {
+  const entries = getById(node.id);
+  const base = entries[0];
+  if (!base) {
+    return {
+      id: node.id,
+      name: node.name,
+      stage: node.stage,
+      chineseName: node.name,
+      englishName: node.name,
+      image: pixelUrl(node.id),
+      types: [],
+      stats: [],
+      error: false,
+      evolutionTrigger: node.trigger,
+      minLevel: node.minLevel,
+      item: node.item,
+      minHappiness: node.minHappiness,
+      timeOfDay: node.timeOfDay,
+    };
+  }
+  const built = buildPokemon(base);
+  return {
+    ...built,
+    stage: node.stage,
+    evolutionTrigger: node.trigger,
+    minLevel: node.minLevel,
+    item: node.item,
+    minHappiness: node.minHappiness,
+    timeOfDay: node.timeOfDay,
+  };
 }
 
-export function fetchCompleteEvolutionChain() {
-  return Promise.resolve([]);
+export function fetchEvolutionChain(pokemonId) {
+  const chain = getEvolutionChainForSpecies(Number(pokemonId));
+  return Promise.resolve(chain.map(buildEvolutionEntry));
+}
+
+export function fetchCompleteEvolutionChain(pokemonId) {
+  return fetchEvolutionChain(pokemonId);
 }
