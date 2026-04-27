@@ -224,8 +224,9 @@ function SearchBox({ onSearch, isLoading, resetKey }) {
               position: "absolute",
               visibility: "hidden",
               whiteSpace: "pre",
-              fontFamily: "Press Start 2P, Courier New, monospace",
-              fontSize: "14px",
+              fontFamily: "Press Start 2P, PingFang TC, Microsoft JhengHei, Courier New, monospace",
+              fontSize: "12px",
+              letterSpacing: "1px",
             }}
           />
 
