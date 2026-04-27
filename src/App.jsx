@@ -1,10 +1,12 @@
-import { useState, useMemo } from "react";
+import { lazy, Suspense, useState, useMemo } from "react";
 import SearchBox from "./components/SearchBox";
 import PokemonGrid from "./components/PokemonGrid";
 import Footer from "./components/Footer";
 import { searchPokemon, searchPokemonForms } from "./services/pokemonApi";
 import "./App.css";
 import "./styles/pixelEffects.css";
+
+const TradeBoard = lazy(() => import("./trade/TradeBoard"));
 
 // LRU Cache implementation for app-level caching
 class LRUCache {
@@ -49,6 +51,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [resetKey, setResetKey] = useState(0);
+  const [view, setView] = useState("dex");
 
   const searchCache = useMemo(() => new LRUCache(50), []);
 
@@ -143,12 +146,40 @@ function App() {
     setResetKey(prev => prev + 1);
   };
 
+  if (view === "trade") {
+    return (
+      <div className="app">
+        <Suspense fallback={<div style={{ padding: 24, fontFamily: "Press Start 2P, monospace", fontSize: 11 }}>loading trade board...</div>}>
+          <TradeBoard onBack={() => setView("dex")} onCreate={() => {}} />
+        </Suspense>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <div className="container">
         <header className="header" onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
           <p>Pokemon Search Tool</p>
         </header>
+        <div style={{ textAlign: "center", marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setView("trade"); }}
+            style={{
+              fontFamily: "Press Start 2P, PingFang TC, monospace",
+              fontSize: 10,
+              letterSpacing: 1,
+              padding: "8px 16px",
+              background: "#fff7c2",
+              border: "2px solid #333",
+              cursor: "pointer",
+              boxShadow: "2px 2px 0 #c9a300",
+            }}
+          >
+            TRADE BOARD {">"}
+          </button>
+        </div>
         <SearchBox onSearch={handleSearch} isLoading={isLoading} resetKey={resetKey} />
         {error && (
           <div className="error-message">
