@@ -29,6 +29,7 @@ const POKEAPI_FORM = {
   ZYGARDE_COMPLETE: "zygarde-complete",
   FURFROU_NATURAL: "furfrou",
 };
+const LURE_WEATHER = { ITEM_TROY_DISK_RAINY: "雨天" };
 const hasCjk = (s) => /[\u3400-\u9fff]/.test(s || "");
 
 async function load(url, name) {
@@ -94,7 +95,9 @@ function describe(branch, quests, t) {
     lines.push(branch.evolutionItemRequirementCost ? `${item} ×${branch.evolutionItemRequirementCost}` : item);
   }
   if (branch.lureItemRequirement) {
-    lines.push(`在使用${t(`${branch.lureItemRequirement}_name`) || branch.lureItemRequirement}的寶可補給站進化`);
+    const lure = (t(`${branch.lureItemRequirement}_name`) || branch.lureItemRequirement).replace("誘餌模組", "模組");
+    const weather = LURE_WEATHER[branch.lureItemRequirement];
+    lines.push(weather ? `${lure}或${weather}` : lure);
   }
   if (branch.genderRequirement) lines.push(branch.genderRequirement === "MALE" ? "限雄性" : "限雌性");
   if (branch.onlyDaytime) lines.push("限白天");
