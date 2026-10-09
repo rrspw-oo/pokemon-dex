@@ -743,7 +743,7 @@ p {
 .speaker {
   position: absolute;
   right: 20px;
-  top: 14px;
+  top: 16px;
   display: flex;
   gap: 7px;
   transform: rotate(-30deg);
@@ -757,11 +757,22 @@ p {
   box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.25);
 }
 
-.copyright {
+.footer-text {
   padding-right: 90px;
+  text-align: left;
+}
+
+.copyright {
   color: var(--shell-ink);
   font-size: 12px;
-  text-align: left;
+}
+
+.disclaimer {
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font-size: 10px;
+  line-height: 1.5;
 }
 
 @media (min-width: 600px) {
