@@ -10,7 +10,7 @@ const REPORT = join(CACHE_DIR, "cards-report.json");
 const REFRESH = process.argv.includes("--refresh");
 const API = "https://api.tcgdex.net/v2";
 const ASSETS = "https://assets.tcgdex.net/";
-const MAX_CARDS = 6;
+const MAX_PER_LANG = 6;
 const CONCURRENCY = 4;
 const ZH_ALIASES = { 電飛鼠: "導電飛鼠", 胡帕: "懲戒胡帕", 連擊武道熊師: "武道熊師", 一擊武道熊師: "武道熊師" };
 
@@ -103,7 +103,7 @@ async function main() {
       .map((c) => enCards.get(c.id))
       .filter(Boolean)
       .sort(newestFirst);
-    const kept = [...zh, ...en].slice(0, MAX_CARDS);
+    const kept = [...zh.slice(0, MAX_PER_LANG), ...en.slice(0, MAX_PER_LANG)];
     if (!kept.length) return;
     cards[dex] = kept.map((card) => card.img);
     for (const card of kept) sets[card.img.slice(0, card.img.lastIndexOf("/"))] = card.set;

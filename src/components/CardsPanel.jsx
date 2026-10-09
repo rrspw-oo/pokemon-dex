@@ -3,10 +3,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 const ASSETS = "https://assets.tcgdex.net/";
 const FORMATS = ["webp", "jpg"];
 const PRICE_MIN = 100;
+const PRICE_TIMEOUT = 3000;
 let cardsPromise;
 const loadCards = () => (cardsPromise ||= import("../data/cards.json").then((m) => m.default));
 
-const loadPrice = (id) =>
+const fetchPrice = (id) =>
   fetch(`https://api.tcgdex.net/v2/en/cards/${id}`)
     .then((res) => (res.ok ? res.json() : null))
     .then((card) => {
@@ -16,6 +17,8 @@ const loadPrice = (id) =>
       return prices.length ? Math.min(...prices) : null;
     })
     .catch(() => null);
+
+const loadPrice = (id) => Promise.race([fetchPrice(id), new Promise((r) => setTimeout(() => r(null), PRICE_TIMEOUT))]);
 
 function toCard(img, sets) {
   const cut = img.lastIndexOf("/");
@@ -150,7 +153,7 @@ function CardsPanel({ dex, name }) {
   const [shown, setShown] = useState(false);
   const [viewing, setViewing] = useState(null);
   const drag = useRef(null);
-  const [prices, setPrices] = useState({});
+  const [prices, setPrices] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -173,6 +176,12 @@ function CardsPanel({ dex, name }) {
       alive = false;
     };
   }, [shown, cards]);
+
+  const ordered = useMemo(() => {
+    if (!cards || !prices) return cards;
+    const priced = cards.filter((card) => highPrice(prices[card.img])).sort((a, b) => prices[b.img] - prices[a.img]);
+    return [...priced, ...cards.filter((card) => !priced.includes(card))];
+  }, [cards, prices]);
 
   if (!cards) return null;
 
@@ -229,7 +238,8 @@ function CardsPanel({ dex, name }) {
         </button>
         <div className="collapse" aria-hidden={!open}>
           <div className="collapse-inner">
-            {shown && (
+            {shown && !prices && <p className="card-loading">載入中</p>}
+            {shown && prices && (
               <ul
                 className="card-strip"
                 onPointerDown={onPointerDown}
@@ -238,7 +248,7 @@ function CardsPanel({ dex, name }) {
                 onPointerLeave={onPointerLeave}
                 onClickCapture={onClickCapture}
               >
-                {cards.map((card, i) => (
+                {ordered.map((card, i) => (
                   <li key={card.img}>
                     <button type="button" className="card-thumb" onClick={() => setViewing(i)}>
                       <CardImage card={card} size="low" alt={`${name} ${card.set} ${card.no}`} lazy />
@@ -258,7 +268,7 @@ function CardsPanel({ dex, name }) {
         </div>
       </div>
       {viewing !== null && (
-        <CardViewer cards={cards} index={viewing} name={name} prices={prices} onIndex={setViewing} onClose={() => setViewing(null)} />
+        <CardViewer cards={ordered} index={viewing} name={name} prices={prices} onIndex={setViewing} onClose={() => setViewing(null)} />
       )}
     </section>
   );

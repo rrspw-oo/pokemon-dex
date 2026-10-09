@@ -994,6 +994,12 @@ p {
   list-style: none;
 }
 
+.card-loading {
+  margin: 10px 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
 .card-strip li {
   scroll-snap-align: start;
 }
