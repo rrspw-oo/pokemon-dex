@@ -47,7 +47,12 @@ function CupList({ cups, league, onLeague, onOpen }) {
               <button key={cup.id} type="button" className="cup-card" onClick={() => onOpen(cup.id)}>
                 <CupIcon icon={cup.icon} />
                 <span className="cup-name">{listName(cup.zh)}</span>
-                <span className="cup-rule">{cup.rules.slice(1).join("・") || cup.rules[0]}</span>
+                {cup.diff && (
+                  <span className="cup-rule">
+                    <span>多禁 {cup.diff.removed.length} 種</span>
+                    {cup.diff.added.length > 0 && <span>多開放 {cup.diff.added.length} 種</span>}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -78,6 +83,12 @@ function CupDetail({ cup, data, onBack, onSelect }) {
             <li key={rule}>{rule}</li>
           ))}
         </ul>
+        {cup.diff && (
+          <div className="cup-diff">
+            <p>比{cup.diff.base}多禁：{cup.diff.removed.join("、")}</p>
+            {cup.diff.added.length > 0 && <p>多開放：{cup.diff.added.join("、")}</p>}
+          </div>
+        )}
       </div>
       <div className="panel">
         <h3 className="panel-title">推薦排名</h3>

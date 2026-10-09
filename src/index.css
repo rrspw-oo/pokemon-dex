@@ -1203,6 +1203,9 @@ p {
 }
 
 .cup-rule {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
   grid-column: 1 / -1;
   color: var(--ink-soft);
   font-size: 12px;
@@ -1235,6 +1238,21 @@ p {
   padding: 2px 8px;
   border: 2px solid var(--ink);
   background: var(--paper-hi);
+}
+
+.cup-rule span {
+  white-space: nowrap;
+}
+
+.cup-diff {
+  margin-top: 10px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.cup-diff p {
+  margin: 0;
 }
 
 .panel-title-row {
