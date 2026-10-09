@@ -21,6 +21,7 @@
   --line: #b4b1a8;
   --highlight: #f4dc9c;
   --screen: #e7e5de;
+  --screen-deep: #d6d3cb;
   --paper: #f6f5f0;
   --paper-hi: #ffffff;
   --button: #9a2257;
@@ -964,17 +965,21 @@ p {
   border-top: 2px dashed var(--line);
 }
 
+.card-block .matchup-toggle {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
 .card-count {
   display: inline-grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   margin-left: 8px;
   border-radius: 50%;
-  background: var(--highlight);
+  background: var(--screen-deep);
   color: var(--ink);
-  font-family: var(--font-pixel);
-  font-size: 9px;
+  font-size: 14px;
 }
 
 .card-strip {
@@ -982,7 +987,7 @@ p {
   grid-auto-flow: column;
   grid-auto-columns: min(40%, 160px);
   gap: 10px;
-  margin: 0;
+  margin: 10px 0 0;
   padding: 0 0 10px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
@@ -1031,7 +1036,7 @@ p {
 
 .card-meta {
   color: var(--ink-soft);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.4;
 }
 
@@ -1063,14 +1068,16 @@ p {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 16px;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
   background: rgba(34, 37, 46, 0.9);
   touch-action: pan-y;
   user-select: none;
 }
 
 .card-viewer img {
-  width: min(90vw, 420px, 72vh * 63 / 88);
+  width: min(100%, 420px, (100vh - 140px) * 63 / 88);
+  width: min(100%, 420px, (100dvh - 140px) * 63 / 88);
   aspect-ratio: 63 / 88;
   object-fit: contain;
 }
@@ -1082,6 +1089,8 @@ p {
 
 .card-viewer-caption {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 12px;
   margin: 0;
   color: var(--paper-hi);
