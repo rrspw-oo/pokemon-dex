@@ -112,6 +112,12 @@ async function main() {
     return idIndex.get(id);
   };
 
+  const pool = pvpoke.pokemon.filter(
+    (p) => p.released !== false && !p.speciesId.includes("_shadow") && !p.tags?.includes("mega") && goNameByDex.has(p.dex)
+  );
+  const zhOf = (p) => (zhByGoId.get(p.speciesId) || p.speciesName).replace(/的樣子\)/, ")");
+  const allowedByCup = new Map();
+
   const seenTitles = new Set();
   const leagues = gm
     .filter((tpl) => tpl.data.combatLeague && tpl.templateId.startsWith("COMBAT_LEAGUE_VS_SEEKER_") && !tpl.templateId.includes("MEGAS"))
@@ -149,13 +155,33 @@ async function main() {
 
     const source = PVPOKE_CUP[id] || (STANDARD[id] && ["all", STANDARD[id]]);
     const ranking = source ? await rankingFile(source[0], source[1]) : await rankingFile("all", cp);
+    const beats = new Map();
+    const losesTo = new Map();
+    const add = (map, key, id) => {
+      if (!map.has(key)) map.set(key, []);
+      if (!map.get(key).includes(id)) map.get(key).push(id);
+    };
+    for (const r of ranking) {
+      for (const m of r.matchups || []) add(beats, r.speciesId, m.opponent);
+      for (const m of r.counters || []) add(losesTo, r.speciesId, m.opponent);
+    }
+    if (!source) {
+      for (const r of ranking) {
+        for (const m of r.matchups || []) add(losesTo, m.opponent, r.speciesId);
+        for (const m of r.counters || []) add(beats, m.opponent, r.speciesId);
+      }
+    }
     const top = [];
     for (const r of ranking) {
       if (top.length >= TOP) break;
       if (!linked.has(r.speciesId.replace(/_shadow$/, ""))) continue;
       if (!source && !eligible(r.speciesId)) continue;
-      const keep = (list) => (list || []).map((m) => m.opponent).filter((o) => linked.has(o.replace(/_shadow$/, "")) && (source || eligible(o))).map(ref);
-      top.push([ref(r.speciesId), r.score, r.moveset.filter((m) => m !== "none"), keep(r.matchups), keep(r.counters)]);
+      const keep = (list) =>
+        (list || [])
+          .filter((o) => linked.has(o.replace(/_shadow$/, "")) && (source || eligible(o)))
+          .slice(0, 5)
+          .map(ref);
+      top.push([ref(r.speciesId), r.score, r.moveset.filter((m) => m !== "none"), keep(beats.get(r.speciesId)), keep(losesTo.get(r.speciesId))]);
     }
     if (top.length === 0) continue;
 
@@ -163,9 +189,6 @@ async function main() {
     if (types) rules.push(`限 ${types.map((x) => t.get(`pokemon_type_${x}`) || x).join("、")} 屬性`);
     if (whitelist) rules.push(`限指定的 ${new Set(whitelist.map((e) => e.id)).size} 種寶可夢`);
     if (banlist.length) {
-      const pool = pvpoke.pokemon.filter(
-        (p) => p.released !== false && !p.speciesId.includes("_shadow") && !p.tags?.includes("mega") && goNameByDex.has(p.dex)
-      );
       const isBanned = (p) =>
         banned.has(goNameByDex.get(p.dex)) || matchesList(banlist, p, goNameByDex.get(p.dex));
       const inBanlist = (p) => matchesList(banlist, p, goNameByDex.get(p.dex));
@@ -176,7 +199,7 @@ async function main() {
       });
       const exceptions = pool
         .filter((p) => p.types.some((x) => bannedTypes.includes(x)) && !isBanned(p))
-        .map((p) => (zhByGoId.get(p.speciesId) || p.speciesName).replace(/的樣子\)/, ")"));
+        .map(zhOf);
       const others = new Set(
         pool.filter((p) => inBanlist(p) && !p.types.some((x) => bannedTypes.includes(x))).map((p) => p.dex)
       ).size;
@@ -191,6 +214,7 @@ async function main() {
     if (banned.has("MEWTWO") || banned.has("MEW")) rules.push("禁用傳說、幻之寶可夢等");
     else if (banned.size > 2) rules.push(`禁用 ${banned.size} 種寶可夢`);
 
+    allowedByCup.set(zh.replace(/\s+/g, ""), new Set(pool.filter((p) => eligible(p.speciesId)).map(zhOf)));
     cups.push({
       id: id.replace("COMBAT_LEAGUE_VS_SEEKER_", "").toLowerCase(),
       zh: zh.replace(/\s+/g, ""),
@@ -201,6 +225,16 @@ async function main() {
       source: source ? "pvpoke" : "derived",
       top,
     });
+  }
+
+  for (const cup of cups) {
+    const baseZh = cup.zh.replace(/(：.+版)?(Remix|Rmix)$/, "");
+    if (baseZh === cup.zh) continue;
+    const base = allowedByCup.get(baseZh);
+    const own = allowedByCup.get(cup.zh);
+    const removed = [...base].filter((n) => !own.has(n));
+    const added = [...own].filter((n) => !base.has(n));
+    cup.diff = { base: baseZh, removed, added };
   }
 
   cups.sort((a, b) => b.standard - a.standard || a.cp - b.cp || a.zh.localeCompare(b.zh, "zh-Hant"));
