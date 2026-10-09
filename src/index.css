@@ -716,6 +716,17 @@ p {
   margin-top: 12px;
 }
 
+.mega-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0 8px;
+}
+
+.mega-cards .mini-card {
+  width: 96px;
+}
+
 .go-line {
   margin-top: 8px;
 }
@@ -1270,6 +1281,23 @@ p {
 .rank-name {
   font-size: 15px;
   line-height: 1.2;
+}
+
+.rank-filter {
+  margin-bottom: 12px;
+}
+
+.rank-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.rank-note span {
+  white-space: nowrap;
 }
 
 .rank-names {

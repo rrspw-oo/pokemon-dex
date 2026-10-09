@@ -3,7 +3,7 @@ import Sprite from "./Sprite";
 import TypeBadges from "./TypeBadges";
 import PvpPanel from "./PvpPanel";
 import CardsPanel from "./CardsPanel";
-import { getFamily, getFormChanges } from "../services/pokemonApi";
+import { getFamily, getFormChanges, getMegas } from "../services/pokemonApi";
 import { formatId } from "../utils/format";
 
 function MiniCard({ pokemon, label, current, selected, onClick }) {
@@ -68,6 +68,40 @@ function GoHint({ text }) {
   );
 }
 
+function MegaBlock({ id, current, onSelect }) {
+  const megas = getMegas(id);
+  if (megas.length === 0) return null;
+  const primal = megas.every((m) => m.goId.endsWith("_primal"));
+  const energy = primal ? "能量" : "超級能量";
+  const costs = [...new Set(megas.map((m) => `${m.cost}/${m.next}`))];
+  return (
+    <div className="go-block mega-block">
+      <p className="go-condition-title">
+        <span className="go-badge">GO</span>
+        {primal ? "原始回歸" : "超級進化"}
+      </p>
+      <div className="mega-cards">
+        {megas.map((m) => (
+          <MiniCard key={m.goId} pokemon={m.pokemon} current={m.pokemon.key === current} onClick={onSelect} />
+        ))}
+      </div>
+      {costs.map((cost) => {
+        const [first, next] = cost.split("/");
+        return (
+          <ul key={cost} className="go-chips">
+            <li>
+              首次 {first} {energy}
+            </li>
+            <li>
+              之後 {next} {energy}
+            </li>
+          </ul>
+        );
+      })}
+    </div>
+  );
+}
+
 const optionsFrom = (member, fromId) =>
   (member.go || []).filter((o) => fromId == null || o.from === fromId).map((o) => ({ label: o.form, lines: o.lines }));
 
@@ -90,7 +124,13 @@ function EvolutionPanel({ pokemon, family, onSelect }) {
     <section className="panel">
       <h3 className="panel-title">進化</h3>
       {family.stages.length === 0 ? (
-        <p className="panel-empty">此寶可夢不會進化</p>
+        getMegas(pokemon.id).length > 0 ? (
+          <div className="go-condition">
+            <MegaBlock id={pokemon.id} current={pokemon.key} onSelect={onSelect} />
+          </div>
+        ) : (
+          <p className="panel-empty">此寶可夢不會進化</p>
+        )
       ) : (
         <>
           <div className={`evo-chain ${stages.length === 1 ? "is-single" : ""}`}>
@@ -129,6 +169,7 @@ function EvolutionPanel({ pokemon, family, onSelect }) {
                   emptyText="Pokémon GO 目前沒有這個進化"
                 />
               ))}
+              <MegaBlock id={picked.pokemon.id} current={pokemon.key} onSelect={onSelect} />
               {picked.pokemon.id !== pokemon.id && <GoOpen target={picked.pokemon} onSelect={onSelect} />}
             </div>
           ) : (
@@ -179,7 +220,8 @@ function PokemonDetail({ pokemon, onSelect, onBack, backLabel, onTypeClick }) {
   const [mode, setMode] = useState("normal");
   const family = useMemo(() => getFamily(pokemon), [pokemon]);
   const formChanges = useMemo(() => getFormChanges(pokemon), [pokemon]);
-  const otherForms = formChanges ? family.forms.filter((p) => !formChanges.linkedKeys.has(p.key)) : family.forms;
+  const megaKeys = new Set(getMegas(pokemon.id).map((m) => m.pokemon.key));
+  const otherForms = family.forms.filter((p) => !megaKeys.has(p.key) && !formChanges?.linkedKeys.has(p.key));
   const modes = [
     ["normal", "一般", pokemon.image],
     ["shiny", "閃光", pokemon.shinyImage],

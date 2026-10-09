@@ -8,6 +8,8 @@ const normalize = (s) =>
     .normalize("NFKD")
     .replace(/[^a-z0-9]/g, "");
 
+const foldZh = (s) => s.normalize("NFKC").toLowerCase();
+
 export const records = database.map((entry, key) => {
   const zh = entry.form_zh || entry.name_zh_tw;
   const en = entry.form_en || entry.name_en;
@@ -18,7 +20,7 @@ export const records = database.map((entry, key) => {
     en,
     enKeys: [...new Set([normalize(en), normalize(entry.name_en)])],
     enWords: en.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean),
-    zhKeys: [...new Set([zh, entry.name_zh_tw])],
+    zhKeys: [...new Set([zh, entry.name_zh_tw].map(foldZh))],
   };
 });
 
@@ -126,7 +128,7 @@ export function search(rawQuery) {
     }
   } else if (/[㐀-鿿]/.test(query)) {
     for (const r of records) {
-      const s = scoreChinese(r, query);
+      const s = scoreChinese(r, foldZh(query));
       if (s) scored.push({ r, s });
     }
     const named = new Set(scored.map((x) => x.r.key));

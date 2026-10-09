@@ -13,6 +13,12 @@ const SOURCES = {
 };
 
 const ITEM_OVERRIDE = { ITEM_OTHER_EVOLUTION_STONE_A: "索財靈的硬幣" };
+const TEMP_EVO_SUFFIX = {
+  TEMP_EVOLUTION_MEGA: "_mega",
+  TEMP_EVOLUTION_MEGA_X: "_mega_x",
+  TEMP_EVOLUTION_MEGA_Y: "_mega_y",
+  TEMP_EVOLUTION_PRIMAL: "_primal",
+};
 const REGION_ZH = { ALOLA: "阿羅拉", GALARIAN: "伽勒爾", HISUIAN: "洗翠", PALDEA: "帕底亞" };
 const POKEAPI_FORM = {
   KYUREM_NORMAL: "kyurem",
@@ -232,6 +238,7 @@ async function main() {
 
   const byTarget = new Map();
   const regional = new Map();
+  const megas = new Map();
   for (const tpl of gm) {
     const ps = tpl.data.pokemonSettings;
     const m = tpl.templateId.match(/^V(\d{4})_POKEMON_/);
@@ -239,6 +246,15 @@ async function main() {
     const from = Number(m[1]);
     const rank = !ps.form ? 0 : ps.form.endsWith("_NORMAL") ? 1 : 2;
     for (const branch of ps.evolutionBranch) {
+      if (branch.temporaryEvolution && rank < 2) {
+        if (!megas.has(from)) megas.set(from, new Map());
+        const goId = `${ps.pokemonId.toLowerCase()}${TEMP_EVO_SUFFIX[branch.temporaryEvolution]}`;
+        megas.get(from).set(goId, {
+          goId,
+          cost: branch.temporaryEvolutionEnergyCost,
+          next: branch.temporaryEvolutionEnergyCostSubsequent,
+        });
+      }
       if (!branch.evolution) continue;
       const to = dexByName.get(branch.evolution);
       if (!to || to === from) continue;
@@ -291,11 +307,16 @@ async function main() {
 
   writeFileSync(
     OUT,
-    JSON.stringify({ generatedAt: new Date().toISOString().slice(0, 10), source: "PokeMiners game_masters", byTarget: out })
+    JSON.stringify({
+      generatedAt: new Date().toISOString().slice(0, 10),
+      source: "PokeMiners game_masters",
+      byTarget: out,
+      megas: Object.fromEntries([...megas].sort((a, b) => a[0] - b[0]).map(([dex, m]) => [dex, [...m.values()]])),
+    })
   );
   const formsOut = await buildForms(gm, t, dexByName);
   writeFileSync(FORMS_OUT, JSON.stringify(formsOut));
-  console.log(`targets ${Object.keys(out).length}, quests ${quests.size}, form-change species ${Object.keys(formsOut).length}`);
+  console.log(`targets ${Object.keys(out).length}, mega species ${megas.size}, quests ${quests.size}, form-change species ${Object.keys(formsOut).length}`);
 }
 
 main().catch((err) => {
