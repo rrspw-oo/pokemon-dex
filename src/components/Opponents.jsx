@@ -45,10 +45,10 @@ export function MoveChips({ moveset, moves, elite = [] }) {
   );
 }
 
-export function Collapsible({ title, children }) {
+export function Collapsible({ title, className = "", children }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`matchup-block ${open ? "is-open" : ""}`}>
+    <div className={`matchup-block ${className} ${open ? "is-open" : ""}`}>
       <button type="button" className="matchup-toggle" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         {title}
       </button>
@@ -59,9 +59,10 @@ export function Collapsible({ title, children }) {
   );
 }
 
-export function Matchups({ matchups, counters, onSelect }) {
+export function Matchups({ matchups, counters, onSelect, children }) {
   return (
     <div className="matchups">
+      {children}
       <Collapsible title="擅長對付">
         <OpponentList ids={matchups} onSelect={onSelect} />
       </Collapsible>

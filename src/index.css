@@ -1151,6 +1151,23 @@ p {
   border-bottom: 0;
 }
 
+.rank-moves-collapsible .move-list {
+  padding-bottom: 10px;
+}
+
+@media (max-width: 599px) {
+  .rank-moves-inline,
+  .rank-meta:has(> .rank-moves-inline:only-child) {
+    display: none;
+  }
+}
+
+@media (min-width: 600px) {
+  .rank-moves-collapsible {
+    display: none;
+  }
+}
+
 .show-all {
   display: block;
   margin: 14px auto 0;

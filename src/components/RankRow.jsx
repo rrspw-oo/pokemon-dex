@@ -1,7 +1,7 @@
 import Sprite from "./Sprite";
 import TypeBadges from "./TypeBadges";
 import ShadowIcon from "./ShadowIcon";
-import { Matchups, MoveChips } from "./Opponents";
+import { Collapsible, Matchups, MoveChips } from "./Opponents";
 import { shortName } from "../utils/format";
 
 function RankRow({ rank, pokemon, tags = [], moveset, moves, matchups, counters, onSelect }) {
@@ -28,13 +28,25 @@ function RankRow({ rank, pokemon, tags = [], moveset, moves, matchups, counters,
                     {tag.label}
                   </span>
                 ))}
-                {moveset && <MoveChips moveset={moveset} moves={moves} />}
+                {moveset && (
+                  <span className="rank-moves-inline">
+                    <MoveChips moveset={moveset} moves={moves} />
+                  </span>
+                )}
               </span>
             )}
           </span>
         </button>
       </div>
-      {expandable && <Matchups matchups={matchups} counters={counters} onSelect={onSelect} />}
+      {expandable && (
+        <Matchups matchups={matchups} counters={counters} onSelect={onSelect}>
+          {moveset && (
+            <Collapsible title="推薦招式" className="rank-moves-collapsible">
+              <MoveChips moveset={moveset} moves={moves} />
+            </Collapsible>
+          )}
+        </Matchups>
+      )}
     </li>
   );
 }
