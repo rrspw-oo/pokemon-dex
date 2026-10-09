@@ -735,17 +735,18 @@ p {
 }
 
 .footer {
-  position: relative;
-  padding: 28px 12px 20px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 36px 12px 28px;
 }
 
 .speaker {
-  position: absolute;
-  right: 20px;
-  top: 16px;
+  order: 1;
+  flex: none;
   display: flex;
   gap: 7px;
+  margin-right: 8px;
   transform: rotate(-30deg);
 }
 
@@ -758,7 +759,8 @@ p {
 }
 
 .footer-text {
-  padding-right: 90px;
+  flex: 1;
+  min-width: 0;
   text-align: left;
 }
 
