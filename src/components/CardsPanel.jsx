@@ -23,6 +23,7 @@ function CardImage({ card, size, alt, lazy }) {
       alt={alt}
       loading={lazy ? "lazy" : "eager"}
       crossOrigin="anonymous"
+      draggable="false"
       onError={() => setIndex((i) => i + 1)}
     />
   );
@@ -39,16 +40,24 @@ function CardViewer({ cards, index, name, onIndex, onClose }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const touch = useRef(null);
-  const onTouchStart = (e) => {
-    touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  const swipe = useRef(null);
+  const onPointerDown = (e) => {
+    swipe.current = { x: e.clientX, y: e.clientY, done: false };
   };
-  const onTouchEnd = (e) => {
-    const dx = e.changedTouches[0].clientX - touch.current.x;
-    const dy = e.changedTouches[0].clientY - touch.current.y;
+  const onPointerUp = (e) => {
+    const s = swipe.current;
+    if (!s) return;
+    const dx = e.clientX - s.x;
+    const dy = e.clientY - s.y;
     if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+    s.done = true;
     const next = index + (dx < 0 ? 1 : -1);
     if (next >= 0 && next < cards.length) onIndex(next);
+  };
+  const onBackdropClick = () => {
+    const swiped = swipe.current?.done;
+    swipe.current = null;
+    if (!swiped) onClose();
   };
 
   const step = (delta) => (e) => {
@@ -62,9 +71,9 @@ function CardViewer({ cards, index, name, onIndex, onClose }) {
       role="dialog"
       aria-modal="true"
       aria-label={`${name} ${card.set}`}
-      onClick={onClose}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
+      onClick={onBackdropClick}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
     >
       <CardImage key={card.img} card={card} size="high" alt={`${name} ${card.set} ${card.no}`} />
       <p className="card-viewer-caption">
@@ -97,6 +106,7 @@ function CardsPanel({ dex, name }) {
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState(false);
   const [viewing, setViewing] = useState(null);
+  const drag = useRef(null);
 
   useEffect(() => {
     let alive = true;
@@ -108,6 +118,36 @@ function CardsPanel({ dex, name }) {
 
   const cards = all?.[dex];
   if (!cards) return null;
+
+  const onPointerDown = (e) => {
+    if (e.pointerType !== "mouse") return;
+    drag.current = { x: e.clientX, left: e.currentTarget.scrollLeft, moved: false };
+  };
+  const onPointerMove = (e) => {
+    const d = drag.current;
+    if (!d) return;
+    const dx = e.clientX - d.x;
+    if (!d.moved && Math.abs(dx) > 5) {
+      d.moved = true;
+      e.currentTarget.classList.add("is-dragging");
+    }
+    if (d.moved) e.currentTarget.scrollLeft = d.left - dx;
+  };
+  const onPointerUp = (e) => {
+    if (drag.current?.moved) e.currentTarget.classList.remove("is-dragging");
+    if (drag.current && !drag.current.moved) drag.current = null;
+  };
+  const onPointerLeave = (e) => {
+    e.currentTarget.classList.remove("is-dragging");
+    drag.current = null;
+  };
+  const onClickCapture = (e) => {
+    if (drag.current?.moved) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    drag.current = null;
+  };
 
   const toggle = () => {
     setOpen((v) => !v);
@@ -124,7 +164,14 @@ function CardsPanel({ dex, name }) {
         <div className="collapse" aria-hidden={!open}>
           <div className="collapse-inner">
             {shown && (
-              <ul className="card-strip">
+              <ul
+                className="card-strip"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerLeave={onPointerLeave}
+                onClickCapture={onClickCapture}
+              >
                 {cards.map((card, i) => (
                   <li key={card.img}>
                     <button type="button" className="card-thumb" onClick={() => setViewing(i)}>

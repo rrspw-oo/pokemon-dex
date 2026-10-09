@@ -973,6 +973,12 @@ p {
   scroll-snap-align: start;
 }
 
+.card-strip.is-dragging {
+  scroll-snap-type: none;
+  cursor: grabbing;
+  user-select: none;
+}
+
 .card-thumb {
   display: flex;
   flex-direction: column;
@@ -1031,6 +1037,7 @@ p {
   padding: 16px;
   background: rgba(34, 37, 46, 0.9);
   touch-action: pan-y;
+  user-select: none;
 }
 
 .card-viewer img {
