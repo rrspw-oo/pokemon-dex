@@ -11,15 +11,15 @@ const SPRITE_PREFIX = "/sprites/pokemon/";
 const STAT_KEYS = ["hp", "attack", "defense", "special-attack", "special-defense", "speed"];
 const DB_STAT_KEYS = ["hp", "attack", "defense", "sp_attack", "sp_defense", "speed"];
 const FORM_ZH = {
-  hisui: "洗翠的樣子",
-  paldea: "帕底亞的樣子",
+  hisui: "洗翠",
+  paldea: "帕底亞",
   "combat-breed": "鬥戰種",
   "blaze-breed": "火熾種",
   "aqua-breed": "水瀾種",
   origin: "起源形態",
-  "white-striped": "白條紋的樣子",
+  "white-striped": "白條紋",
   therian: "靈獸形態",
-  female: "雌性的樣子",
+  female: "雌性",
   "family-of-three": "三隻家庭",
   "blue-plumage": "藍羽毛",
   "yellow-plumage": "黃羽毛",
@@ -32,7 +32,7 @@ const FORM_ZH = {
   trash: "垃圾蓑衣",
 };
 const FORM_ZH_OVERRIDE = {
-  "darmanitan-galar-zen": "達摩狒狒(伽勒爾的樣子・達摩模式)",
+  "darmanitan-galar-zen": "達摩狒狒(伽勒爾・達摩模式)",
 };
 
 mkdirSync(CACHE_DIR, { recursive: true });
@@ -244,7 +244,7 @@ async function main() {
           compose(base.name_zh_tw, names.zhFull, names.zhForm || dictionaryZh(cand));
         const enBase = base.name_en.replace(/\s*\(.*$/, "");
         const en = compose(enBase, names.enFull, names.enForm) || cand.name;
-        if (entry.name_zh_tw === base.name_zh_tw && zh) entry.form_zh = zh;
+        if (entry.name_zh_tw === base.name_zh_tw && zh) entry.form_zh = zh.replace(/的樣子/g, "");
         if (entry.name_en === base.name_en || /^[a-z]/.test(entry.name_en)) entry.form_en = en;
         report.forms.push(`${id} ${entry.name_en} -> ${cand.name} sprite=${cand.sprite} zh=${entry.form_zh || entry.name_zh_tw} en=${entry.form_en || entry.name_en}`);
       }

@@ -181,7 +181,7 @@ async function buildForms(gm, t, dexByName) {
       const sprite = api?.sprites?.front_default?.split("/sprites/pokemon/")[1]?.replace(/\.png$/, "") || null;
       const i18n = t(`form_${form}`);
       const apiZh = api && (api.names.find((n) => n.language.name === "zh-hant")?.name || api.form_names.find((n) => n.language.name === "zh-hant")?.name);
-      forms.push({ id: form, zh: hasCjk(i18n) ? i18n : apiZh || i18n || form, sprite: sprite || String(dex) });
+      forms.push({ id: form, zh: (hasCjk(i18n) ? i18n : apiZh || i18n || form).replace(/的樣子/g, ""), sprite: sprite || String(dex) });
     }
     forms.sort((a, b) => (b.sprite === String(dex)) - (a.sprite === String(dex)));
     const zhOf = (form) => forms.find((f) => f.id === form).zh;
@@ -246,13 +246,13 @@ async function main() {
       const region = rank === 2 && Object.keys(REGION_ZH).find((r) => ps.form.split("_").includes(r));
       if (region) {
         if (!regional.has(to)) regional.set(to, []);
-        regional.get(to).push({ from, form: `${REGION_ZH[region]}的樣子`, lines: [...lines] });
-        lines.unshift(`限${REGION_ZH[region]}的樣子`);
+        regional.get(to).push({ from, form: REGION_ZH[region], lines: [...lines] });
+        lines.unshift(`限${REGION_ZH[region]}`);
       }
       const option = { from, lines };
       const formName =
         branch.form && (t(`form_${branch.form}`) || t(`form_${branch.form.split("_").slice(1).join("_")}`));
-      if (formName?.trim() && !branch.genderRequirement) option.form = formName.trim();
+      if (formName?.trim() && !branch.genderRequirement) option.form = formName.trim().replace(/的樣子/g, "");
       const entry = byTarget.get(to);
       if (!entry || rank < entry.rank) byTarget.set(to, { rank, options: [option] });
       else if (rank === entry.rank) entry.options.push(option);
@@ -286,7 +286,7 @@ async function main() {
     const conditions = new Set(out[to].map((o) => o.lines.join("/")));
     if (conditions.size === 1) out[to] = [{ from: out[to][0].from, lines: out[to][0].lines }];
     else if (forms.size === 1) out[to].forEach((o) => delete o.form);
-    else if (forms.has("")) out[to].forEach((o) => (o.form ||= "一般的樣子"));
+    else if (forms.has("")) out[to].forEach((o) => (o.form ||= "一般"));
   }
 
   writeFileSync(

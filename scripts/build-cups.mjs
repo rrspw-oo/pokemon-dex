@@ -115,7 +115,7 @@ async function main() {
   const pool = pvpoke.pokemon.filter(
     (p) => p.released !== false && !p.speciesId.includes("_shadow") && !p.tags?.includes("mega") && goNameByDex.has(p.dex)
   );
-  const zhOf = (p) => (zhByGoId.get(p.speciesId) || p.speciesName).replace(/的樣子\)/, ")");
+  const zhOf = (p) => zhByGoId.get(p.speciesId) || p.speciesName;
   const allowedByCup = new Map();
 
   const seenTitles = new Set();

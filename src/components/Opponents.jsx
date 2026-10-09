@@ -3,7 +3,6 @@ import Sprite from "./Sprite";
 import ShadowIcon from "./ShadowIcon";
 import { getPokemonByGoId } from "../services/pokemonApi";
 import { TYPE_COLOR } from "../utils/types";
-import { shortName } from "../utils/format";
 
 export function OpponentList({ ids, onSelect }) {
   const list = ids.map(getPokemonByGoId).filter(Boolean);
@@ -20,7 +19,7 @@ export function OpponentList({ ids, onSelect }) {
           <Sprite key={p.image[0]} urls={p.image} alt={p.zh} />
           <span className="opponent-name">
             {p.shadow && <ShadowIcon />}
-            {shortName(p.zh)}
+            {p.zh}
           </span>
         </button>
       ))}

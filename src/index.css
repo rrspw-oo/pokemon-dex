@@ -108,6 +108,21 @@ p {
   text-transform: uppercase;
 }
 
+.title-acute {
+  position: relative;
+}
+
+.title-acute::before {
+  content: "";
+  position: absolute;
+  left: 0.375em;
+  top: -0.375em;
+  width: 0.25em;
+  height: 0.125em;
+  background: currentColor;
+  box-shadow: 0.125em -0.125em 0 currentColor;
+}
+
 .screen {
   flex: 1;
   padding: 16px 8px 32px;
@@ -784,6 +799,15 @@ p {
 .copyright {
   color: var(--shell-ink);
   font-size: 12px;
+}
+
+.collab {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.collab a {
+  color: var(--shell-ink);
 }
 
 .disclaimer {

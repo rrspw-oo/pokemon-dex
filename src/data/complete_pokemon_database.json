@@ -531,7 +531,7 @@
     "name_zh_tw": "小拉達",
     "is_variant": true,
     "sprite": "10091",
-    "form_zh": "小拉達(阿羅拉的樣子)",
+    "form_zh": "小拉達(阿羅拉)",
     "form_en": "Alolan Rattata",
     "go_id": "rattata_alolan"
   },
@@ -573,7 +573,7 @@
     "name_zh_tw": "拉達",
     "is_variant": true,
     "sprite": "10092",
-    "form_zh": "拉達(阿羅拉的樣子)",
+    "form_zh": "拉達(阿羅拉)",
     "form_en": "Alolan Raticate",
     "go_id": "raticate_alolan"
   },
@@ -713,7 +713,7 @@
     "name_zh_tw": "雷丘",
     "is_variant": true,
     "sprite": "10100",
-    "form_zh": "雷丘(阿羅拉的樣子)",
+    "form_zh": "雷丘(阿羅拉)",
     "form_en": "Alolan Raichu",
     "go_id": "raichu_alolan"
   },
@@ -755,7 +755,7 @@
     "name_zh_tw": "穿山鼠",
     "is_variant": true,
     "sprite": "10101",
-    "form_zh": "穿山鼠(阿羅拉的樣子)",
+    "form_zh": "穿山鼠(阿羅拉)",
     "form_en": "Alolan Sandshrew",
     "go_id": "sandshrew_alolan"
   },
@@ -797,7 +797,7 @@
     "name_zh_tw": "穿山王",
     "is_variant": true,
     "sprite": "10102",
-    "form_zh": "穿山王(阿羅拉的樣子)",
+    "form_zh": "穿山王(阿羅拉)",
     "form_en": "Alolan Sandslash",
     "go_id": "sandslash_alolan"
   },
@@ -992,7 +992,7 @@
     "name_zh_tw": "六尾",
     "is_variant": true,
     "sprite": "10103",
-    "form_zh": "六尾(阿羅拉的樣子)",
+    "form_zh": "六尾(阿羅拉)",
     "form_en": "Alolan Vulpix",
     "go_id": "vulpix_alolan"
   },
@@ -1034,7 +1034,7 @@
     "name_zh_tw": "九尾",
     "is_variant": true,
     "sprite": "10104",
-    "form_zh": "九尾(阿羅拉的樣子)",
+    "form_zh": "九尾(阿羅拉)",
     "form_en": "Alolan Ninetales",
     "go_id": "ninetales_alolan"
   },
@@ -1296,7 +1296,7 @@
     "name_zh_tw": "地鼠",
     "is_variant": true,
     "sprite": "10105",
-    "form_zh": "地鼠(阿羅拉的樣子)",
+    "form_zh": "地鼠(阿羅拉)",
     "form_en": "Alolan Diglett",
     "go_id": "diglett_alolan"
   },
@@ -1338,7 +1338,7 @@
     "name_zh_tw": "三地鼠",
     "is_variant": true,
     "sprite": "10106",
-    "form_zh": "三地鼠(阿羅拉的樣子)",
+    "form_zh": "三地鼠(阿羅拉)",
     "form_en": "Alolan Dugtrio",
     "go_id": "dugtrio_alolan"
   },
@@ -1380,7 +1380,7 @@
     "name_zh_tw": "喵喵",
     "is_variant": true,
     "sprite": "10107",
-    "form_zh": "喵喵(阿羅拉的樣子)",
+    "form_zh": "喵喵(阿羅拉)",
     "form_en": "Alolan Meowth",
     "go_id": "meowth_alolan"
   },
@@ -1402,7 +1402,7 @@
     "name_zh_tw": "喵喵",
     "is_variant": true,
     "sprite": "10161",
-    "form_zh": "喵喵(伽勒爾的樣子)",
+    "form_zh": "喵喵(伽勒爾)",
     "form_en": "Galarian Meowth",
     "go_id": "meowth_galarian"
   },
@@ -1443,7 +1443,7 @@
     "name_zh_tw": "貓老大",
     "is_variant": true,
     "sprite": "10108",
-    "form_zh": "貓老大(阿羅拉的樣子)",
+    "form_zh": "貓老大(阿羅拉)",
     "form_en": "Alolan Persian",
     "go_id": "persian_alolan"
   },
@@ -1561,7 +1561,7 @@
     "name_zh_tw": "卡蒂狗",
     "is_variant": true,
     "sprite": "10229",
-    "form_zh": "卡蒂狗(洗翠的樣子)",
+    "form_zh": "卡蒂狗(洗翠)",
     "form_en": "Hisuian Growlithe",
     "go_id": "growlithe_hisuian"
   },
@@ -1603,7 +1603,7 @@
     "name_zh_tw": "風速狗",
     "is_variant": true,
     "sprite": "10230",
-    "form_zh": "風速狗(洗翠的樣子)",
+    "form_zh": "風速狗(洗翠)",
     "form_en": "Hisuian Arcanine",
     "go_id": "arcanine_hisuian"
   },
@@ -1941,7 +1941,7 @@
     "name_zh_tw": "小拳石",
     "is_variant": true,
     "sprite": "10109",
-    "form_zh": "小拳石(阿羅拉的樣子)",
+    "form_zh": "小拳石(阿羅拉)",
     "form_en": "Alolan Geodude",
     "go_id": "geodude_alolan"
   },
@@ -1984,7 +1984,7 @@
     "name_zh_tw": "隆隆石",
     "is_variant": true,
     "sprite": "10110",
-    "form_zh": "隆隆石(阿羅拉的樣子)",
+    "form_zh": "隆隆石(阿羅拉)",
     "form_en": "Alolan Graveler",
     "go_id": "graveler_alolan"
   },
@@ -2027,7 +2027,7 @@
     "name_zh_tw": "隆隆岩",
     "is_variant": true,
     "sprite": "10111",
-    "form_zh": "隆隆岩(阿羅拉的樣子)",
+    "form_zh": "隆隆岩(阿羅拉)",
     "form_en": "Alolan Golem",
     "go_id": "golem_alolan"
   },
@@ -2068,7 +2068,7 @@
     "name_zh_tw": "小火馬",
     "is_variant": true,
     "sprite": "10162",
-    "form_zh": "小火馬(伽勒爾的樣子)",
+    "form_zh": "小火馬(伽勒爾)",
     "form_en": "Galarian Ponyta",
     "go_id": "ponyta_galarian"
   },
@@ -2110,7 +2110,7 @@
     "name_zh_tw": "烈焰馬",
     "is_variant": true,
     "sprite": "10163",
-    "form_zh": "烈焰馬(伽勒爾的樣子)",
+    "form_zh": "烈焰馬(伽勒爾)",
     "form_en": "Galarian Rapidash",
     "go_id": "rapidash_galarian"
   },
@@ -2152,7 +2152,7 @@
     "name_zh_tw": "呆呆獸",
     "is_variant": true,
     "sprite": "10164",
-    "form_zh": "呆呆獸(伽勒爾的樣子)",
+    "form_zh": "呆呆獸(伽勒爾)",
     "form_en": "Galarian Slowpoke",
     "go_id": "slowpoke_galarian"
   },
@@ -2218,7 +2218,7 @@
     "name_zh_tw": "呆殼獸",
     "is_variant": true,
     "sprite": "10165",
-    "form_zh": "呆殼獸(伽勒爾的樣子)",
+    "form_zh": "呆殼獸(伽勒爾)",
     "form_en": "Galarian Slowbro",
     "go_id": "slowbro_galarian"
   },
@@ -2300,7 +2300,7 @@
     "name_zh_tw": "大蔥鴨",
     "is_variant": true,
     "sprite": "10166",
-    "form_zh": "大蔥鴨(伽勒爾的樣子)",
+    "form_zh": "大蔥鴨(伽勒爾)",
     "form_en": "Galarian Farfetch’d",
     "go_id": "farfetchd_galarian"
   },
@@ -2421,7 +2421,7 @@
     "name_zh_tw": "臭泥",
     "is_variant": true,
     "sprite": "10112",
-    "form_zh": "臭泥(阿羅拉的樣子)",
+    "form_zh": "臭泥(阿羅拉)",
     "form_en": "Alolan Grimer",
     "go_id": "grimer_alolan"
   },
@@ -2463,7 +2463,7 @@
     "name_zh_tw": "臭臭泥",
     "is_variant": true,
     "sprite": "10113",
-    "form_zh": "臭臭泥(阿羅拉的樣子)",
+    "form_zh": "臭臭泥(阿羅拉)",
     "form_en": "Alolan Muk",
     "go_id": "muk_alolan"
   },
@@ -2725,7 +2725,7 @@
     "name_zh_tw": "霹靂電球",
     "is_variant": true,
     "sprite": "10231",
-    "form_zh": "霹靂電球(洗翠的樣子)",
+    "form_zh": "霹靂電球(洗翠)",
     "form_en": "Hisuian Voltorb",
     "go_id": "voltorb_hisuian"
   },
@@ -2767,7 +2767,7 @@
     "name_zh_tw": "頑皮雷彈",
     "is_variant": true,
     "sprite": "10232",
-    "form_zh": "頑皮雷彈(洗翠的樣子)",
+    "form_zh": "頑皮雷彈(洗翠)",
     "form_en": "Hisuian Electrode",
     "go_id": "electrode_hisuian"
   },
@@ -2830,7 +2830,7 @@
     "name_zh_tw": "椰蛋樹",
     "is_variant": true,
     "sprite": "10114",
-    "form_zh": "椰蛋樹(阿羅拉的樣子)",
+    "form_zh": "椰蛋樹(阿羅拉)",
     "form_en": "Alolan Exeggutor",
     "go_id": "exeggutor_alolan"
   },
@@ -2891,7 +2891,7 @@
     "name_zh_tw": "嘎啦嘎啦",
     "is_variant": true,
     "sprite": "10115",
-    "form_zh": "嘎啦嘎啦(阿羅拉的樣子)",
+    "form_zh": "嘎啦嘎啦(阿羅拉)",
     "form_en": "Alolan Marowak",
     "go_id": "marowak_alolan"
   },
@@ -3009,7 +3009,7 @@
     "name_zh_tw": "雙彈瓦斯",
     "is_variant": true,
     "sprite": "10167",
-    "form_zh": "雙彈瓦斯(伽勒爾的樣子)",
+    "form_zh": "雙彈瓦斯(伽勒爾)",
     "form_en": "Galarian Weezing",
     "go_id": "weezing_galarian"
   },
@@ -3286,7 +3286,7 @@
     "name_zh_tw": "魔牆人偶",
     "is_variant": true,
     "sprite": "10168",
-    "form_zh": "魔牆人偶(伽勒爾的樣子)",
+    "form_zh": "魔牆人偶(伽勒爾)",
     "form_en": "Galarian Mr. Mime",
     "go_id": "mr_mime_galarian"
   },
@@ -3447,7 +3447,7 @@
     "name_zh_tw": "肯泰羅",
     "is_variant": true,
     "sprite": "10250",
-    "form_zh": "肯泰羅(帕底亞的樣子・鬥戰種)",
+    "form_zh": "肯泰羅(帕底亞・鬥戰種)",
     "form_en": "Paldean Tauros (Combat Breed)",
     "go_id": "tauros_combat"
   },
@@ -3470,7 +3470,7 @@
     "name_zh_tw": "肯泰羅",
     "is_variant": true,
     "sprite": "10251",
-    "form_zh": "肯泰羅(帕底亞的樣子・火熾種)",
+    "form_zh": "肯泰羅(帕底亞・火熾種)",
     "form_en": "Paldean Tauros (Blaze Breed)",
     "go_id": "tauros_blaze"
   },
@@ -3493,7 +3493,7 @@
     "name_zh_tw": "肯泰羅",
     "is_variant": true,
     "sprite": "10252",
-    "form_zh": "肯泰羅(帕底亞的樣子・水瀾種)",
+    "form_zh": "肯泰羅(帕底亞・水瀾種)",
     "form_en": "Paldean Tauros (Aqua Breed)",
     "go_id": "tauros_aqua"
   },
@@ -3876,7 +3876,7 @@
     "name_zh_tw": "急凍鳥",
     "is_variant": true,
     "sprite": "10169",
-    "form_zh": "急凍鳥(伽勒爾的樣子)",
+    "form_zh": "急凍鳥(伽勒爾)",
     "form_en": "Galarian Articuno",
     "go_id": "articuno_galarian"
   },
@@ -3919,7 +3919,7 @@
     "name_zh_tw": "閃電鳥",
     "is_variant": true,
     "sprite": "10170",
-    "form_zh": "閃電鳥(伽勒爾的樣子)",
+    "form_zh": "閃電鳥(伽勒爾)",
     "form_en": "Galarian Zapdos",
     "go_id": "zapdos_galarian"
   },
@@ -3962,7 +3962,7 @@
     "name_zh_tw": "火焰鳥",
     "is_variant": true,
     "sprite": "10171",
-    "form_zh": "火焰鳥(伽勒爾的樣子)",
+    "form_zh": "火焰鳥(伽勒爾)",
     "form_en": "Galarian Moltres",
     "go_id": "moltres_galarian"
   },
@@ -4240,7 +4240,7 @@
     "name_zh_tw": "火爆獸",
     "is_variant": true,
     "sprite": "10233",
-    "form_zh": "火爆獸(洗翠的樣子)",
+    "form_zh": "火爆獸(洗翠)",
     "form_en": "Hisuian Typhlosion",
     "go_id": "typhlosion_hisuian"
   },
@@ -5009,7 +5009,7 @@
     "name_zh_tw": "烏波",
     "is_variant": true,
     "sprite": "10253",
-    "form_zh": "烏波(帕底亞的樣子)",
+    "form_zh": "烏波(帕底亞)",
     "form_en": "Paldean Wooper",
     "go_id": "wooper_paldean"
   },
@@ -5130,7 +5130,7 @@
     "name_zh_tw": "呆呆王",
     "is_variant": true,
     "sprite": "10172",
-    "form_zh": "呆呆王(伽勒爾的樣子)",
+    "form_zh": "呆呆王(伽勒爾)",
     "form_en": "Galarian Slowking",
     "go_id": "slowking_galarian"
   },
@@ -5409,7 +5409,7 @@
     "name_zh_tw": "千針魚",
     "is_variant": true,
     "sprite": "10234",
-    "form_zh": "千針魚(洗翠的樣子)",
+    "form_zh": "千針魚(洗翠)",
     "form_en": "Hisuian Qwilfish",
     "go_id": "qwilfish_hisuian"
   },
@@ -5558,7 +5558,7 @@
     "name_zh_tw": "狃拉",
     "is_variant": true,
     "sprite": "10235",
-    "form_zh": "狃拉(洗翠的樣子)",
+    "form_zh": "狃拉(洗翠)",
     "form_en": "Hisuian Sneasel",
     "go_id": "sneasel_hisuian"
   },
@@ -5717,7 +5717,7 @@
     "name_zh_tw": "太陽珊瑚",
     "is_variant": true,
     "sprite": "10173",
-    "form_zh": "太陽珊瑚(伽勒爾的樣子)",
+    "form_zh": "太陽珊瑚(伽勒爾)",
     "form_en": "Galarian Corsola",
     "go_id": "corsola_galarian"
   },
@@ -6651,7 +6651,7 @@
     "name_zh_tw": "蛇紋熊",
     "is_variant": true,
     "sprite": "10174",
-    "form_zh": "蛇紋熊(伽勒爾的樣子)",
+    "form_zh": "蛇紋熊(伽勒爾)",
     "form_en": "Galarian Zigzagoon",
     "go_id": "zigzagoon_galarian"
   },
@@ -6693,7 +6693,7 @@
     "name_zh_tw": "直衝熊",
     "is_variant": true,
     "sprite": "10175",
-    "form_zh": "直衝熊(伽勒爾的樣子)",
+    "form_zh": "直衝熊(伽勒爾)",
     "form_en": "Galarian Linoone",
     "go_id": "linoone_galarian"
   },
@@ -8621,7 +8621,7 @@
     "name_zh_tw": "飄浮泡泡",
     "is_variant": true,
     "sprite": "10013",
-    "form_zh": "飄浮泡泡(太陽的樣子)",
+    "form_zh": "飄浮泡泡(太陽)",
     "form_en": "Sunny Castform",
     "go_id": "castform_sunny"
   },
@@ -8643,7 +8643,7 @@
     "name_zh_tw": "飄浮泡泡",
     "is_variant": true,
     "sprite": "10014",
-    "form_zh": "飄浮泡泡(雨水的樣子)",
+    "form_zh": "飄浮泡泡(雨水)",
     "form_en": "Rainy Castform",
     "go_id": "castform_rainy"
   },
@@ -8665,7 +8665,7 @@
     "name_zh_tw": "飄浮泡泡",
     "is_variant": true,
     "sprite": "10015",
-    "form_zh": "飄浮泡泡(雪雲的樣子)",
+    "form_zh": "飄浮泡泡(雪雲)",
     "form_en": "Snowy Castform",
     "go_id": "castform_snowy"
   },
@@ -9445,7 +9445,7 @@
     "name_zh_tw": "蓋歐卡",
     "is_variant": true,
     "sprite": "10077",
-    "form_zh": "蓋歐卡(原始回歸的樣子)",
+    "form_zh": "蓋歐卡(原始回歸)",
     "form_en": "Primal Kyogre",
     "go_id": "kyogre_primal"
   },
@@ -9487,7 +9487,7 @@
     "name_zh_tw": "固拉多",
     "is_variant": true,
     "sprite": "10078",
-    "form_zh": "固拉多(原始回歸的樣子)",
+    "form_zh": "固拉多(原始回歸)",
     "form_en": "Primal Groudon",
     "go_id": "groudon_primal"
   },
@@ -12346,7 +12346,7 @@
     "name_zh_tw": "大劍鬼",
     "is_variant": true,
     "sprite": "10236",
-    "form_zh": "大劍鬼(洗翠的樣子)",
+    "form_zh": "大劍鬼(洗翠)",
     "form_en": "Hisuian Samurott",
     "go_id": "samurott_hisuian"
   },
@@ -13282,7 +13282,7 @@
     "name_zh_tw": "裙兒小姐",
     "is_variant": true,
     "sprite": "10237",
-    "form_zh": "裙兒小姐(洗翠的樣子)",
+    "form_zh": "裙兒小姐(洗翠)",
     "form_en": "Hisuian Lilligant",
     "go_id": "lilligant_hisuian"
   },
@@ -13323,7 +13323,7 @@
     "name_zh_tw": "野蠻鱸魚",
     "is_variant": true,
     "sprite": "10016",
-    "form_zh": "野蠻鱸魚(藍條紋的樣子)",
+    "form_zh": "野蠻鱸魚(藍條紋)",
     "form_en": "Blue-Striped Basculin"
   },
   {
@@ -13344,7 +13344,7 @@
     "name_zh_tw": "野蠻鱸魚",
     "is_variant": true,
     "sprite": "10247",
-    "form_zh": "野蠻鱸魚(白條紋的樣子)",
+    "form_zh": "野蠻鱸魚(白條紋)",
     "form_en": "White-Striped Basculin"
   },
   {
@@ -13444,7 +13444,7 @@
     "name_zh_tw": "火紅不倒翁",
     "is_variant": true,
     "sprite": "10176",
-    "form_zh": "火紅不倒翁(伽勒爾的樣子)",
+    "form_zh": "火紅不倒翁(伽勒爾)",
     "form_en": "Galarian Darumaka",
     "go_id": "darumaka_galarian"
   },
@@ -13507,7 +13507,7 @@
     "name_zh_tw": "達摩狒狒",
     "is_variant": true,
     "sprite": "10177",
-    "form_zh": "達摩狒狒(伽勒爾的樣子)",
+    "form_zh": "達摩狒狒(伽勒爾)",
     "form_en": "Standard Galarian Darmanitan",
     "go_id": "darmanitan_galarian_standard"
   },
@@ -13530,7 +13530,7 @@
     "name_zh_tw": "達摩狒狒",
     "is_variant": true,
     "sprite": "10178",
-    "form_zh": "達摩狒狒(伽勒爾的樣子・達摩模式)",
+    "form_zh": "達摩狒狒(伽勒爾・達摩模式)",
     "form_en": "Zen Galarian Darmanitan"
   },
   {
@@ -13690,7 +13690,7 @@
     "name_zh_tw": "哭哭面具",
     "is_variant": true,
     "sprite": "10179",
-    "form_zh": "哭哭面具(伽勒爾的樣子)",
+    "form_zh": "哭哭面具(伽勒爾)",
     "form_en": "Galarian Yamask",
     "go_id": "yamask_galarian"
   },
@@ -13870,7 +13870,7 @@
     "name_zh_tw": "索羅亞",
     "is_variant": true,
     "sprite": "10238",
-    "form_zh": "索羅亞(洗翠的樣子)",
+    "form_zh": "索羅亞(洗翠)",
     "form_en": "Hisuian Zorua",
     "go_id": "zorua_hisuian"
   },
@@ -13912,7 +13912,7 @@
     "name_zh_tw": "索羅亞克",
     "is_variant": true,
     "sprite": "10239",
-    "form_zh": "索羅亞克(洗翠的樣子)",
+    "form_zh": "索羅亞克(洗翠)",
     "form_en": "Hisuian Zoroark",
     "go_id": "zoroark_hisuian"
   },
@@ -14846,7 +14846,7 @@
     "name_zh_tw": "泥巴魚",
     "is_variant": true,
     "sprite": "10180",
-    "form_zh": "泥巴魚(伽勒爾的樣子)",
+    "form_zh": "泥巴魚(伽勒爾)",
     "form_en": "Galarian Stunfisk",
     "go_id": "stunfisk_galarian"
   },
@@ -15065,7 +15065,7 @@
     "name_zh_tw": "勇士雄鷹",
     "is_variant": true,
     "sprite": "10240",
-    "form_zh": "勇士雄鷹(洗翠的樣子)",
+    "form_zh": "勇士雄鷹(洗翠)",
     "form_en": "Hisuian Braviary",
     "go_id": "braviary_hisuian"
   },
@@ -15580,7 +15580,7 @@
     "name_zh_tw": "凱路迪歐",
     "is_variant": true,
     "sprite": "10024",
-    "form_zh": "凱路迪歐(覺悟的樣子)",
+    "form_zh": "凱路迪歐(覺悟)",
     "form_en": "Resolute Keldeo",
     "go_id": "keldeo_resolute"
   },
@@ -16035,7 +16035,7 @@
     },
     "is_variant": false,
     "sprite": "668-female",
-    "form_zh": "火炎獅(雌性的樣子)"
+    "form_zh": "火炎獅(雌性)"
   },
   {
     "id": 669,
@@ -16246,7 +16246,7 @@
     "name_zh_tw": "超能妙喵",
     "is_variant": true,
     "sprite": "10025",
-    "form_zh": "超能妙喵(雌性的樣子)",
+    "form_zh": "超能妙喵(雌性)",
     "go_id": "meowstic_female"
   },
   {
@@ -17903,7 +17903,7 @@
     "name_zh_tw": "弱丁魚",
     "is_variant": true,
     "sprite": "10127",
-    "form_zh": "弱丁魚(魚群的樣子)"
+    "form_zh": "弱丁魚(魚群)"
   },
   {
     "id": 747,
@@ -20021,7 +20021,7 @@
     "is_variant": true,
     "sprite": "10184",
     "gmax_sprite": "10228",
-    "form_zh": "顫弦蠑螈(低調的樣子)",
+    "form_zh": "顫弦蠑螈(低調)",
     "form_en": "Low Key Toxtricity"
   },
   {
@@ -20589,7 +20589,7 @@
     "name_zh_tw": "愛管侍",
     "is_variant": true,
     "sprite": "10186",
-    "form_zh": "愛管侍(雌性的樣子)",
+    "form_zh": "愛管侍(雌性)",
     "form_en": "Female Indeedee",
     "go_id": "indeedee_female"
   },
@@ -21151,7 +21151,7 @@
     "name_zh_tw": "蕾冠王",
     "is_variant": true,
     "sprite": "10193",
-    "form_zh": "蕾冠王(騎白馬的樣子)",
+    "form_zh": "蕾冠王(騎白馬)",
     "form_en": "Ice Calyrex"
   },
   {
@@ -21173,7 +21173,7 @@
     "name_zh_tw": "蕾冠王",
     "is_variant": true,
     "sprite": "10194",
-    "form_zh": "蕾冠王(騎黑馬的樣子)",
+    "form_zh": "蕾冠王(騎黑馬)",
     "form_en": "Shadow Calyrex"
   },
   {
@@ -21296,7 +21296,7 @@
     "name_zh_tw": "幽尾玄魚",
     "is_variant": true,
     "sprite": "10248",
-    "form_zh": "幽尾玄魚(雌性的樣子)",
+    "form_zh": "幽尾玄魚(雌性)",
     "form_en": "Female Basculegion"
   },
   {
@@ -21612,7 +21612,7 @@
     "name_zh_tw": "飄香豚",
     "is_variant": true,
     "sprite": "10254",
-    "form_zh": "飄香豚(雌性的樣子)",
+    "form_zh": "飄香豚(雌性)",
     "form_en": "Female Oinkologne",
     "go_id": "oinkologne_female"
   },
