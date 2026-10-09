@@ -154,9 +154,23 @@ function CardViewer({ cards, index, name, prices, priceDate, onIndex, onClose })
   );
 }
 
+const DESKTOP = window.matchMedia("(min-width: 860px)");
+
+function useDesktop() {
+  const [desktop, setDesktop] = useState(DESKTOP.matches);
+  useEffect(() => {
+    const onChange = (e) => setDesktop(e.matches);
+    DESKTOP.addEventListener("change", onChange);
+    return () => DESKTOP.removeEventListener("change", onChange);
+  }, []);
+  return desktop;
+}
+
 function CardsPanel({ dex, name }) {
   const [all, setAll] = useState(null);
-  const [open, setOpen] = useState(false);
+  const [toggled, setToggled] = useState(false);
+  const desktop = useDesktop();
+  const open = desktop || toggled;
   const [viewing, setViewing] = useState(null);
   const drag = useRef(null);
 
@@ -215,25 +229,27 @@ function CardsPanel({ dex, name }) {
 
   const toggle = () => {
     if (!open) for (const card of cards) preload(`${PROXY}${card.img}/low.webp`);
-    setOpen((v) => !v);
+    setToggled((v) => !v);
   };
 
   return (
     <section className="panel">
       <h3 className="panel-title">卡牌</h3>
       <div className={`matchup-block card-block ${open ? "is-open" : ""}`}>
-        <button type="button" className="matchup-toggle" aria-expanded={open} onClick={toggle}>
-          {open ? (
-            "收卡"
-          ) : (
-            <>
-              發卡
-              <span className="card-count" aria-label={`${cards.length} 張`}>
-                {cards.length}
-              </span>
-            </>
-          )}
-        </button>
+        {!desktop && (
+          <button type="button" className="matchup-toggle" aria-expanded={open} onClick={toggle}>
+            {open ? (
+              "收卡"
+            ) : (
+              <>
+                發卡
+                <span className="card-count" aria-label={`${cards.length} 張`}>
+                  {cards.length}
+                </span>
+              </>
+            )}
+          </button>
+        )}
         {open && visible.length === 0 && <p className="card-loading">此寶可夢暫搜尋不到卡牌</p>}
         {open && visible.length > 0 && (
           <ul

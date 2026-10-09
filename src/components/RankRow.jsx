@@ -24,18 +24,13 @@ function RankRow({ rank, pokemon, tags = [], note, moveset, moves, matchups, cou
               <TypeBadges types={pokemon.types} />
             </span>
             {note && <span className="rank-note">{note}</span>}
-            {(tags.length > 0 || moveset) && (
+            {tags.length > 0 && (
               <span className="rank-meta">
                 {tags.map((tag) => (
                   <span key={tag.label} className={`league-tag ${tag.active ? "is-active" : ""}`}>
                     {tag.label}
                   </span>
                 ))}
-                {moveset && (
-                  <span className="rank-moves-inline">
-                    <MoveChips moveset={moveset} moves={moves} />
-                  </span>
-                )}
               </span>
             )}
           </span>

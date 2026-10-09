@@ -122,6 +122,8 @@ function TypeView({ type, type2, onChange, onSelect }) {
                       label: `${short} #${entry[cap][0]}`,
                       active: cap === league,
                     }))}
+                    moveset={entry[league][2]}
+                    moves={data.moves}
                     matchups={entry[league][4].map((i) => data.ids[i])}
                     counters={entry[league][5].map((i) => data.ids[i])}
                     onSelect={onSelect}

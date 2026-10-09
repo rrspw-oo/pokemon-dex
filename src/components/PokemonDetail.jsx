@@ -225,41 +225,40 @@ function PokemonDetail({ pokemon, onSelect, onBack, backLabel, onTypeClick }) {
 
   return (
     <article className="detail">
-      <section className="panel detail-main">
-        <div className="detail-head">
-          <button type="button" className="nav-back" onClick={onBack}>
-            <span className="chevron-left" aria-hidden="true" />
-            {backLabel}
-          </button>
-          <span className="detail-meta">
-            <span className="dex-no">{formatId(pokemon.id)}</span>
-            <TypeBadges types={pokemon.types} onTypeClick={pokemon.isCustom ? undefined : onTypeClick} />
-          </span>
-        </div>
-        <div className={`sprite-tile sprite-tile-large ${mode}`}>
-          <Sprite key={urls[0]} urls={urls} alt={`${pokemon.zh} ${pokemon.en}`} eager />
-        </div>
-        <h2 className="detail-zh">{pokemon.zh}</h2>
-        <p className="detail-en">{pokemon.en}</p>
-
-        {modes.length > 1 && (
-          <div className="segmented" role="group" aria-label="外觀">
-            {modes.map(([m, label]) => (
-              <button
-                key={m}
-                type="button"
-                className={mode === m ? "is-on" : ""}
-                aria-pressed={mode === m}
-                onClick={() => setMode(m)}
-              >
-                {label}
-              </button>
-            ))}
+      <div className="detail-col detail-col-a">
+        <section className="panel detail-main">
+          <div className="detail-head">
+            <button type="button" className="nav-back" onClick={onBack}>
+              <span className="chevron-left" aria-hidden="true" />
+              {backLabel}
+            </button>
+            <span className="detail-meta">
+              <span className="dex-no">{formatId(pokemon.id)}</span>
+              <TypeBadges types={pokemon.types} onTypeClick={pokemon.isCustom ? undefined : onTypeClick} />
+            </span>
           </div>
-        )}
-      </section>
+          <div className={`sprite-tile sprite-tile-large ${mode}`}>
+            <Sprite key={urls[0]} urls={urls} alt={`${pokemon.zh} ${pokemon.en}`} eager />
+          </div>
+          <h2 className="detail-zh">{pokemon.zh}</h2>
+          <p className="detail-en">{pokemon.en}</p>
 
-      <div className="detail-side">
+          {modes.length > 1 && (
+            <div className="segmented" role="group" aria-label="外觀">
+              {modes.map(([m, label]) => (
+                <button
+                  key={m}
+                  type="button"
+                  className={mode === m ? "is-on" : ""}
+                  aria-pressed={mode === m}
+                  onClick={() => setMode(m)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
         {!pokemon.isCustom && <EvolutionPanel pokemon={pokemon} family={family} onSelect={onSelect} />}
         {formChanges && <FormChangePanel pokemon={pokemon} formChanges={formChanges} onSelect={onSelect} />}
         {otherForms.length > 0 && (
@@ -272,6 +271,8 @@ function PokemonDetail({ pokemon, onSelect, onBack, backLabel, onTypeClick }) {
             </div>
           </section>
         )}
+      </div>
+      <div className="detail-col detail-col-b">
         {pokemon.goId && <PvpPanel goId={pokemon.goId} onSelect={onSelect} />}
         {!pokemon.isCustom && <CardsPanel key={pokemon.key} dex={pokemon.id} name={pokemon.zh} />}
       </div>
