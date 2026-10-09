@@ -23,9 +23,17 @@ async function getJson(url) {
   throw new Error(`Failed: ${url}`);
 }
 
+function pickDetail(details = []) {
+  return (
+    details.find((d) => d.is_default) ||
+    details.find((d) => d.trigger?.name === "use-item") ||
+    details[details.length - 1]
+  );
+}
+
 function flattenChain(node, stage = 0, acc = []) {
-  const detail = node.evolution_details && node.evolution_details[0];
-  acc.push({
+  const detail = pickDetail(node.evolution_details);
+  const entry = {
     id: idFromUrl(node.species.url),
     name: node.species.name,
     stage,
@@ -34,7 +42,13 @@ function flattenChain(node, stage = 0, acc = []) {
     item: detail?.item?.name || null,
     minHappiness: detail?.min_happiness || null,
     timeOfDay: detail?.time_of_day || null,
-  });
+    heldItem: detail?.held_item?.name || null,
+    knownMoveType: detail?.known_move_type?.name || null,
+    knownMove: detail?.known_move?.name || null,
+    minAffection: detail?.min_affection || null,
+    nearSpecialRock: detail?.near_special_rock || null,
+  };
+  acc.push(Object.fromEntries(Object.entries(entry).filter(([, v]) => v != null)));
   for (const next of node.evolves_to || []) flattenChain(next, stage + 1, acc);
   return acc;
 }
