@@ -801,13 +801,8 @@ p {
   font-size: 12px;
 }
 
-.collab {
-  margin-top: 6px;
-  font-size: 12px;
-}
-
-.collab a {
-  color: var(--shell-ink);
+.copyright a {
+  color: inherit;
 }
 
 .disclaimer {
@@ -976,8 +971,8 @@ p {
   height: 20px;
   margin-left: 8px;
   border-radius: 50%;
-  background: var(--ink);
-  color: var(--paper-hi);
+  background: var(--highlight);
+  color: var(--ink);
   font-family: var(--font-pixel);
   font-size: 9px;
 }

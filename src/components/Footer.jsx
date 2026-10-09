@@ -10,12 +10,15 @@ function Footer() {
         <span />
       </div>
       <div className="footer-text">
-        <p className="copyright">© 2025 R_R · MIT License</p>
+        <p className="copyright">
+          © 2025{" "}
+          <a href="mailto:wpsrrr@gmail.com" title="collab">
+            R_R
+          </a>{" "}
+          · MIT License
+        </p>
         <p className="disclaimer">
           Pokémon 及相關名稱、圖像之版權屬於 Nintendo、Creatures、GAME FREAK、The Pokémon Company 與 Niantic。資料來源：PokeAPI、PvPoke、PokeMiners、TCGdex。
-        </p>
-        <p className="collab">
-          <a href="mailto:wpsrrr@gmail.com">collab</a>
         </p>
       </div>
     </footer>
