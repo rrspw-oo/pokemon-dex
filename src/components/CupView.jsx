@@ -3,6 +3,7 @@ import RankRow from "./RankRow";
 import LeagueIcon from "./LeagueIcon";
 import { useCupsData } from "../services/pvpData";
 import { getPokemonByGoId } from "../services/pokemonApi";
+import { useLang, useT } from "../i18n";
 
 const LEAGUE_GROUPS = [
   { cp: 500, icon: "little", name: "小小盃", sub: "CP 500" },
@@ -12,15 +13,21 @@ const LEAGUE_GROUPS = [
 ];
 
 const groupOf = (cp) => LEAGUE_GROUPS.find((g) => g.cp === cp);
-const REMIX = /(Remix|Rmix)$/;
+const REMIX = /\s?(Remix|Rmix)$/;
 const listName = (zh) =>
   zh.replace(/：(超級|高級|大師)聯盟版|：迷你版|HLVer\.|^(UL|ML)(?=紀念)/g, "").replace(/(.)小小盃/, "$1盃");
+const listNameEn = (en) =>
+  en
+    .replace(/: (Great|Ultra|Master) League Edition|: Little Edition|^(UL|ML) (?=Premier Classic)/g, "")
+    .replace(/^Little (?=\S+ Cup)/, "");
 
-function CupName({ zh }) {
-  const [name, sub] = listName(zh).replace(REMIX, "").split("：");
+function CupName({ cup }) {
+  const lang = useLang();
+  const full = lang === "en" ? cup.en : cup.zh;
+  const [name, sub] = (lang === "en" ? listNameEn(full) : listName(full)).replace(REMIX, "").split(/：|: /);
   return (
     <span className="cup-name">
-      {REMIX.test(zh) ? (
+      {REMIX.test(full) ? (
         <>
           {name.slice(0, -1)}
           <span className="cup-name-tail">
@@ -41,11 +48,12 @@ function CupIcon({ icon }) {
 }
 
 function CupList({ cups, league, onLeague, onOpen }) {
+  const t = useT();
   const group = groupOf(league);
   const list = cups.filter((c) => c.cp === league);
   return (
     <>
-      <div className="league-picker" role="group" aria-label="聯盟">
+      <div className="league-picker" role="group" aria-label={t("聯盟")}>
         {LEAGUE_GROUPS.map((g) => (
           <button
             key={g.cp}
@@ -55,25 +63,25 @@ function CupList({ cups, league, onLeague, onOpen }) {
             onClick={() => onLeague(g.cp)}
           >
             <LeagueIcon league={g.icon} />
-            <span className="league-option-name">{g.name}</span>
-            <span className="league-option-sub">{g.sub}</span>
+            <span className="league-option-name">{t(g.name)}</span>
+            <span className="league-option-sub">{t(g.sub)}</span>
           </button>
         ))}
       </div>
       {group && (
         <div className="panel">
           <h3 className="panel-title">
-            {group.name} {group.sub} 的盃賽
+            {t("{name} {sub} 的盃賽", { name: t(group.name), sub: t(group.sub) })}
           </h3>
           <div className="cup-grid">
             {list.map((cup) => (
               <button key={cup.id} type="button" className="cup-card" onClick={() => onOpen(cup.id)}>
                 <CupIcon icon={cup.icon} />
-                <CupName zh={cup.zh} />
+                <CupName cup={cup} />
                 {cup.diff && (
                   <span className="cup-rule">
-                    <span>多禁 {cup.diff.removed.length} 種</span>
-                    {cup.diff.added.length > 0 && <span>多開放 {cup.diff.added.length} 種</span>}
+                    <span>{t("多禁 {n} 種", { n: cup.diff.removed.length })}</span>
+                    {cup.diff.added.length > 0 && <span>{t("多開放 {n} 種", { n: cup.diff.added.length })}</span>}
                   </span>
                 )}
               </button>
@@ -85,19 +93,21 @@ function CupList({ cups, league, onLeague, onOpen }) {
   );
 }
 
-function megaNote(info) {
+function megaNote(info, t) {
   if (!info) return null;
   const [iv, , cp, baseCp] = info;
   return (
     <>
-      <span>進化前 CP {baseCp}</span>
-      <span>超級進化 CP {cp}</span>
+      <span>{t("進化前 CP {cp}", { cp: baseCp })}</span>
+      <span>{t("超級進化 CP {cp}", { cp })}</span>
       <span>IV {iv.join("/")}</span>
     </>
   );
 }
 
 function CupDetail({ cup, data, onBack, onSelect }) {
+  const t = useT();
+  const en = useLang() === "en";
   const [megaOnly, setMegaOnly] = useState(false);
   const ids = (list) => list.map((i) => data.ids[i]);
   const group = groupOf(cup.cp);
@@ -108,29 +118,35 @@ function CupDetail({ cup, data, onBack, onSelect }) {
         <div className="cup-head">
           <button type="button" className="nav-back" onClick={onBack}>
             <span className="chevron-left" aria-hidden="true" />
-            {group ? group.name : "全部盃賽"}
+            {t(group ? group.name : "全部盃賽")}
           </button>
         </div>
         <h3 className="cup-title">
           <CupIcon icon={cup.icon} />
-          {cup.zh}
+          {en ? cup.en : cup.zh}
         </h3>
         <ul className="cup-rules">
-          {cup.rules.map((rule) => (
+          {(en ? cup.rulesEn : cup.rules).map((rule) => (
             <li key={rule}>{rule}</li>
           ))}
         </ul>
         {cup.diff && (
           <div className="cup-diff">
-            <p>比{cup.diff.base}多禁：{cup.diff.removed.join("、")}</p>
-            {cup.diff.added.length > 0 && <p>多開放：{cup.diff.added.join("、")}</p>}
+            <p>
+              {en
+                ? t("比{base}多禁：{list}", { base: cup.diff.baseEn, list: cup.diff.removedEn.join(", ") })
+                : t("比{base}多禁：{list}", { base: cup.diff.base, list: cup.diff.removed.join("、") })}
+            </p>
+            {cup.diff.added.length > 0 && (
+              <p>{t("多開放：{list}", { list: en ? cup.diff.addedEn.join(", ") : cup.diff.added.join("、") })}</p>
+            )}
           </div>
         )}
       </div>
       <div className="panel">
-        <h3 className="panel-title">推薦排名</h3>
+        <h3 className="panel-title">{t("推薦排名")}</h3>
         {cup.megaTop && (
-          <div className="segmented rank-filter" role="group" aria-label="排名範圍">
+          <div className="segmented rank-filter" role="group" aria-label={t("排名範圍")}>
             {[
               [false, "全部"],
               [true, "只看超級進化"],
@@ -142,7 +158,7 @@ function CupDetail({ cup, data, onBack, onSelect }) {
                 aria-pressed={megaOnly === value}
                 onClick={() => setMegaOnly(value)}
               >
-                {label}
+                {t(label)}
               </button>
             ))}
           </div>
@@ -156,7 +172,7 @@ function CupDetail({ cup, data, onBack, onSelect }) {
                 key={`${pokemon.key}-${i}`}
                 rank={megaOnly ? rank : i + 1}
                 pokemon={pokemon}
-                note={megaOnly && megaNote(info)}
+                note={megaOnly && megaNote(info, t)}
                 moveset={moveset}
                 moves={data.moves}
                 matchups={ids(matchups)}
@@ -172,8 +188,9 @@ function CupDetail({ cup, data, onBack, onSelect }) {
 }
 
 function CupView({ cupId, league, onLeague, onOpen, onBack, onSelect }) {
+  const t = useT();
   const data = useCupsData();
-  if (!data) return <p className="message">載入中</p>;
+  if (!data) return <p className="message">{t("載入中")}</p>;
   const cup = cupId && data.cups.find((c) => c.id === cupId);
   return (
     <section className="cup-view">

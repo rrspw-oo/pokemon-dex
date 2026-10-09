@@ -30,8 +30,8 @@ const PVPOKE_CUP = {
   COMBAT_LEAGUE_VS_SEEKER_MASTER_MEGAS: ["mega", 10000],
 };
 const TITLE_FALLBACK = {
-  COMBAT_LEAGUE_VS_SEEKER_GREAT_MEGAS: "超級聯盟：超級版",
-  COMBAT_LEAGUE_VS_SEEKER_ULTRA_MEGAS: "高級聯盟：超級版",
+  COMBAT_LEAGUE_VS_SEEKER_GREAT_MEGAS: ["超級聯盟：超級版", "Great League: Mega Edition"],
+  COMBAT_LEAGUE_VS_SEEKER_ULTRA_MEGAS: ["高級聯盟：超級版", "Ultra League: Mega Edition"],
 };
 const MEGA_ID = /_mega(_[xy])?$|_primal$/;
 const STANDARD = {
@@ -92,15 +92,19 @@ async function main() {
     "https://raw.githubusercontent.com/PokeMiners/pogo_assets/master/Texts/Latest%20APK/JSON/i18n_chinesetraditional.json",
     "i18n_chinesetraditional.json"
   );
+  const textsEnRaw = await load(
+    "https://raw.githubusercontent.com/PokeMiners/pogo_assets/master/Texts/Latest%20APK/JSON/i18n_english.json",
+    "i18n_english.json"
+  );
   const pvpoke = await load(`${PVPOKE}/gamemaster.min.json`, "pvpoke_gamemaster.json");
   const pvp = JSON.parse(readFileSync(PVP, "utf8"));
-  const zhByGoId = new Map(
-    JSON.parse(readFileSync(DB, "utf8"))
-      .filter((r) => r.go_id)
-      .map((r) => [r.go_id, r.form_zh || r.name_zh_tw])
-  );
+  const linkedRecords = JSON.parse(readFileSync(DB, "utf8")).filter((r) => r.go_id);
+  const zhByGoId = new Map(linkedRecords.map((r) => [r.go_id, r.form_zh || r.name_zh_tw]));
+  const enByGoId = new Map(linkedRecords.map((r) => [r.go_id, r.form_en || r.name_en]));
   const t = new Map();
   for (let i = 0; i < textsRaw.data.length; i += 2) t.set(textsRaw.data[i].toLowerCase(), textsRaw.data[i + 1]);
+  const tEn = new Map();
+  for (let i = 0; i < textsEnRaw.data.length; i += 2) tEn.set(textsEnRaw.data[i].toLowerCase(), textsEnRaw.data[i + 1]);
 
   const goNameByDex = new Map();
   for (const tpl of gm) {
@@ -126,13 +130,19 @@ async function main() {
     (p) => p.released !== false && !p.speciesId.includes("_shadow") && !p.tags?.includes("mega") && goNameByDex.has(p.dex)
   );
   const zhOf = (p) => zhByGoId.get(p.speciesId) || p.speciesName;
+  const enOf = (p) => enByGoId.get(p.speciesId) || p.speciesName;
+  const enByZh = new Map(pool.map((p) => [zhOf(p), enOf(p)]));
   const allowedByCup = new Map();
 
   const seenTitles = new Set();
   const leagues = gm
     .filter((tpl) => tpl.data.combatLeague && tpl.templateId.startsWith("COMBAT_LEAGUE_VS_SEEKER_"))
     .reverse()
-    .map((tpl) => ({ id: tpl.templateId, league: tpl.data.combatLeague, zh: t.get(tpl.data.combatLeague.title.toLowerCase()) || TITLE_FALLBACK[tpl.templateId] }))
+    .map((tpl) => {
+      const key = tpl.data.combatLeague.title.toLowerCase();
+      const fallback = TITLE_FALLBACK[tpl.templateId] || [];
+      return { id: tpl.templateId, league: tpl.data.combatLeague, zh: t.get(key) || fallback[0], en: tEn.get(key) || fallback[1] };
+    })
     .filter((l) => {
       if (!l.zh || seenTitles.has(l.zh)) return false;
       seenTitles.add(l.zh);
@@ -141,7 +151,7 @@ async function main() {
     .reverse();
 
   const cups = [];
-  for (const { id, league, zh } of leagues) {
+  for (const { id, league, zh, en } of leagues) {
     const conds = league.pokemonCondition || [];
     const maxCp = conds.find((c) => c.withPokemonCpLimit)?.withPokemonCpLimit.maxCp || 10000;
     const cp = leagueCp(maxCp);
@@ -209,9 +219,20 @@ async function main() {
     }
     if (top.length === 0) continue;
 
-    const rules = [maxCp >= 6000 ? "無 CP 上限" : `CP 上限 ${maxCp}`];
-    if (types) rules.push(`限 ${types.map((x) => t.get(`pokemon_type_${x}`) || x).join("、")} 屬性`);
-    if (whitelist) rules.push(`限指定的 ${new Set(whitelist.map((e) => e.id)).size} 種寶可夢`);
+    const rules = [];
+    const rulesEn = [];
+    const rule = (zhRule, enRule) => {
+      rules.push(zhRule);
+      rulesEn.push(enRule);
+    };
+    const typeZh = (x) => t.get(`pokemon_type_${x}`) || x;
+    const typeEn = (x) => tEn.get(`pokemon_type_${x}`) || x;
+    rule(maxCp >= 6000 ? "無 CP 上限" : `CP 上限 ${maxCp}`, maxCp >= 6000 ? "No CP limit" : `CP limit ${maxCp}`);
+    if (types) rule(`限 ${types.map(typeZh).join("、")} 屬性`, `${types.map(typeEn).join(", ")} types only`);
+    if (whitelist) {
+      const n = new Set(whitelist.map((e) => e.id)).size;
+      rule(`限指定的 ${n} 種寶可夢`, `Only ${n} listed Pokémon`);
+    }
     if (banlist.length) {
       const isBanned = (p) =>
         banned.has(goNameByDex.get(p.dex)) || matchesList(banlist, p, goNameByDex.get(p.dex));
@@ -221,33 +242,48 @@ async function main() {
         const ofType = pool.filter((p) => p.types.includes(type));
         return ofType.length >= 3 && ofType.filter(isBanned).length / ofType.length >= 0.95;
       });
-      const exceptions = pool
-        .filter((p) => p.types.some((x) => bannedTypes.includes(x)) && !isBanned(p))
-        .map(zhOf);
+      const exceptionPool = pool.filter((p) => p.types.some((x) => bannedTypes.includes(x)) && !isBanned(p));
+      const exceptions = exceptionPool.map(zhOf);
+      const exceptionsEn = exceptionPool.map(enOf);
       const others = new Set(
         pool.filter((p) => inBanlist(p) && !p.types.some((x) => bannedTypes.includes(x))).map((p) => p.dex)
       ).size;
       if (bannedTypes.length) {
-        const names = bannedTypes.map((x) => t.get(`pokemon_type_${x}`) || x).join("、");
-        rules.push(`禁用 ${names} 屬性${exceptions.length ? `（${exceptions.join("、")}除外）` : ""}`);
+        rule(
+          `禁用 ${bannedTypes.map(typeZh).join("、")} 屬性${exceptions.length ? `（${exceptions.join("、")}除外）` : ""}`,
+          `${bannedTypes.map(typeEn).join(", ")} types banned${exceptionsEn.length ? ` (except ${exceptionsEn.join(", ")})` : ""}`
+        );
       }
-      if (others) rules.push(`另禁用 ${others} 種寶可夢`);
+      if (others) rule(`另禁用 ${others} 種寶可夢`, `${others} more Pokémon banned`);
     }
-    if (maxLevel && maxLevel < 51) rules.push(`等級上限 ${maxLevel}`);
-    if (caughtWindow) rules.push("限賽季期間捕捉的寶可夢");
-    if (banned.has("MEWTWO") || banned.has("MEW")) rules.push("禁用傳說、幻之寶可夢等");
-    else if (banned.size > 2) rules.push(`禁用 ${banned.size} 種寶可夢`);
-    else if (banned.size) rules.push(`禁用 ${[...banned].map((name) => zhByGoId.get(name.toLowerCase()) || t.get(`pokemon_name_${String(dexByGoName.get(name)).padStart(4, "0")}`) || name).join("、")}`);
-    if (league.allowTempEvos) rules.push(maxCp < 6000 ? "可超級進化，CP 超過上限時對戰中自動調降" : "可超級進化");
+    if (maxLevel && maxLevel < 51) rule(`等級上限 ${maxLevel}`, `Level cap ${maxLevel}`);
+    if (caughtWindow) rule("限賽季期間捕捉的寶可夢", "Caught this season only");
+    if (banned.has("MEWTWO") || banned.has("MEW")) rule("禁用傳說、幻之寶可夢等", "Legendary and Mythical Pokémon banned");
+    else if (banned.size > 2) rule(`禁用 ${banned.size} 種寶可夢`, `${banned.size} Pokémon banned`);
+    else if (banned.size) {
+      const nameKey = (name) => `pokemon_name_${String(dexByGoName.get(name)).padStart(4, "0")}`;
+      rule(
+        `禁用 ${[...banned].map((name) => zhByGoId.get(name.toLowerCase()) || t.get(nameKey(name)) || name).join("、")}`,
+        `${[...banned].map((name) => enByGoId.get(name.toLowerCase()) || tEn.get(nameKey(name)) || name).join(", ")} banned`
+      );
+    }
+    if (league.allowTempEvos) {
+      rule(
+        maxCp < 6000 ? "可超級進化，CP 超過上限時對戰中自動調降" : "可超級進化",
+        maxCp < 6000 ? "Mega Evolution allowed, CP above the cap is lowered in battle" : "Mega Evolution allowed"
+      );
+    }
 
     allowedByCup.set(zh.replace(/\s+/g, ""), new Set(pool.filter((p) => eligible(p.speciesId)).map(zhOf)));
     cups.push({
       id: id.replace("COMBAT_LEAGUE_VS_SEEKER_", "").toLowerCase(),
       zh: zh.replace(/\s+/g, ""),
+      en,
       cp,
       standard: Boolean(STANDARD[id]),
       icon: await cupIcon(league.iconUrl),
       rules,
+      rulesEn,
       source: source ? "pvpoke" : "derived",
       top,
       ...(megaTop.length ? { megaTop } : {}),
@@ -261,7 +297,14 @@ async function main() {
     const own = allowedByCup.get(cup.zh);
     const removed = [...base].filter((n) => !own.has(n));
     const added = [...own].filter((n) => !base.has(n));
-    cup.diff = { base: baseZh, removed, added };
+    cup.diff = {
+      base: baseZh,
+      baseEn: cups.find((c) => c.zh === baseZh).en,
+      removed,
+      added,
+      removedEn: removed.map((n) => enByZh.get(n)),
+      addedEn: added.map((n) => enByZh.get(n)),
+    };
   }
 
   cups.sort((a, b) => b.standard - a.standard || a.cp - b.cp || a.zh.localeCompare(b.zh, "zh-Hant"));

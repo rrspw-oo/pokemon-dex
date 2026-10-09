@@ -6,9 +6,13 @@ import TypeView from "./components/TypeView";
 import CupView from "./components/CupView";
 import Footer from "./components/Footer";
 import { searchPokemon, getPokemonByKey } from "./services/pokemonApi";
+import { LangContext, initialLang, translate } from "./i18n";
 
 const PAGE_SIZE = 12;
-const EXAMPLES = ["皮卡丘", "#150", "阿羅拉", "惡屬性", "捕捉惡屬性", "誘餌"];
+const EXAMPLES = {
+  zh: ["皮卡丘", "#150", "阿羅拉", "惡屬性", "捕捉惡屬性", "誘餌"],
+  en: ["Pikachu", "#150", "Alolan", "Dark type", "Catch Dark", "Lure"],
+};
 const TABS = [
   ["dex", "圖鑑"],
   ["types", "屬性"],
@@ -33,6 +37,22 @@ function App() {
   const [nav, setNav] = useState(() => navFromState(window.history.state));
   const [resetKey, setResetKey] = useState(0);
   const [presetQuery, setPresetQuery] = useState("");
+  const [lang, setLang] = useState(initialLang);
+  const t = (text, vars) => translate(lang, text, vars);
+
+  useEffect(() => {
+    document.documentElement.lang = lang === "en" ? "en" : "zh-Hant-TW";
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("lang")) {
+      url.searchParams.set("lang", lang);
+      window.history.replaceState(window.history.state, "", url);
+    }
+    try {
+      window.localStorage.setItem("lang", lang);
+    } catch {
+      return;
+    }
+  }, [lang]);
 
   const selected = nav.pokemonKey == null ? null : getPokemonByKey(nav.pokemonKey);
 
@@ -113,7 +133,7 @@ function App() {
           pokemon={selected}
           onSelect={openDetail}
           onTypeClick={(type) => openType(type)}
-          backLabel={BACK_LABELS[nav.from] || "返回"}
+          backLabel={t(BACK_LABELS[nav.from] || "返回")}
           onBack={() => window.history.back()}
         />
       );
@@ -144,7 +164,7 @@ function App() {
       return (
         <section className="home">
           <div className="chips">
-            {EXAMPLES.map((ex) => (
+            {EXAMPLES[lang].map((ex) => (
               <button key={ex} type="button" className="chip" onClick={() => runExample(ex)}>
                 {ex}
               </button>
@@ -153,7 +173,7 @@ function App() {
         </section>
       );
     }
-    if (results.length === 0) return <p className="message">找不到「{query}」相關的寶可夢</p>;
+    if (results.length === 0) return <p className="message">{t("找不到「{query}」相關的寶可夢", { query })}</p>;
     return (
       <PokemonGrid
         pokemon={results}
@@ -165,14 +185,32 @@ function App() {
   };
 
   return (
+    <LangContext.Provider value={lang}>
     <div className="shell">
       <header className="bezel">
         <span className="power-led" aria-hidden="true" />
         <h1 className="title">
-          <button type="button" onClick={reset} aria-label="重設搜尋">
+          <button type="button" onClick={reset} aria-label={t("重設搜尋")}>
             Pok<span className="title-acute">e</span>mon OmniSearch
           </button>
         </h1>
+        <div className="lang-switch" role="group" aria-label={t("語言")}>
+          {[
+            ["zh", "TW", "繁體中文"],
+            ["en", "EN", "English"],
+          ].map(([value, label, name]) => (
+            <button
+              key={value}
+              type="button"
+              aria-label={name}
+              className={lang === value ? "is-on" : ""}
+              aria-pressed={lang === value}
+              onClick={() => setLang(value)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </header>
 
       <main className="screen">
@@ -183,7 +221,7 @@ function App() {
           presetQuery={presetQuery}
         />
 
-        <nav className="tabs" aria-label="功能">
+        <nav className="tabs" aria-label={t("功能")}>
           {TABS.map(([view, label]) => (
             <button
               key={view}
@@ -192,7 +230,7 @@ function App() {
               aria-current={nav.view === view ? "page" : undefined}
               onClick={() => go({ view })}
             >
-              {label}
+              {t(label)}
             </button>
           ))}
         </nav>
@@ -202,6 +240,7 @@ function App() {
 
       <Footer />
     </div>
+    </LangContext.Provider>
   );
 }
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLang, useT } from "../i18n";
 
 const ASSETS = "https://assets.tcgdex.net/";
 const PROXY = "https://wsrv.nl/?url=assets.tcgdex.net/";
@@ -70,6 +71,7 @@ function ViewerImage({ card, alt }) {
 }
 
 function CardViewer({ cards, index, name, prices, priceDate, onIndex, onClose }) {
+  const t = useT();
   const card = cards[index];
   const price = prices[card.img];
   const hasNext = index < cards.length - 1;
@@ -138,15 +140,15 @@ function CardViewer({ cards, index, name, prices, priceDate, onIndex, onClose })
       <div className="card-viewer-actions">
         {hasPrev && (
           <button type="button" className="pixel-button" onClick={step(-1)}>
-            上一張
+            {t("上一張")}
           </button>
         )}
         <button type="button" className="pixel-button" onClick={onClose}>
-          關閉
+          {t("關閉")}
         </button>
         {hasNext && (
           <button type="button" className="pixel-button" onClick={step(1)}>
-            下一張
+            {t("下一張")}
           </button>
         )}
       </div>
@@ -167,6 +169,8 @@ function useDesktop() {
 }
 
 function CardsPanel({ dex, name }) {
+  const t = useT();
+  const lang = useLang();
   const [all, setAll] = useState(null);
   const [toggled, setToggled] = useState(false);
   const desktop = useDesktop();
@@ -182,7 +186,13 @@ function CardsPanel({ dex, name }) {
     };
   }, []);
 
-  const cards = useMemo(() => all?.cards[dex]?.map((img) => toCard(img, all.sets)), [all, dex]);
+  const cards = useMemo(
+    () =>
+      all?.cards[dex]
+        ?.filter((img) => lang !== "en" || img.startsWith("en/"))
+        .map((img) => toCard(img, all.sets)),
+    [all, dex, lang]
+  );
 
   const prices = all?.prices;
   const ordered = useMemo(() => {
@@ -234,23 +244,23 @@ function CardsPanel({ dex, name }) {
 
   return (
     <section className="panel">
-      <h3 className="panel-title">卡牌</h3>
+      <h3 className="panel-title">{t("卡牌")}</h3>
       <div className={`matchup-block card-block ${open ? "is-open" : ""}`}>
         {!desktop && (
           <button type="button" className="matchup-toggle" aria-expanded={open} onClick={toggle}>
             {open ? (
-              "收卡"
+              t("收卡")
             ) : (
               <>
-                發卡
-                <span className="card-count" aria-label={`${cards.length} 張`}>
+                {t("發卡")}
+                <span className="card-count" aria-label={t("{n} 張", { n: cards.length })}>
                   {cards.length}
                 </span>
               </>
             )}
           </button>
         )}
-        {open && visible.length === 0 && <p className="card-loading">此寶可夢暫搜尋不到卡牌</p>}
+        {open && visible.length === 0 && <p className="card-loading">{t("此寶可夢暫搜尋不到卡牌")}</p>}
         {open && visible.length > 0 && (
           <ul
             className="card-strip"
@@ -265,7 +275,7 @@ function CardsPanel({ dex, name }) {
                 <button type="button" className="card-thumb" onClick={() => setViewing(i)}>
                   <CardImage card={card} size="low" alt={`${name} ${card.set} ${card.no}`} lazy onFail={onFail} />
                   <span className="card-meta">
-                    {card.img.startsWith("en/") && <em>EN</em>}
+                    {lang !== "en" && card.img.startsWith("en/") && <em>EN</em>}
                     {card.set}
                   </span>
                   {prices[card.img] && (

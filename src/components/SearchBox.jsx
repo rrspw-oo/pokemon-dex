@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import SearchSuggestions from "./SearchSuggestions";
 import { suggestPokemon } from "../services/pokemonApi";
+import { useT } from "../i18n";
 
 const LIST_ID = "search-suggestions";
 
 function SearchBox({ onSearch, onSelect, resetKey, presetQuery }) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen] = useState(false);
@@ -88,8 +90,8 @@ function SearchBox({ onSearch, onSelect, resetKey, presetQuery }) {
           enterKeyHint="search"
           className="search-input"
           value={query}
-          placeholder="輸入編號、名稱、屬性或進化條件"
-          aria-label="搜尋寶可夢"
+          placeholder={t("輸入編號名稱屬性或進化條件")}
+          aria-label={t("搜尋寶可夢")}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
@@ -110,7 +112,7 @@ function SearchBox({ onSearch, onSelect, resetKey, presetQuery }) {
           }}
         />
         {query && (
-          <button type="button" className="search-clear" aria-label="清除" onClick={clear} onPointerDown={(e) => e.preventDefault()}>
+          <button type="button" className="search-clear" aria-label={t("清除")} onClick={clear} onPointerDown={(e) => e.preventDefault()}>
             ×
           </button>
         )}

@@ -3,7 +3,7 @@ import { searchCustomPokemon, getCustomPokemon } from "../data/customPokemon";
 import { getEvolutionChainForSpecies } from "../utils/evolutionIndex";
 import goEvolutions from "../data/go_evolutions.json";
 import goForms from "../data/go_forms.json";
-import { TYPE_ZH, TYPE_COLOR } from "../utils/types";
+import { TYPE_ZH, TYPE_EN, TYPE_COLOR } from "../utils/types";
 
 const SPRITE_CDN = "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/";
 const SPRITE_RAW = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/";
@@ -13,7 +13,7 @@ const spriteUrls = (stem) => (stem ? [`${SPRITE_RAW}${stem}.png`, `${SPRITE_CDN}
 const toTypes = (types) =>
   types.map((t) => {
     const name = t.toLowerCase();
-    return { name, zh: TYPE_ZH[name] || t, color: TYPE_COLOR[name] || "#68A090" };
+    return { name, zh: TYPE_ZH[name] || t, en: TYPE_EN[name] || t, color: TYPE_COLOR[name] || "#68A090" };
   });
 
 function fromRecord(r) {
@@ -31,6 +31,7 @@ function fromRecord(r) {
     gmaxImage: spriteUrls(r.gmax_sprite),
     goId: r.go_id || null,
     hint: r.hint || null,
+    hintEn: r.hintEn || null,
     isVariant: !!r.is_variant,
     isCustom: false,
   };
@@ -102,9 +103,12 @@ export function getFormChanges(pokemon) {
     return {
       id: f.id,
       options: data.to[f.id] || [],
-      pokemon: record ? fromRecord(record) : { key: `form-${f.id}`, id: pokemon.id, zh: f.zh, image: spriteUrls(f.sprite) },
+      pokemon: record
+        ? fromRecord(record)
+        : { key: `form-${f.id}`, id: pokemon.id, zh: f.zh, en: f.en, image: spriteUrls(f.sprite) },
       linked: !!record,
       label: f.zh,
+      labelEn: f.en,
     };
   });
   return { forms, linkedKeys: new Set(forms.filter((f) => f.linked).map((f) => f.pokemon.key)) };

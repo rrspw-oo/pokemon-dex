@@ -16203,7 +16203,7 @@
   },
   {
     "id": 668,
-    "name_en": "Pyroar ♂",
+    "name_en": "Pyroar",
     "name_zh_tw": "火炎獅",
     "types": [
       "Fire",
@@ -16240,7 +16240,8 @@
     },
     "is_variant": false,
     "sprite": "668-female",
-    "form_zh": "火炎獅(雌性)"
+    "form_zh": "火炎獅(雌性)",
+    "form_en": "Pyroar (Female)"
   },
   {
     "id": 669,
@@ -16416,7 +16417,7 @@
   },
   {
     "id": 678,
-    "name_en": "Meowstic ♂",
+    "name_en": "Meowstic",
     "name_zh_tw": "超能妙喵",
     "types": [
       "Psychic"
@@ -16452,6 +16453,7 @@
     "is_variant": true,
     "sprite": "10025",
     "form_zh": "超能妙喵(雌性)",
+    "form_en": "Meowstic (Female)",
     "go_id": "meowstic_female"
   },
   {
@@ -16496,7 +16498,7 @@
   },
   {
     "id": 681,
-    "name_en": "Aegislash༒",
+    "name_en": "Aegislash",
     "name_zh_tw": "堅盾劍怪",
     "types": [
       "Steel",
@@ -16533,7 +16535,8 @@
     "name_zh_tw": "堅盾劍怪",
     "is_variant": true,
     "sprite": "10026",
-    "form_zh": "堅盾劍怪(刀劍形態)"
+    "form_zh": "堅盾劍怪(刀劍形態)",
+    "form_en": "Aegislash (Blade Forme)"
   },
   {
     "id": 682,
@@ -17331,7 +17334,7 @@
   },
   {
     "id": 718,
-    "name_en": "Zygarde (50%)",
+    "name_en": "Zygarde",
     "name_zh_tw": "基格爾德",
     "types": [
       "Dragon",
@@ -17369,6 +17372,7 @@
     "is_variant": true,
     "sprite": "10118",
     "form_zh": "基格爾德(１０％形態)",
+    "form_en": "Zygarde (10% Forme)",
     "go_id": "zygarde_10"
   },
   {
@@ -17391,6 +17395,7 @@
     "is_variant": true,
     "sprite": "10120",
     "form_zh": "基格爾德(完全體形態)",
+    "form_en": "Zygarde (Complete Forme)",
     "go_id": "zygarde_complete"
   },
   {
@@ -18097,7 +18102,7 @@
   },
   {
     "id": 746,
-    "name_en": "Wishiwashi(solo)",
+    "name_en": "Wishiwashi",
     "name_zh_tw": "弱丁魚",
     "types": [
       "Water"
@@ -18131,7 +18136,8 @@
     "name_zh_tw": "弱丁魚",
     "is_variant": true,
     "sprite": "10127",
-    "form_zh": "弱丁魚(魚群)"
+    "form_zh": "弱丁魚(魚群)",
+    "form_en": "Wishiwashi (School Form)"
   },
   {
     "id": 747,
@@ -18660,7 +18666,7 @@
   },
   {
     "id": 774,
-    "name_en": "Minior(Meteor)",
+    "name_en": "Minior",
     "name_zh_tw": "小隕星",
     "types": [
       "Rock",
@@ -18696,7 +18702,8 @@
     "name_zh_tw": "小隕星",
     "is_variant": true,
     "sprite": "10136",
-    "form_zh": "小隕星(紅色核心)"
+    "form_zh": "小隕星(紅色核心)",
+    "form_en": "Minior (Red Core)"
   },
   {
     "id": 775,

@@ -5,8 +5,11 @@ import PvpPanel from "./PvpPanel";
 import CardsPanel from "./CardsPanel";
 import { getFamily, getFormChanges, getMegas } from "../services/pokemonApi";
 import { formatId } from "../utils/format";
+import { nameOf, useLang, useT } from "../i18n";
 
 function MiniCard({ pokemon, label, current, selected, onClick }) {
+  const lang = useLang();
+  const name = label || nameOf(pokemon, lang);
   return (
     <button
       type="button"
@@ -15,8 +18,8 @@ function MiniCard({ pokemon, label, current, selected, onClick }) {
       aria-pressed={selected === undefined ? undefined : selected}
       aria-current={current ? "true" : undefined}
     >
-      <Sprite key={pokemon.image[0]} urls={pokemon.image} alt={label || pokemon.zh} />
-      <span className="mini-card-zh">{label || pokemon.zh}</span>
+      <Sprite key={pokemon.image[0]} urls={pokemon.image} alt={name} />
+      <span className="mini-card-zh">{name}</span>
     </button>
   );
 }
@@ -52,9 +55,11 @@ function GoBlock({ title, options, emptyText }) {
 }
 
 function GoOpen({ target, onSelect }) {
+  const t = useT();
+  const lang = useLang();
   return (
     <button type="button" className="pixel-button go-open" onClick={() => onSelect(target)}>
-      查看{target.zh} →
+      {t("查看{name}", { name: nameOf(target, lang) })} →
     </button>
   );
 }
@@ -69,16 +74,17 @@ function GoHint({ text }) {
 }
 
 function MegaBlock({ id, current, onSelect }) {
+  const t = useT();
   const megas = getMegas(id);
   if (megas.length === 0) return null;
   const primal = megas.every((m) => m.goId.endsWith("_primal"));
-  const energy = primal ? "能量" : "超級能量";
+  const energy = t(primal ? "能量" : "超級能量");
   const costs = [...new Set(megas.map((m) => `${m.cost}/${m.next}`))];
   return (
     <div className="go-block mega-block">
       <p className="go-condition-title">
         <span className="go-badge">GO</span>
-        {primal ? "原始回歸" : "超級進化"}
+        {t(primal ? "原始回歸" : "超級進化")}
       </p>
       <div className="mega-cards">
         {megas.map((m) => (
@@ -89,12 +95,8 @@ function MegaBlock({ id, current, onSelect }) {
         const [first, next] = cost.split("/");
         return (
           <ul key={cost} className="go-chips">
-            <li>
-              首次 {first} {energy}
-            </li>
-            <li>
-              之後 {next} {energy}
-            </li>
+            <li>{t("首次 {n} {energy}", { n: first, energy })}</li>
+            <li>{t("之後 {n} {energy}", { n: next, energy })}</li>
           </ul>
         );
       })}
@@ -102,10 +104,14 @@ function MegaBlock({ id, current, onSelect }) {
   );
 }
 
-const optionsFrom = (member, fromId) =>
-  (member.go || []).filter((o) => fromId == null || o.from === fromId).map((o) => ({ label: o.form, lines: o.lines }));
+const optionsFrom = (member, fromId, lang) =>
+  (member.go || [])
+    .filter((o) => fromId == null || o.from === fromId)
+    .map((o) => (lang === "en" ? { label: o.formEn, lines: o.en } : { label: o.form, lines: o.lines }));
 
 function EvolutionPanel({ pokemon, family, onSelect }) {
+  const t = useT();
+  const lang = useLang();
   const panelRef = useRef(null);
   const all = family.stages.flatMap((stage, i) => stage.map((m) => ({ ...m, stage: i })));
   const linked = (child, parent) =>
@@ -120,14 +126,14 @@ function EvolutionPanel({ pokemon, family, onSelect }) {
 
   return (
     <section className="panel evo-panel" ref={panelRef}>
-      <h3 className="panel-title">進化</h3>
+      <h3 className="panel-title">{t("進化")}</h3>
       {family.stages.length === 0 ? (
         getMegas(pokemon.id).length > 0 ? (
           <div className="go-condition">
             <MegaBlock id={pokemon.id} current={pokemon.key} onSelect={open} />
           </div>
         ) : (
-          <p className="panel-empty">此寶可夢不會進化</p>
+          <p className="panel-empty">{t("此寶可夢不會進化")}</p>
         )
       ) : (
         <>
@@ -147,23 +153,23 @@ function EvolutionPanel({ pokemon, family, onSelect }) {
             ))}
           </div>
           {nexts.length > 2 ? (
-            <GoHint text="點選進化後的寶可夢查看 Pokémon GO 進化條件" />
+            <GoHint text={t("點選進化後的寶可夢查看 Pokémon GO 進化條件")} />
           ) : (
             <div className="go-condition" aria-live="polite">
               {nexts.map((next) => (
                 <GoBlock
                   key={next.pokemon.key}
-                  title={`進化成${next.pokemon.zh}`}
-                  options={optionsFrom(next, current.pokemon.id)}
-                  emptyText="Pokémon GO 目前沒有這個進化"
+                  title={t("進化成{name}", { name: nameOf(next.pokemon, lang) })}
+                  options={optionsFrom(next, current.pokemon.id, lang)}
+                  emptyText={t("Pokémon GO 目前沒有這個進化")}
                 />
               ))}
               {prevs.map((prev) => (
                 <GoBlock
                   key={prev.pokemon.key}
-                  title={`由${prev.pokemon.zh}進化成${current.pokemon.zh}`}
-                  options={optionsFrom(current, prev.pokemon.id)}
-                  emptyText="Pokémon GO 目前沒有這個進化"
+                  title={t("由{from}進化成{to}", { from: nameOf(prev.pokemon, lang), to: nameOf(current.pokemon, lang) })}
+                  options={optionsFrom(current, prev.pokemon.id, lang)}
+                  emptyText={t("Pokémon GO 目前沒有這個進化")}
                 />
               ))}
               <MegaBlock id={current.pokemon.id} current={pokemon.key} onSelect={open} />
@@ -176,18 +182,21 @@ function EvolutionPanel({ pokemon, family, onSelect }) {
 }
 
 function FormChangePanel({ pokemon, formChanges, onSelect }) {
+  const t = useT();
+  const lang = useLang();
   const [pickedId, setPickedId] = useState(null);
+  const labelOf = (f) => (lang === "en" ? f.labelEn : f.label);
   const picked = formChanges.forms.find((f) => f.id === pickedId);
 
   return (
     <section className="panel">
-      <h3 className="panel-title">型態變化</h3>
+      <h3 className="panel-title">{t("型態變化")}</h3>
       <div className="mini-grid">
         {formChanges.forms.map((f) => (
           <MiniCard
             key={f.id}
             pokemon={f.pokemon}
-            label={f.label}
+            label={labelOf(f)}
             current={f.pokemon.key === pokemon.key}
             selected={f.id === pickedId}
             onClick={() => setPickedId(f.id)}
@@ -197,20 +206,25 @@ function FormChangePanel({ pokemon, formChanges, onSelect }) {
       {picked ? (
         <div className="go-condition" aria-live="polite">
           <GoBlock
-            title={`變換成${picked.label}`}
-            options={picked.options.map((o) => ({ label: o.from && `從${o.from}`, lines: o.lines }))}
-            emptyText="目前無法透過型態變化獲得，在官方有活動時方可進化"
+            title={t("變換成{name}", { name: labelOf(picked) })}
+            options={picked.options.map((o) => ({
+              label: o.from && t("從{name}", { name: lang === "en" ? o.fromEn : o.from }),
+              lines: lang === "en" ? o.en : o.lines,
+            }))}
+            emptyText={t("目前無法透過型態變化獲得在官方有活動時方可進化")}
           />
           {picked.linked && picked.pokemon.key !== pokemon.key && <GoOpen target={picked.pokemon} onSelect={onSelect} />}
         </div>
       ) : (
-        <GoHint text="點選型態查看 Pokémon GO 變換條件" />
+        <GoHint text={t("點選型態查看 Pokémon GO 變換條件")} />
       )}
     </section>
   );
 }
 
 function PokemonDetail({ pokemon, onSelect, onBack, backLabel, onTypeClick }) {
+  const t = useT();
+  const lang = useLang();
   const [mode, setMode] = useState("normal");
   const family = useMemo(() => getFamily(pokemon), [pokemon]);
   const formChanges = useMemo(() => getFormChanges(pokemon), [pokemon]);
@@ -238,13 +252,13 @@ function PokemonDetail({ pokemon, onSelect, onBack, backLabel, onTypeClick }) {
             </span>
           </div>
           <div className={`sprite-tile sprite-tile-large ${mode}`}>
-            <Sprite key={urls[0]} urls={urls} alt={`${pokemon.zh} ${pokemon.en}`} eager />
+            <Sprite key={urls[0]} urls={urls} alt={lang === "en" ? pokemon.en : `${pokemon.zh} ${pokemon.en}`} eager />
           </div>
-          <h2 className="detail-zh">{pokemon.zh}</h2>
-          <p className="detail-en">{pokemon.en}</p>
+          <h2 className="detail-zh">{nameOf(pokemon, lang)}</h2>
+          {lang !== "en" && <p className="detail-en">{pokemon.en}</p>}
 
           {modes.length > 1 && (
-            <div className="segmented" role="group" aria-label="外觀">
+            <div className="segmented" role="group" aria-label={t("外觀")}>
               {modes.map(([m, label]) => (
                 <button
                   key={m}
@@ -253,7 +267,7 @@ function PokemonDetail({ pokemon, onSelect, onBack, backLabel, onTypeClick }) {
                   aria-pressed={mode === m}
                   onClick={() => setMode(m)}
                 >
-                  {label}
+                  {t(label)}
                 </button>
               ))}
             </div>
@@ -263,7 +277,7 @@ function PokemonDetail({ pokemon, onSelect, onBack, backLabel, onTypeClick }) {
         {formChanges && <FormChangePanel pokemon={pokemon} formChanges={formChanges} onSelect={onSelect} />}
         {otherForms.length > 0 && (
           <section className="panel">
-            <h3 className="panel-title">其他型態</h3>
+            <h3 className="panel-title">{t("其他型態")}</h3>
             <div className="mini-grid">
               {otherForms.map((p) => (
                 <MiniCard key={p.key} pokemon={p} onClick={onSelect} />
@@ -274,7 +288,7 @@ function PokemonDetail({ pokemon, onSelect, onBack, backLabel, onTypeClick }) {
       </div>
       <div className="detail-col detail-col-b">
         {pokemon.goId && <PvpPanel goId={pokemon.goId} onSelect={onSelect} />}
-        {!pokemon.isCustom && <CardsPanel key={pokemon.key} dex={pokemon.id} name={pokemon.zh} />}
+        {!pokemon.isCustom && <CardsPanel key={pokemon.key} dex={pokemon.id} name={nameOf(pokemon, lang)} />}
       </div>
     </article>
   );

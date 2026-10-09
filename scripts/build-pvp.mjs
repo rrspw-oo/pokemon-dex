@@ -171,7 +171,7 @@ async function main() {
 
   for (const m of pvpoke.moves) {
     const zh = zhMoves.get(m.moveId) || (m.moveId.startsWith("HIDDEN_POWER") && zhMoves.get("HIDDEN_POWER"));
-    moveOut[m.moveId] = [zh || m.name, m.type, m.energyGain > 0 ? 1 : 0];
+    moveOut[m.moveId] = [zh || m.name, m.type, m.energyGain > 0 ? 1 : 0, m.name];
   }
 
   for (const [id, m] of Object.entries(moveOut)) {

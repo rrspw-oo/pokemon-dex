@@ -10,9 +10,10 @@ const REFRESH = process.argv.includes("--refresh");
 const SOURCES = {
   gameMaster: "https://raw.githubusercontent.com/PokeMiners/game_masters/master/latest/latest.json",
   texts: "https://raw.githubusercontent.com/PokeMiners/pogo_assets/master/Texts/Latest%20APK/JSON/i18n_chinesetraditional.json",
+  textsEn: "https://raw.githubusercontent.com/PokeMiners/pogo_assets/master/Texts/Latest%20APK/JSON/i18n_english.json",
 };
 
-const ITEM_OVERRIDE = { ITEM_OTHER_EVOLUTION_STONE_A: "索財靈的硬幣" };
+const ITEM_OVERRIDE = { ITEM_OTHER_EVOLUTION_STONE_A: ["索財靈的硬幣", "Gimmighoul Coin"] };
 const TEMP_EVO_SUFFIX = {
   TEMP_EVOLUTION_MEGA: "_mega",
   TEMP_EVOLUTION_MEGA_X: "_mega_x",
@@ -20,6 +21,7 @@ const TEMP_EVO_SUFFIX = {
   TEMP_EVOLUTION_PRIMAL: "_primal",
 };
 const REGION_ZH = { ALOLA: "阿羅拉", GALARIAN: "伽勒爾", HISUIAN: "洗翠", PALDEA: "帕底亞" };
+const REGION_EN = { ALOLA: "Alolan", GALARIAN: "Galarian", HISUIAN: "Hisuian", PALDEA: "Paldean" };
 const POKEAPI_FORM = {
   KYUREM_NORMAL: "kyurem",
   HOOPA_CONFINED: "hoopa",
@@ -35,7 +37,7 @@ const POKEAPI_FORM = {
   ZYGARDE_COMPLETE: "zygarde-complete",
   FURFROU_NATURAL: "furfrou",
 };
-const LURE_WEATHER = { ITEM_TROY_DISK_RAINY: "雨天" };
+const LURE_WEATHER = { ITEM_TROY_DISK_RAINY: ["雨天", "rain"] };
 const hasCjk = (s) => /[\u3400-\u9fff]/.test(s || "");
 
 async function load(url, name) {
@@ -49,6 +51,8 @@ async function load(url, name) {
   return JSON.parse(readFileSync(file, "utf8"));
 }
 
+const zhKey = (lines) => lines.map(([zh]) => zh).join("/");
+
 function textLookup(raw) {
   const pairs = raw.data;
   const map = new Map();
@@ -56,74 +60,84 @@ function textLookup(raw) {
   return (key) => map.get(key.toLowerCase());
 }
 
-function questTypes(goal, t) {
+function questTypes(goal, T) {
   for (const c of goal.condition || []) {
     const list = c.withPokemonType?.pokemonType || c.withOpponentPokemonBattleStatus?.opponentPokemonType;
-    if (list) return list.map((x) => t(x.replace("POKEMON_TYPE_", "pokemon_type_")) || x).join("/");
+    if (list) {
+      const keys = list.map((x) => x.replace("POKEMON_TYPE_", "pokemon_type_"));
+      return [keys.map((k) => T.zh(k) || k).join("/"), keys.map((k) => T.en(k) || k).join("/")];
+    }
   }
-  return null;
+  return ["", ""];
 }
 
-function questText(quest, t) {
+function questText(quest, T) {
   const goal = quest.goals[0];
   const n = goal.target;
-  const types = questTypes(goal, t);
+  const [types, typesEn] = questTypes(goal, T);
   const combat = goal.condition?.find((c) => c.withCombatType)?.withCombatType.combatType || [];
-  const where = combat.some((x) => x.includes("MAX")) ? "在團體戰或極巨對戰" : combat.length ? "在團體戰" : "";
+  const max = combat.some((x) => x.includes("MAX"));
+  const where = max ? "在團體戰或極巨對戰" : combat.length ? "在團體戰" : "";
+  const whereEn = max ? " in raids or Max Battles" : combat.length ? " in raids" : "";
   switch (quest.questType) {
     case "QUEST_CATCH_POKEMON":
-      return `設為夥伴捕捉 ${n} 隻${types}屬性`;
+      return [`設為夥伴捕捉 ${n} 隻${types}屬性`, `Catch ${n} ${typesEn}-type with it as buddy`];
     case "QUEST_FIGHT_POKEMON":
     case "QUEST_COMPLETE_BATTLE":
-      return `設為夥伴${where}戰勝 ${n} 隻${types}屬性`;
+      return [`設為夥伴${where}戰勝 ${n} 隻${types}屬性`, `Defeat ${n} ${typesEn}-type${whereEn} as buddy`];
     case "QUEST_COMPLETE_RAID_BATTLE":
-      return `設為夥伴在團體戰獲勝 ${n} 次`;
+      return [`設為夥伴在團體戰獲勝 ${n} 次`, `Win ${n} raids as buddy`];
     case "QUEST_BUDDY_EVOLUTION_WALK":
-      return `和夥伴步行 ${n} 公里`;
+      return [`和夥伴步行 ${n} 公里`, `Walk ${n} km as buddy`];
     case "QUEST_BUDDY_EARN_AFFECTION_POINTS":
-      return `和夥伴獲得 ${n} 顆心心`;
+      return [`和夥伴獲得 ${n} 顆心心`, `Earn ${n} hearts as buddy`];
     case "QUEST_BUDDY_FEED":
-      return `餵夥伴 ${n} 次點心`;
+      return [`餵夥伴 ${n} 次點心`, `Feed ${n} treats as buddy`];
     case "QUEST_LAND_THROW":
-      return `設為夥伴投出 ${n} 次 Excellent`;
+      return [`設為夥伴投出 ${n} 次 Excellent`, `Make ${n} Excellent throws as buddy`];
     case "QUEST_USE_INCENSE":
-      return n > 1 ? `設為夥伴使用 ${n} 個薰香` : "設為夥伴使用薰香";
+      return n > 1 ? [`設為夥伴使用 ${n} 個薰香`, `Use ${n} Incense as buddy`] : ["設為夥伴使用薰香", "Use Incense as buddy"];
     default:
       return null;
   }
 }
 
-function describe(branch, quests, t) {
+function describe(branch, quests, T) {
   const lines = [];
-  if (branch.candyCost) lines.push(`${branch.candyCost} 顆糖果`);
+  if (branch.candyCost) lines.push([`${branch.candyCost} 顆糖果`, `${branch.candyCost} Candy`]);
   if (branch.evolutionItemRequirement) {
-    const item = ITEM_OVERRIDE[branch.evolutionItemRequirement] || t(`${branch.evolutionItemRequirement}_name`) || branch.evolutionItemRequirement;
-    lines.push(branch.evolutionItemRequirementCost ? `${item} ×${branch.evolutionItemRequirementCost}` : item);
+    const key = branch.evolutionItemRequirement;
+    const [zh, en] = ITEM_OVERRIDE[key] || [T.zh(`${key}_name`) || key, T.en(`${key}_name`) || key];
+    const cost = branch.evolutionItemRequirementCost;
+    lines.push(cost ? [`${zh} ×${cost}`, `${en} ×${cost}`] : [zh, en]);
   }
   if (branch.lureItemRequirement) {
-    const lure = (t(`${branch.lureItemRequirement}_name`) || branch.lureItemRequirement).replace("誘餌模組", "模組");
-    const weather = LURE_WEATHER[branch.lureItemRequirement];
-    lines.push(weather ? `${lure}或${weather}` : lure);
+    const key = branch.lureItemRequirement;
+    const lure = (T.zh(`${key}_name`) || key).replace("誘餌模組", "模組");
+    const lureEn = (T.en(`${key}_name`) || key).replace(" Lure Module", " Lure");
+    const weather = LURE_WEATHER[key];
+    lines.push(weather ? [`${lure}或${weather[0]}`, `${lureEn} or ${weather[1]}`] : [lure, lureEn]);
   }
-  if (branch.genderRequirement) lines.push(branch.genderRequirement === "MALE" ? "限雄性" : "限雌性");
-  if (branch.onlyDaytime) lines.push("限白天");
-  if (branch.onlyNighttime) lines.push("限夜晚");
-  if (branch.onlyDuskPeriod) lines.push("限黃昏");
-  if (branch.onlyFullMoon) lines.push("限滿月");
-  if (branch.onlyUpsideDown) lines.push("手機上下顛倒時進化");
+  if (branch.genderRequirement) lines.push(branch.genderRequirement === "MALE" ? ["限雄性", "Male only"] : ["限雌性", "Female only"]);
+  if (branch.onlyDaytime) lines.push(["限白天", "Daytime only"]);
+  if (branch.onlyNighttime) lines.push(["限夜晚", "Nighttime only"]);
+  if (branch.onlyDuskPeriod) lines.push(["限黃昏", "Dusk only"]);
+  if (branch.onlyFullMoon) lines.push(["限滿月", "Full moon only"]);
+  if (branch.onlyUpsideDown) lines.push(["手機上下顛倒時進化", "Turn your phone upside down"]);
 
   const questIds = (branch.questDisplay || []).map((q) => q.questRequirementTemplateId);
   const questLines = questIds.map((id) => quests.get(id)).filter(Boolean);
   for (const quest of questLines) {
-    const text = questText(quest, t);
+    const text = questText(quest, T);
     if (!text) continue;
     lines.push(text);
   }
   if (!questLines.some((q) => q.questType === "QUEST_BUDDY_EVOLUTION_WALK") && branch.kmBuddyDistanceRequirement) {
-    lines.push(`和夥伴步行 ${branch.kmBuddyDistanceRequirement} 公里`);
+    const km = branch.kmBuddyDistanceRequirement;
+    lines.push([`和夥伴步行 ${km} 公里`, `Walk ${km} km as buddy`]);
   }
-  if (branch.mustBeBuddy && !lines.some((l) => l.includes("夥伴"))) lines.push("須設為夥伴");
-  if (branch.noCandyCostViaTrade) lines.push("交換後進化免糖果");
+  if (branch.mustBeBuddy && !lines.some(([zh]) => zh.includes("夥伴"))) lines.push(["須設為夥伴", "Must be your buddy"]);
+  if (branch.noCandyCostViaTrade) lines.push(["交換後進化免糖果", "No Candy cost if traded"]);
   return lines;
 }
 
@@ -138,30 +152,38 @@ async function pokeapiForm(form) {
   return JSON.parse(readFileSync(file, "utf8"));
 }
 
-function describeFormChange(change, t, dexByName, moveZh) {
+function describeFormChange(change, T, dexByName, moveNames) {
   const comp = change.componentPokemonSettings;
-  const compZh = comp && t(`pokemon_name_${String(dexByName.get(comp.pokedexId)).padStart(4, "0")}`);
-  if (comp?.formChangeType === "UNFUSE") return [`解除與${compZh}的合體`];
+  const compKey = comp && `pokemon_name_${String(dexByName.get(comp.pokedexId)).padStart(4, "0")}`;
+  const compZh = comp && T.zh(compKey);
+  const compEn = comp && T.en(compKey);
+  if (comp?.formChangeType === "UNFUSE") return [[`解除與${compZh}的合體`, `Unfuse from ${compEn}`]];
   const lines = [];
-  if (change.candyCost) lines.push(`${change.candyCost} 顆糖果`);
-  if (change.stardustCost) lines.push(`${change.stardustCost} 星星沙子`);
-  if (change.item) lines.push(`${t(`${change.item}_name`) || change.item} ×${change.itemCostCount}`);
+  if (change.candyCost) lines.push([`${change.candyCost} 顆糖果`, `${change.candyCost} Candy`]);
+  if (change.stardustCost) lines.push([`${change.stardustCost} 星星沙子`, `${change.stardustCost} Stardust`]);
+  if (change.item) {
+    const key = `${change.item}_name`;
+    lines.push([`${T.zh(key) || change.item} ×${change.itemCostCount}`, `${T.en(key) || change.item} ×${change.itemCostCount}`]);
+  }
   if (comp?.formChangeType === "FUSE") {
-    lines.push(`與${compZh}合體`);
-    if (comp.componentCandyCost) lines.push(`${compZh}的糖果 ${comp.componentCandyCost} 顆`);
+    lines.push([`與${compZh}合體`, `Fuse with ${compEn}`]);
+    if (comp.componentCandyCost) lines.push([`${compZh}的糖果 ${comp.componentCandyCost} 顆`, `${comp.componentCandyCost} ${compEn} Candy`]);
   }
   for (const req of change.requiredCinematicMoves || []) {
-    for (const move of req.requiredMoves) lines.push(`須學會${moveZh.get(move) || move}`);
+    for (const move of req.requiredMoves) {
+      const [zh, en] = moveNames.get(move) || [move, move];
+      lines.push([`須學會${zh}`, `Must know ${en}`]);
+    }
   }
   return lines;
 }
 
-async function buildForms(gm, t, dexByName) {
-  const moveZh = new Map();
+async function buildForms(gm, T, dexByName) {
+  const moveNames = new Map();
   for (const tpl of gm) {
     const m = tpl.templateId.match(/^V(\d{4})_MOVE_(.+)$/);
-    const zh = m && t(`move_name_${m[1]}`);
-    if (zh) moveZh.set(m[2].replace(/_FAST$/, ""), zh);
+    const zh = m && T.zh(`move_name_${m[1]}`);
+    if (zh) moveNames.set(m[2].replace(/_FAST$/, ""), [zh, T.en(`move_name_${m[1]}`) || zh]);
   }
 
   const bySpecies = new Map();
@@ -185,37 +207,47 @@ async function buildForms(gm, t, dexByName) {
     for (const form of order) {
       const api = await pokeapiForm(form);
       const sprite = api?.sprites?.front_default?.split("/sprites/pokemon/")[1]?.replace(/\.png$/, "") || null;
-      const i18n = t(`form_${form}`);
-      const apiZh = api && (api.names.find((n) => n.language.name === "zh-hant")?.name || api.form_names.find((n) => n.language.name === "zh-hant")?.name);
-      forms.push({ id: form, zh: (hasCjk(i18n) ? i18n : apiZh || i18n || form).replace(/的樣子/g, ""), sprite: sprite || String(dex) });
+      const i18n = T.zh(`form_${form}`);
+      const apiName = (lang) => api && (api.names.find((n) => n.language.name === lang)?.name || api.form_names.find((n) => n.language.name === lang)?.name);
+      forms.push({
+        id: form,
+        zh: (hasCjk(i18n) ? i18n : apiName("zh-hant") || i18n || form).replace(/的樣子/g, ""),
+        en: T.en(`form_${form}`) || apiName("en") || form,
+        sprite: sprite || String(dex),
+      });
     }
     forms.sort((a, b) => (b.sprite === String(dex)) - (a.sprite === String(dex)));
-    const zhOf = (form) => forms.find((f) => f.id === form).zh;
+    const nameOf = (form) => forms.find((f) => f.id === form);
 
     const to = {};
     for (const ps of templates) {
       for (const change of ps.formChange) {
-        const described = describeFormChange(change, t, dexByName, moveZh);
-        const lines = described.length ? described : ["免費變回"];
+        const described = describeFormChange(change, T, dexByName, moveNames);
+        const lines = described.length ? described : [["免費變回", "Free to change back"]];
         for (const target of change.availableForm) {
           if (!to[target]) to[target] = [];
-          to[target].push({ from: zhOf(ps.form), lines });
+          to[target].push({ from: nameOf(ps.form), lines });
         }
       }
     }
+    const split = (o) => ({
+      ...(o.from ? { from: o.from.zh, fromEn: o.from.en } : {}),
+      lines: o.lines.map(([zh]) => zh),
+      en: o.lines.map(([, en]) => en),
+    });
     for (const target of Object.keys(to)) {
-      const conditions = new Set(to[target].map((o) => o.lines.join("/")));
+      const conditions = new Set(to[target].map((o) => o.lines.map(([zh]) => zh).join("/")));
       if (conditions.size === 1) {
-        to[target] = [{ lines: to[target][0].lines }];
+        to[target] = [split({ lines: to[target][0].lines })];
         continue;
       }
       const bestByFrom = new Map();
       for (const o of to[target]) {
-        const prev = bestByFrom.get(o.from);
-        if (!prev || o.lines.length > prev.lines.length) bestByFrom.set(o.from, o);
+        const prev = bestByFrom.get(o.from.id);
+        if (!prev || o.lines.length > prev.lines.length) bestByFrom.set(o.from.id, o);
       }
-      to[target] = [...bestByFrom.values()];
-      if (to[target].length === 1) to[target] = [{ lines: to[target][0].lines }];
+      const best = [...bestByFrom.values()];
+      to[target] = best.length === 1 ? [split({ lines: best[0].lines })] : best.map(split);
     }
     out[dex] = { forms, to };
   }
@@ -225,6 +257,7 @@ async function buildForms(gm, t, dexByName) {
 async function main() {
   const gm = await load(SOURCES.gameMaster, "game_master.json");
   const t = textLookup(await load(SOURCES.texts, "i18n_chinesetraditional.json"));
+  const T = { zh: t, en: textLookup(await load(SOURCES.textsEn, "i18n_english.json")) };
 
   const quests = new Map();
   const dexByName = new Map();
@@ -258,17 +291,19 @@ async function main() {
       if (!branch.evolution) continue;
       const to = dexByName.get(branch.evolution);
       if (!to || to === from) continue;
-      const lines = describe(branch, quests, t);
+      const lines = describe(branch, quests, T);
       const region = rank === 2 && Object.keys(REGION_ZH).find((r) => ps.form.split("_").includes(r));
       if (region) {
         if (!regional.has(to)) regional.set(to, []);
-        regional.get(to).push({ from, form: REGION_ZH[region], lines: [...lines] });
-        lines.unshift(`限${REGION_ZH[region]}`);
+        regional.get(to).push({ from, form: [REGION_ZH[region], REGION_EN[region]], lines: [...lines] });
+        lines.unshift([`限${REGION_ZH[region]}`, `${REGION_EN[region]} form only`]);
       }
       const option = { from, lines };
-      const formName =
-        branch.form && (t(`form_${branch.form}`) || t(`form_${branch.form.split("_").slice(1).join("_")}`));
-      if (formName?.trim() && !branch.genderRequirement) option.form = formName.trim().replace(/的樣子/g, "");
+      const formKey = branch.form && [`form_${branch.form}`, `form_${branch.form.split("_").slice(1).join("_")}`];
+      const formName = formKey && (t(formKey[0]) || t(formKey[1]));
+      if (formName?.trim() && !branch.genderRequirement) {
+        option.form = [formName.trim().replace(/的樣子/g, ""), (T.en(formKey[0]) || T.en(formKey[1]) || formName).trim()];
+      }
       const entry = byTarget.get(to);
       if (!entry || rank < entry.rank) byTarget.set(to, { rank, options: [option] });
       else if (rank === entry.rank) entry.options.push(option);
@@ -277,32 +312,39 @@ async function main() {
 
   for (const [to, entry] of byTarget) {
     if (entry.rank === 2 || !regional.has(to)) continue;
-    const baseConditions = new Set(entry.options.map((o) => o.lines.join("/")));
+    const baseConditions = new Set(entry.options.map((o) => zhKey(o.lines)));
     for (const option of regional.get(to)) {
-      if (!baseConditions.has(option.lines.join("/"))) entry.options.push(option);
+      if (!baseConditions.has(zhKey(option.lines))) entry.options.push(option);
     }
   }
 
   const out = {};
   for (const [to, { options }] of [...byTarget].sort((a, b) => a[0] - b[0])) {
     const seen = new Set();
-    out[to] = options.filter((o) => {
-      const key = `${o.from}|${o.form || ""}|${o.lines.join("/")}`;
+    let list = options.filter((o) => {
+      const key = `${o.from}|${o.form?.[0] || ""}|${zhKey(o.lines)}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
     const genderLines = new Set(["限雄性", "限雌性"]);
-    const withoutGender = out[to].map((o) => o.lines.filter((l) => !genderLines.has(l)).join("/"));
-    const genders = new Set(out[to].flatMap((o) => o.lines.filter((l) => genderLines.has(l))));
+    const notGender = ([zh]) => !genderLines.has(zh);
+    const withoutGender = list.map((o) => zhKey(o.lines.filter(notGender)));
+    const genders = new Set(list.flatMap((o) => o.lines.filter((l) => !notGender(l)).map(([zh]) => zh)));
     if (genders.size === 2 && new Set(withoutGender).size === 1) {
-      out[to] = [{ from: out[to][0].from, lines: out[to][0].lines.filter((l) => !genderLines.has(l)) }];
+      list = [{ from: list[0].from, lines: list[0].lines.filter(notGender) }];
     }
-    const forms = new Set(out[to].map((o) => o.form || ""));
-    const conditions = new Set(out[to].map((o) => o.lines.join("/")));
-    if (conditions.size === 1) out[to] = [{ from: out[to][0].from, lines: out[to][0].lines }];
-    else if (forms.size === 1) out[to].forEach((o) => delete o.form);
-    else if (forms.has("")) out[to].forEach((o) => (o.form ||= "一般"));
+    const forms = new Set(list.map((o) => o.form?.[0] || ""));
+    const conditions = new Set(list.map((o) => zhKey(o.lines)));
+    if (conditions.size === 1) list = [{ from: list[0].from, lines: list[0].lines }];
+    else if (forms.size === 1) list.forEach((o) => delete o.form);
+    else if (forms.has("")) list.forEach((o) => (o.form ||= ["一般", "Normal"]));
+    out[to] = list.map((o) => ({
+      from: o.from,
+      lines: o.lines.map(([zh]) => zh),
+      en: o.lines.map(([, en]) => en),
+      ...(o.form ? { form: o.form[0], formEn: o.form[1] } : {}),
+    }));
   }
 
   writeFileSync(
@@ -314,7 +356,7 @@ async function main() {
       megas: Object.fromEntries([...megas].sort((a, b) => a[0] - b[0]).map(([dex, m]) => [dex, [...m.values()]])),
     })
   );
-  const formsOut = await buildForms(gm, t, dexByName);
+  const formsOut = await buildForms(gm, T, dexByName);
   writeFileSync(FORMS_OUT, JSON.stringify(formsOut));
   console.log(`targets ${Object.keys(out).length}, mega species ${megas.size}, quests ${quests.size}, form-change species ${Object.keys(formsOut).length}`);
 }

@@ -131,6 +131,28 @@ p {
   box-shadow: 0.125em -0.125em 0 currentColor;
 }
 
+.lang-switch {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.lang-switch button {
+  min-width: 28px;
+  padding: 4px 6px;
+  border: 2px solid var(--bezel-text);
+  background: none;
+  color: var(--bezel-text);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  line-height: 1;
+}
+
+.lang-switch button.is-on {
+  background: var(--bezel-text);
+  color: var(--bezel);
+}
+
 .screen {
   flex: 1;
   padding: 16px 8px 32px;

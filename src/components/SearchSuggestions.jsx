@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
 import Sprite from "./Sprite";
 import { formatId } from "../utils/format";
+import { nameOf, useLang } from "../i18n";
 
 const TAP_SLOP = 10;
 
 function SearchSuggestions({ id, suggestions, activeIndex, onPick, onHover }) {
+  const lang = useLang();
   const listRef = useRef(null);
   const touch = useRef(null);
 
@@ -56,8 +58,10 @@ function SearchSuggestions({ id, suggestions, activeIndex, onPick, onHover }) {
             <Sprite key={p.image[0]} urls={p.image} alt="" eager />
           </span>
           <span className="suggestion-text">
-            <span className="suggestion-zh">{p.zh}</span>
-            <span className="suggestion-en">{p.hint || p.en}</span>
+            <span className="suggestion-zh">{nameOf(p, lang)}</span>
+            {(lang === "en" ? p.hintEn : p.hint || p.en) && (
+              <span className="suggestion-en">{lang === "en" ? p.hintEn : p.hint || p.en}</span>
+            )}
           </span>
           <span className="dex-no">{formatId(p.id)}</span>
         </li>

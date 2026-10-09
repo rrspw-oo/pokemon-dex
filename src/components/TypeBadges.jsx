@@ -1,4 +1,7 @@
+import { useLang } from "../i18n";
+
 function TypeBadges({ types, onTypeClick }) {
+  const en = useLang() === "en";
   return (
     <span className="type-badges">
       {types.map((t) =>
@@ -10,11 +13,11 @@ function TypeBadges({ types, onTypeClick }) {
             style={{ "--type-color": t.color }}
             onClick={() => onTypeClick(t.name)}
           >
-            {t.zh}
+            {en ? t.en : t.zh}
           </button>
         ) : (
           <span key={t.name} className="type-badge" style={{ "--type-color": t.color }}>
-            {t.zh}
+            {en ? t.en : t.zh}
           </span>
         )
       )}

@@ -3,13 +3,15 @@ import PokemonGrid from "./PokemonGrid";
 import RankRow from "./RankRow";
 import { LEAGUES, usePvpData } from "../services/pvpData";
 import { getPokemonOfType, getSecondTypes, typeInfo } from "../services/pokemonApi";
-import { TYPE_ZH } from "../utils/types";
+import { TYPE_EN, TYPE_ZH } from "../utils/types";
+import { useLang, useT } from "../i18n";
 
 const TYPES = Object.keys(TYPE_ZH).filter((t) => t !== "meow");
 const PAGE_SIZE = 12;
 const TOP = 5;
 
 function TypeChip({ type, active, count, onClick }) {
+  const lang = useLang();
   const info = typeInfo(type);
   return (
     <button
@@ -19,13 +21,15 @@ function TypeChip({ type, active, count, onClick }) {
       aria-pressed={active}
       onClick={onClick}
     >
-      {info.zh}
+      {lang === "en" ? info.en : info.zh}
       {count != null && <small>{count}</small>}
     </button>
   );
 }
 
 function TypeView({ type, type2, onChange, onSelect }) {
+  const t = useT();
+  const lang = useLang();
   const data = usePvpData();
   const [league, setLeague] = useState(1500);
   const [showAll, setShowAll] = useState(false);
@@ -52,21 +56,22 @@ function TypeView({ type, type2, onChange, onSelect }) {
     onChange(nextType, nextType2);
   };
 
-  const label = type ? [type, type2].filter(Boolean).map((t) => TYPE_ZH[t]).join(" + ") : "";
+  const names = lang === "en" ? TYPE_EN : TYPE_ZH;
+  const label = type ? [type, type2].filter(Boolean).map((x) => names[x]).join(lang === "en" ? "/" : " + ") : "";
   const rows = showAll ? ranked : ranked.slice(0, TOP);
 
   return (
     <section className="type-view">
       <div className="panel">
-        <h3 className="panel-title">屬性</h3>
+        <h3 className="panel-title">{t("屬性")}</h3>
         <div className="type-picker">
-          {TYPES.map((t) => (
-            <TypeChip key={t} type={t} active={t === type} onClick={() => change(t, null)} />
+          {TYPES.map((x) => (
+            <TypeChip key={x} type={x} active={x === type} onClick={() => change(x, null)} />
           ))}
         </div>
         {type && (
           <>
-            <p className="picker-label">第二屬性</p>
+            <p className="picker-label">{t("第二屬性")}</p>
             <div className="type-picker">
               <button
                 type="button"
@@ -74,15 +79,15 @@ function TypeView({ type, type2, onChange, onSelect }) {
                 aria-pressed={!type2}
                 onClick={() => change(type, null)}
               >
-                不限
+                {t("不限")}
               </button>
-              {TYPES.filter((t) => secondTypes.has(t)).map((t) => (
+              {TYPES.filter((x) => secondTypes.has(x)).map((x) => (
                 <TypeChip
-                  key={t}
-                  type={t}
-                  active={t === type2}
-                  count={secondTypes.get(t)}
-                  onClick={() => change(type, t === type2 ? null : t)}
+                  key={x}
+                  type={x}
+                  active={x === type2}
+                  count={secondTypes.get(x)}
+                  onClick={() => change(type, x === type2 ? null : x)}
                 />
               ))}
             </div>
@@ -92,8 +97,8 @@ function TypeView({ type, type2, onChange, onSelect }) {
 
       {type && (
         <div className="panel">
-          <h3 className="panel-title">{label} 最強排名</h3>
-          <div className="segmented" role="group" aria-label="聯盟">
+          <h3 className="panel-title">{t("{label} 最強排名", { label })}</h3>
+          <div className="segmented" role="group" aria-label={t("聯盟")}>
             {LEAGUES.map(([cap, name]) => (
               <button
                 key={cap}
@@ -102,14 +107,14 @@ function TypeView({ type, type2, onChange, onSelect }) {
                 aria-pressed={league === cap}
                 onClick={() => setLeague(cap)}
               >
-                {name}
+                {t(name)}
               </button>
             ))}
           </div>
           {!data ? (
-            <p className="panel-empty">載入中</p>
+            <p className="panel-empty">{t("載入中")}</p>
           ) : ranked.length === 0 ? (
-            <p className="panel-empty">此聯盟沒有排名資料</p>
+            <p className="panel-empty">{t("此聯盟沒有排名資料")}</p>
           ) : (
             <>
               <ol className="rank-list">
@@ -119,7 +124,7 @@ function TypeView({ type, type2, onChange, onSelect }) {
                     rank={i + 1}
                     pokemon={p}
                     tags={LEAGUES.filter(([cap]) => entry[cap] && entry[cap][0] <= 100).map(([cap, , short]) => ({
-                      label: `${short} #${entry[cap][0]}`,
+                      label: `${t(short)} #${entry[cap][0]}`,
                       active: cap === league,
                     }))}
                     moveset={entry[league][2]}
@@ -132,7 +137,7 @@ function TypeView({ type, type2, onChange, onSelect }) {
               </ol>
               {ranked.length > TOP && (
                 <button type="button" className="pixel-button show-all" onClick={() => setShowAll((v) => !v)}>
-                  {showAll ? "只看前五名" : `看全部排名（${ranked.length}）`}
+                  {showAll ? t("只看前五名") : t("看全部排名（{n}）", { n: ranked.length })}
                 </button>
               )}
             </>
@@ -142,7 +147,7 @@ function TypeView({ type, type2, onChange, onSelect }) {
 
       {type && (
         <div className="type-all">
-          <h3 className="section-title">全部 {label} 屬性寶可夢</h3>
+          <h3 className="section-title">{t("全部 {label} 屬性寶可夢", { label })}</h3>
           <PokemonGrid
             pokemon={pokemon}
             visible={visible}

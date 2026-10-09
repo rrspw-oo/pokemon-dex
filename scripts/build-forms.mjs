@@ -39,6 +39,15 @@ const FORM_ZH = {
   sandy: "砂土蓑衣",
   trash: "垃圾蓑衣",
 };
+const FORM_EN_OVERRIDE = {
+  "pyroar-female": "Pyroar (Female)",
+  "meowstic-female": "Meowstic (Female)",
+  "aegislash-blade": "Aegislash (Blade Forme)",
+  "zygarde-10-power-construct": "Zygarde (10% Forme)",
+  "zygarde-complete": "Zygarde (Complete Forme)",
+  "wishiwashi-school": "Wishiwashi (School Form)",
+  "minior-red": "Minior (Red Core)",
+};
 const FORM_ZH_OVERRIDE = {
   "darmanitan-galar-zen": "達摩狒狒(伽勒爾・達摩模式)",
 };
@@ -305,7 +314,8 @@ async function main() {
         const enBase = base.name_en.replace(/\s*\(.*$/, "");
         const en = compose(enBase, names.enFull, names.enForm) || cand.name;
         if (entry.name_zh_tw === base.name_zh_tw && zh) entry.form_zh = zh.replace(/的樣子/g, "");
-        if (entry.name_en === base.name_en || /^[a-z]/.test(entry.name_en)) entry.form_en = en;
+        if (FORM_EN_OVERRIDE[cand.name]) entry.form_en = FORM_EN_OVERRIDE[cand.name];
+        else if (entry.name_en === base.name_en || /^[a-z]/.test(entry.name_en)) entry.form_en = en;
         report.forms.push(`${id} ${entry.name_en} -> ${cand.name} sprite=${cand.sprite} zh=${entry.form_zh || entry.name_zh_tw} en=${entry.form_en || entry.name_en}`);
       }
     }
