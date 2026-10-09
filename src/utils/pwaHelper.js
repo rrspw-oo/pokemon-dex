@@ -1,6 +1,7 @@
 import { Workbox } from 'workbox-window';
 
 const SW_URL = `${import.meta.env.BASE_URL}sw.js`;
+const UPDATE_INTERVAL = 30 * 60 * 1000;
 
 let wb;
 let reloading = false;
@@ -14,13 +15,30 @@ export function initializePWA() {
     wb.messageSkipWaiting();
   });
 
-  wb.addEventListener('controlling', () => {
+  let hadController = Boolean(navigator.serviceWorker.controller);
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) {
+      hadController = true;
+      return;
+    }
     if (reloading) return;
     reloading = true;
     window.location.reload();
   });
 
-  wb.register().catch(() => {});
+  const checkForUpdate = () => wb.update().catch(() => {});
+
+  wb.register()
+    .then(() => {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') checkForUpdate();
+      });
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted) checkForUpdate();
+      });
+      setInterval(checkForUpdate, UPDATE_INTERVAL);
+    })
+    .catch(() => {});
 }
 
 // Check if app is running as PWA
@@ -119,7 +137,6 @@ export function setupNetworkMonitoring() {
           return registration.sync.register('pokemon-data-update');
         });
       }
-    } else if (wasOnline && !isOnline) {
     }
   };
 

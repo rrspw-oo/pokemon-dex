@@ -27,6 +27,7 @@
 - 所有寶可夢（含型態）一律使用 PokeAPI 的點陣圖（96x96），閃光與超極巨化也是點陣圖
 - 主要來源 raw.githubusercontent.com，失敗時改用 jsDelivr
 - PWA 會把看過的圖存在 `sprites-cache`，離線也看得到
+- 加到手機桌面後會自動更新：每次從背景切回 App、以及開著時每 30 分鐘，都會檢查新版本，有新版就自動重新載入；首頁由 service worker 提供，不會因瀏覽器快取而停在舊版
 
 ## 使用說明
 

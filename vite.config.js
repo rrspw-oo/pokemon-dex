@@ -17,7 +17,8 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
-        navigateFallback: null,
+        navigateFallback: 'index.html',
+        globPatterns: ['**/*.{js,css,html,woff2}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/(raw\.githubusercontent\.com|cdn\.jsdelivr\.net\/gh)\/PokeAPI\/sprites.*\.png$/,
@@ -46,7 +47,7 @@ export default defineConfig({
           }
         ]
       },
-      includeAssets: ['homeScreen-icon.svg', 'icons/*'],
+      includeAssets: ['homeScreen-icon.svg', 'icons/*.png'],
       manifest: {
         name: 'Pokemon Dex React',
         short_name: 'PokeDex',
