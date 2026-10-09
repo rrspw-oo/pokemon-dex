@@ -84,6 +84,7 @@ export default defineConfig({
         theme_color: '#c9c6be',
         background_color: '#c9c6be',
         display: 'standalone',
+        orientation: 'portrait-primary',
         scope: '/pokemon-dex/',
         start_url: '/pokemon-dex/',
         icons: [
