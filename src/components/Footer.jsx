@@ -13,7 +13,7 @@ function Footer() {
         <p className="copyright">
           © 2025{" "}
           <a href="mailto:wpsrrr@gmail.com" title="collab">
-            R_R
+            yRwRy
           </a>{" "}
           · MIT License
         </p>
