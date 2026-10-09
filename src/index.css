@@ -624,19 +624,6 @@ p {
   gap: 2px;
 }
 
-.evo-chain.is-single .evo-stage {
-  flex: 1;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.evo-chain.is-single .sprite {
-  width: 100%;
-  max-width: 96px;
-  height: auto;
-  aspect-ratio: 1;
-}
-
 .evo-chevron {
   flex: none;
   width: 9px;
