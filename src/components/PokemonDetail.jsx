@@ -137,7 +137,10 @@ function EvolutionPanel({ pokemon, family, onSelect }) {
             {stages.map((stage, i) => (
               <Fragment key={i}>
                 {i > 0 && <span className="evo-chevron" aria-hidden="true" />}
-                <div className="evo-stage" style={{ "--cols": Math.min(stage.length, 3) }}>
+                <div
+                  className={`evo-stage ${stage.length >= 4 ? "is-wide" : ""}`}
+                  style={{ "--cols": stage.length >= 4 ? 4 : stage.length }}
+                >
                   {stage.map(({ pokemon: p }) => (
                     <MiniCard
                       key={p.key}

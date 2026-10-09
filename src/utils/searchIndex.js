@@ -146,7 +146,7 @@ export function search(rawQuery) {
     for (const { base, lines } of hints.values()) {
       const single = new Set([...lines.values()].flat()).size === 1;
       const hint = [...lines]
-        .map(([line, targets]) => (single ? `${line}才可進化` : `${targets.join("、")}：${line}`))
+        .map(([line, targets]) => (single ? `${line}進化` : `${targets.join("、")}：${line}`))
         .join("；");
       scored.push({ r: { ...base, hint }, s: 45 });
     }
