@@ -53,7 +53,7 @@ function CupDetail({ cup, data, onBack, onSelect }) {
       <div className="panel">
         <h3 className="panel-title">推薦排名</h3>
         <ol className="rank-list">
-          {cup.top.map(([idIndex, score, moveset, matchups, counters], i) => {
+          {cup.top.map(([idIndex, , moveset, matchups, counters], i) => {
             const pokemon = getPokemonByGoId(data.ids[idIndex]);
             if (!pokemon) return null;
             return (
@@ -61,7 +61,6 @@ function CupDetail({ cup, data, onBack, onSelect }) {
                 key={`${pokemon.key}-${i}`}
                 rank={i + 1}
                 pokemon={pokemon}
-                score={score}
                 moveset={moveset}
                 moves={data.moves}
                 matchups={ids(matchups)}

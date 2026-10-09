@@ -118,7 +118,6 @@ function TypeView({ type, type2, onChange, onSelect }) {
                     key={`${p.key}-${p.shadow ? "s" : "n"}`}
                     rank={i + 1}
                     pokemon={p}
-                    score={entry[league][1]}
                     tags={LEAGUES.filter(([cap]) => entry[cap] && entry[cap][0] <= 100).map(([cap, , short]) => ({
                       label: `${short} #${entry[cap][0]}`,
                       active: cap === league,

@@ -1069,12 +1069,12 @@ p {
 .rank-main {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .rank-no {
   flex: none;
-  width: 24px;
+  width: 22px;
   font-family: var(--font-pixel);
   font-size: 10px;
   text-align: center;
@@ -1094,16 +1094,24 @@ p {
 
 .rank-pokemon .sprite {
   flex: none;
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
 }
 
-.rank-text {
+.rank-body {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
+}
+
+.rank-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 6px;
 }
 
 .rank-name {
@@ -1111,23 +1119,14 @@ p {
   line-height: 1.2;
 }
 
-.rank-text .type-badges {
-  justify-content: flex-start;
-}
-
-.rank-score {
-  flex: none;
-  color: var(--ink-soft);
-  font-family: var(--font-pixel);
-  font-size: 10px;
+.rank-head .type-badges {
+  margin-left: auto;
 }
 
 .rank-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 6px;
-  padding-left: 30px;
 }
 
 .league-tag {
