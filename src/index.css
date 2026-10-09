@@ -969,6 +969,19 @@ p {
   border-top: 2px dashed var(--line);
 }
 
+.card-count {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper-hi);
+  font-family: var(--font-pixel);
+  font-size: 9px;
+}
+
 .card-strip {
   display: grid;
   grid-auto-flow: column;

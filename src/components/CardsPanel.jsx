@@ -195,7 +195,16 @@ function CardsPanel({ dex, name }) {
       <h3 className="panel-title">卡牌</h3>
       <div className={`matchup-block card-block ${open ? "is-open" : ""}`}>
         <button type="button" className="matchup-toggle" aria-expanded={open} onClick={toggle}>
-          {open ? "收起卡牌" : `顯示 ${cards.length} 張卡牌`}
+          {open ? (
+            "收卡"
+          ) : (
+            <>
+              發卡
+              <span className="card-count" aria-label={`${cards.length} 張`}>
+                {cards.length}
+              </span>
+            </>
+          )}
         </button>
         <div className="collapse" aria-hidden={!open}>
           <div className="collapse-inner">
