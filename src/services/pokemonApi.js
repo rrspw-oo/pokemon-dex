@@ -119,6 +119,12 @@ export function getPokemonByGoId(goId) {
   return { ...fromRecord(record), shadow };
 }
 
+export function getMegas(id) {
+  return (goEvolutions.megas[id] || [])
+    .map((m) => ({ ...m, pokemon: getPokemonByGoId(m.goId) }))
+    .filter((m) => m.pokemon);
+}
+
 export function getPokemonOfType(type, type2) {
   return records
     .filter((r) => {

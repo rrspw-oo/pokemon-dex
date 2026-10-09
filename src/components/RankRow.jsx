@@ -3,7 +3,7 @@ import TypeBadges from "./TypeBadges";
 import ShadowIcon from "./ShadowIcon";
 import { Collapsible, Matchups, MoveChips } from "./Opponents";
 
-function RankRow({ rank, pokemon, tags = [], moveset, moves, matchups, counters, onSelect }) {
+function RankRow({ rank, pokemon, tags = [], note, moveset, moves, matchups, counters, onSelect }) {
   const expandable = Boolean(matchups?.length || counters?.length || moveset);
 
   return (
@@ -23,6 +23,7 @@ function RankRow({ rank, pokemon, tags = [], moveset, moves, matchups, counters,
               </span>
               <TypeBadges types={pokemon.types} />
             </span>
+            {note && <span className="rank-note">{note}</span>}
             {(tags.length > 0 || moveset) && (
               <span className="rank-meta">
                 {tags.map((tag) => (

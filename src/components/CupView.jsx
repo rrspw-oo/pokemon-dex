@@ -1,3 +1,4 @@
+import { useState } from "react";
 import RankRow from "./RankRow";
 import LeagueIcon from "./LeagueIcon";
 import { useCupsData } from "../services/pvpData";
@@ -84,9 +85,25 @@ function CupList({ cups, league, onLeague, onOpen }) {
   );
 }
 
+function megaNote(info) {
+  if (!info) return null;
+  const [iv, level, cp, baseCp] = info;
+  return (
+    <>
+      <span>進化前 CP {baseCp}</span>
+      <span>超級進化 CP {cp}</span>
+      <span>
+        Lv {level}・IV {iv.join("/")}
+      </span>
+    </>
+  );
+}
+
 function CupDetail({ cup, data, onBack, onSelect }) {
+  const [megaOnly, setMegaOnly] = useState(false);
   const ids = (list) => list.map((i) => data.ids[i]);
   const group = groupOf(cup.cp);
+  const rows = megaOnly ? cup.megaTop : cup.top;
   return (
     <>
       <div className="panel">
@@ -114,15 +131,34 @@ function CupDetail({ cup, data, onBack, onSelect }) {
       </div>
       <div className="panel">
         <h3 className="panel-title">推薦排名</h3>
+        {cup.megaTop && (
+          <div className="segmented rank-filter" role="group" aria-label="排名範圍">
+            {[
+              [false, "全部"],
+              [true, "只看超級進化"],
+            ].map(([value, label]) => (
+              <button
+                key={label}
+                type="button"
+                className={megaOnly === value ? "is-on" : ""}
+                aria-pressed={megaOnly === value}
+                onClick={() => setMegaOnly(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
         <ol className="rank-list">
-          {cup.top.map(([idIndex, , moveset, matchups, counters], i) => {
+          {rows.map(([idIndex, , moveset, matchups, counters, rank, info], i) => {
             const pokemon = getPokemonByGoId(data.ids[idIndex]);
             if (!pokemon) return null;
             return (
               <RankRow
                 key={`${pokemon.key}-${i}`}
-                rank={i + 1}
+                rank={megaOnly ? rank : i + 1}
                 pokemon={pokemon}
+                note={megaOnly && megaNote(info)}
                 moveset={moveset}
                 moves={data.moves}
                 matchups={ids(matchups)}
