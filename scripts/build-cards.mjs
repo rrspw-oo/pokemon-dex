@@ -33,6 +33,7 @@ async function describe(lang, brief) {
   const card = await get(`/${lang}/cards/${encodeURIComponent(brief.id)}`);
   const set = await setInfo(lang, card.set.id);
   return {
+    id: brief.id,
     img: brief.image.replace(ASSETS, ""),
     set: card.set.name,
     no: card.localId,
@@ -55,7 +56,7 @@ async function main() {
     const zh = (await Promise.all(zhBriefs.map((c) => describe("zh-tw", c)))).sort(newestFirst);
     const en = (await Promise.all(enBriefs.map((c) => describe("en", c)))).sort(newestFirst);
 
-    out[dex] = [...zh, ...en].slice(0, MAX_CARDS).map(({ img, set, no }) => ({ img, set, no }));
+    out[dex] = [...zh, ...en].slice(0, MAX_CARDS).map(({ id, img, set, no }) => ({ id, img, set, no }));
     console.log(`${dex} ${zhName}: zh-tw ${zh.length}, en ${en.length}, kept ${out[dex].length}`);
   }
 

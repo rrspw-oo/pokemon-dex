@@ -2,8 +2,22 @@ import { useEffect, useRef, useState } from "react";
 
 const ASSETS = "https://assets.tcgdex.net/";
 const FORMATS = ["webp", "jpg"];
+const PRICE_MIN = 100;
 let cardsPromise;
 const loadCards = () => (cardsPromise ||= import("../data/cards.json").then((m) => m.default));
+
+const loadPrice = (id) =>
+  fetch(`https://api.tcgdex.net/v2/en/cards/${id}`)
+    .then((res) => (res.ok ? res.json() : null))
+    .then((card) => {
+      const prices = Object.values(card?.pricing?.tcgplayer || {})
+        .map((variant) => variant?.marketPrice)
+        .filter((n) => typeof n === "number");
+      return prices.length ? Math.min(...prices) : null;
+    })
+    .catch(() => null);
+
+const highPrice = (price) => (price >= PRICE_MIN ? `US$${Math.round(price).toLocaleString("en-US")}` : null);
 
 function CardImage({ card, size, alt, lazy }) {
   const [index, setIndex] = useState(0);
@@ -22,15 +36,15 @@ function CardImage({ card, size, alt, lazy }) {
       src={`${ASSETS}${card.img}/${size}.${FORMATS[index]}`}
       alt={alt}
       loading={lazy ? "lazy" : "eager"}
-      crossOrigin="anonymous"
       draggable="false"
       onError={() => setIndex((i) => i + 1)}
     />
   );
 }
 
-function CardViewer({ cards, index, name, onIndex, onClose }) {
+function CardViewer({ cards, index, name, prices, onIndex, onClose }) {
   const card = cards[index];
+  const price = highPrice(prices[card.img]);
   const hasNext = index < cards.length - 1;
   const hasPrev = !hasNext && index > 0;
 
@@ -78,6 +92,7 @@ function CardViewer({ cards, index, name, onIndex, onClose }) {
       <CardImage key={card.img} card={card} size="high" alt={`${name} ${card.set} ${card.no}`} />
       <p className="card-viewer-caption">
         {card.set} #{card.no}
+        {price && <span className="card-price">市價 {price}</span>}
         <span className="card-viewer-count">
           {index + 1} / {cards.length}
         </span>
@@ -107,6 +122,7 @@ function CardsPanel({ dex, name }) {
   const [shown, setShown] = useState(false);
   const [viewing, setViewing] = useState(null);
   const drag = useRef(null);
+  const [prices, setPrices] = useState({});
 
   useEffect(() => {
     let alive = true;
@@ -117,6 +133,19 @@ function CardsPanel({ dex, name }) {
   }, []);
 
   const cards = all?.[dex];
+
+  useEffect(() => {
+    if (!shown || !cards) return;
+    let alive = true;
+    const english = cards.filter((card) => card.img.startsWith("en/"));
+    Promise.all(english.map((card) => loadPrice(card.id).then((price) => [card.img, price]))).then(
+      (entries) => alive && setPrices(Object.fromEntries(entries)),
+    );
+    return () => {
+      alive = false;
+    };
+  }, [shown, cards]);
+
   if (!cards) return null;
 
   const onPointerDown = (e) => {
@@ -180,6 +209,9 @@ function CardsPanel({ dex, name }) {
                         {card.img.startsWith("en/") && <em>EN</em>}
                         {card.set}
                       </span>
+                      {highPrice(prices[card.img]) && (
+                        <span className="card-price">市價 {highPrice(prices[card.img])}</span>
+                      )}
                     </button>
                   </li>
                 ))}
@@ -189,7 +221,7 @@ function CardsPanel({ dex, name }) {
         </div>
       </div>
       {viewing !== null && (
-        <CardViewer cards={cards} index={viewing} name={name} onIndex={setViewing} onClose={() => setViewing(null)} />
+        <CardViewer cards={cards} index={viewing} name={name} prices={prices} onIndex={setViewing} onClose={() => setViewing(null)} />
       )}
     </section>
   );

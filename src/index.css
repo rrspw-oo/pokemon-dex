@@ -1025,6 +1025,15 @@ p {
   vertical-align: 1px;
 }
 
+.card-price {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.card-thumb .card-price {
+  color: var(--ink);
+}
+
 .card-viewer {
   position: fixed;
   inset: 0;
