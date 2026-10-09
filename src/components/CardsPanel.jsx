@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const ASSETS = "https://assets.tcgdex.net/";
 const FORMATS = ["webp", "jpg"];
@@ -16,6 +16,13 @@ const loadPrice = (id) =>
       return prices.length ? Math.min(...prices) : null;
     })
     .catch(() => null);
+
+function toCard(img, sets) {
+  const cut = img.lastIndexOf("/");
+  const setPath = img.slice(0, cut);
+  const no = img.slice(cut + 1);
+  return { img, no, set: sets[setPath], id: `${setPath.slice(setPath.lastIndexOf("/") + 1)}-${no}` };
+}
 
 const highPrice = (price) => (price >= PRICE_MIN ? `US$${Math.round(price).toLocaleString("en-US")}` : null);
 
@@ -132,7 +139,7 @@ function CardsPanel({ dex, name }) {
     };
   }, []);
 
-  const cards = all?.[dex];
+  const cards = useMemo(() => all?.cards[dex]?.map((img) => toCard(img, all.sets)), [all, dex]);
 
   useEffect(() => {
     if (!shown || !cards) return;
