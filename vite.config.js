@@ -35,21 +35,6 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /^https:\/\/api\.tcgdex\.net\/v2\/en\/cards\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'card-prices',
-              networkTimeoutSeconds: 3,
-              expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 60 * 60 * 24
-              },
-              cacheableResponse: {
-                statuses: [200]
-              }
-            }
-          },
-          {
             urlPattern: /^https:\/\/assets\.tcgdex\.net\/.*\.webp$/,
             handler: 'CacheFirst',
             options: {

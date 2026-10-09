@@ -11,6 +11,51 @@ const REFRESH = process.argv.includes("--refresh");
 const API = "https://api.tcgdex.net/v2";
 const ASSETS = "https://assets.tcgdex.net/";
 const MAX_PER_LANG = 6;
+const MAX_BY_PRICE = 3;
+const PRICE_MIN = 100;
+const RARITY_TIER = {
+  "Special illustration rare": 6,
+  "Hyper rare": 6,
+  "Mega Hyper Rare": 6,
+  "Secret Rare": 6,
+  "Rare Secret": 6,
+  "Rare Rainbow": 6,
+  "Illustration rare": 5,
+  "Ultra Rare": 5,
+  "Rare Ultra": 5,
+  "Shiny Ultra Rare": 5,
+  "Rare Shiny GX": 5,
+  "Black White Rare": 5,
+  "Rare Holo Star": 5,
+  "Rare Prism Star": 5,
+  "LEGEND": 5,
+  "Amazing Rare": 4,
+  "Radiant Rare": 4,
+  "Shiny rare": 4,
+  "Rare Shiny": 4,
+  "Shiny Rare": 4,
+  "ACE SPEC Rare": 4,
+  "Double rare": 3,
+  "Rare Holo V": 3,
+  "Rare Holo VMAX": 3,
+  "Rare Holo VSTAR": 3,
+  "Holo Rare V": 3,
+  "Holo Rare VMAX": 3,
+  "Holo Rare VSTAR": 3,
+  "Rare PRIME": 3,
+  "Rare Holo GX": 3,
+  "Rare Holo EX": 3,
+  "Rare Holo LV.X": 3,
+  "Rare BREAK": 3,
+  "Rare Prime": 3,
+  "Rare Holo": 2,
+  "Holo Rare": 2,
+  "Rare": 1,
+  "Uncommon": 0,
+  "Common": 0,
+  "Promo": 0,
+  "None": 0,
+};
 const CONCURRENCY = 4;
 const ZH_ALIASES = { 電飛鼠: "導電飛鼠", 胡帕: "懲戒胡帕", 連擊武道熊師: "武道熊師", 一擊武道熊師: "武道熊師" };
 
@@ -53,7 +98,15 @@ async function setCards(lang) {
     if (set.serie?.id === "tcgp") continue;
     for (const c of set.cards || []) {
       if (!c.image) continue;
-      cards.set(c.id, { id: c.id, name: c.name, img: c.image.replace(ASSETS, ""), set: set.name, no: c.localId, date: set.releaseDate || "" });
+      cards.set(c.id, {
+        id: c.id,
+        name: c.name,
+        img: c.image.replace(ASSETS, ""),
+        set: set.name,
+        no: c.localId,
+        date: set.releaseDate || "",
+        secret: Number(c.localId) > set.cardCount?.official,
+      });
     }
   }
   return cards;
@@ -73,6 +126,15 @@ function nameCandidates(name) {
 }
 
 const newestFirst = (a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id);
+const zhOrder = (a, b) => b.secret - a.secret || newestFirst(a, b);
+const specialOrder = (a, b) => b.tier - a.tier || b.secret - a.secret || (b.price ?? 0) - (a.price ?? 0) || newestFirst(a, b);
+
+function marketPrice(card) {
+  const prices = Object.values(card.pricing?.tcgplayer || {})
+    .map((variant) => variant?.marketPrice)
+    .filter((n) => typeof n === "number");
+  return prices.length ? Math.min(...prices) : null;
+}
 
 async function main() {
   mkdirSync(CACHE_DIR, { recursive: true });
@@ -94,19 +156,39 @@ async function main() {
   }
 
   const enIds = await pool(dexIds, (dex) => get(`/en/cards?dexId=eq:${dex}`));
+  const enWanted = [...new Set(enIds.flat().map((c) => c.id))].filter((id) => enCards.has(id));
+  console.log(`fetching ${enWanted.length} English card details`);
+  const unknownRarity = {};
+  let priceUpdated = "";
+  await pool(enWanted, async (id) => {
+    const detail = await get(`/en/cards/${encodeURIComponent(id)}`);
+    const card = enCards.get(id);
+    card.rarity = detail.rarity || "";
+    card.tier = RARITY_TIER[card.rarity] ?? 0;
+    card.price = marketPrice(detail);
+    if (card.rarity && !(card.rarity in RARITY_TIER)) unknownRarity[card.rarity] = (unknownRarity[card.rarity] || 0) + 1;
+    const updated = detail.pricing?.tcgplayer?.updated || "";
+    if (updated > priceUpdated) priceUpdated = updated;
+  });
 
   const sets = {};
   const cards = {};
+  const prices = {};
   dexIds.forEach((dex, i) => {
-    const zh = (zhByDex.get(dex) || []).sort(newestFirst);
-    const en = enIds[i]
-      .map((c) => enCards.get(c.id))
-      .filter(Boolean)
-      .sort(newestFirst);
-    const kept = [...zh.slice(0, MAX_PER_LANG), ...en.slice(0, MAX_PER_LANG)];
+    const zh = (zhByDex.get(dex) || []).sort(zhOrder).slice(0, MAX_PER_LANG);
+    const en = [...new Map(enIds[i].map((c) => [c.id, enCards.get(c.id)])).values()].filter(Boolean);
+    const byPrice = en
+      .filter((card) => card.price >= PRICE_MIN)
+      .sort((a, b) => b.price - a.price)
+      .slice(0, MAX_BY_PRICE);
+    const bySpecial = en.filter((card) => !byPrice.includes(card)).sort(specialOrder);
+    const kept = [...zh, ...[...byPrice, ...bySpecial].slice(0, MAX_PER_LANG)];
     if (!kept.length) return;
     cards[dex] = kept.map((card) => card.img);
-    for (const card of kept) sets[card.img.slice(0, card.img.lastIndexOf("/"))] = card.set;
+    for (const card of kept) {
+      sets[card.img.slice(0, card.img.lastIndexOf("/"))] = card.set;
+      if (card.price >= PRICE_MIN) prices[card.img] = Math.round(card.price);
+    }
   });
 
   const counts = Object.values(cards).map((list) => list.length);
@@ -114,8 +196,10 @@ async function main() {
   console.log(
     `species with cards ${counts.length} of ${dexIds.length}, with zh-tw cards ${zhSpecies}, cards kept ${counts.reduce((a, b) => a + b, 0)}`,
   );
-  writeFileSync(REPORT, JSON.stringify({ unmatchedZhNames: unmatched }, null, 2));
-  writeFileSync(OUT, JSON.stringify({ sets, cards }));
+  const priceDate = priceUpdated.slice(0, 7).replace("-", ".");
+  console.log(`prices kept ${Object.keys(prices).length}, price date ${priceDate}`);
+  writeFileSync(REPORT, JSON.stringify({ unmatchedZhNames: unmatched, unknownRarity }, null, 2));
+  writeFileSync(OUT, JSON.stringify({ sets, cards, prices, priceDate }));
 }
 
 main().catch((err) => {

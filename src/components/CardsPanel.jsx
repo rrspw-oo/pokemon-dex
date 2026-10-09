@@ -2,32 +2,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const ASSETS = "https://assets.tcgdex.net/";
 const FORMATS = ["webp", "jpg"];
-const PRICE_MIN = 100;
-const PRICE_TIMEOUT = 3000;
 let cardsPromise;
 const loadCards = () => (cardsPromise ||= import("../data/cards.json").then((m) => m.default));
-
-const fetchPrice = (id) =>
-  fetch(`https://api.tcgdex.net/v2/en/cards/${id}`)
-    .then((res) => (res.ok ? res.json() : null))
-    .then((card) => {
-      const prices = Object.values(card?.pricing?.tcgplayer || {})
-        .map((variant) => variant?.marketPrice)
-        .filter((n) => typeof n === "number");
-      return prices.length ? Math.min(...prices) : null;
-    })
-    .catch(() => null);
-
-const loadPrice = (id) => Promise.race([fetchPrice(id), new Promise((r) => setTimeout(() => r(null), PRICE_TIMEOUT))]);
 
 function toCard(img, sets) {
   const cut = img.lastIndexOf("/");
   const setPath = img.slice(0, cut);
   const no = img.slice(cut + 1);
-  return { img, no, set: sets[setPath], id: `${setPath.slice(setPath.lastIndexOf("/") + 1)}-${no}` };
+  return { img, no, set: sets[setPath] };
 }
 
-const highPrice = (price) => (price >= PRICE_MIN ? `US$${Math.round(price).toLocaleString("en-US")}` : null);
+const formatPrice = (price) => `US$${price.toLocaleString("en-US")}`;
 
 function CardImage({ card, size, alt, lazy }) {
   const [index, setIndex] = useState(0);
@@ -67,9 +52,9 @@ function ViewerImage({ card, alt }) {
   return <CardImage card={card} size="low" alt={alt} />;
 }
 
-function CardViewer({ cards, index, name, prices, onIndex, onClose }) {
+function CardViewer({ cards, index, name, prices, priceDate, onIndex, onClose }) {
   const card = cards[index];
-  const price = highPrice(prices[card.img]);
+  const price = prices[card.img];
   const hasNext = index < cards.length - 1;
   const hasPrev = !hasNext && index > 0;
 
@@ -123,7 +108,12 @@ function CardViewer({ cards, index, name, prices, onIndex, onClose }) {
       <ViewerImage key={card.img} card={card} alt={`${name} ${card.set} ${card.no}`} />
       <p className="card-viewer-caption">
         {card.set} #{card.no}
-        {price && <span className="card-price">市價 {price}</span>}
+        {price && (
+          <span className="card-price">
+            {formatPrice(price)}
+            <span className="card-price-date">{priceDate}</span>
+          </span>
+        )}
         <span className="card-viewer-count">
           {index + 1} / {cards.length}
         </span>
@@ -150,10 +140,8 @@ function CardViewer({ cards, index, name, prices, onIndex, onClose }) {
 function CardsPanel({ dex, name }) {
   const [all, setAll] = useState(null);
   const [open, setOpen] = useState(false);
-  const [shown, setShown] = useState(false);
   const [viewing, setViewing] = useState(null);
   const drag = useRef(null);
-  const [prices, setPrices] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -165,21 +153,10 @@ function CardsPanel({ dex, name }) {
 
   const cards = useMemo(() => all?.cards[dex]?.map((img) => toCard(img, all.sets)), [all, dex]);
 
-  useEffect(() => {
-    if (!shown || !cards) return;
-    let alive = true;
-    const english = cards.filter((card) => card.img.startsWith("en/"));
-    Promise.all(english.map((card) => loadPrice(card.id).then((price) => [card.img, price]))).then(
-      (entries) => alive && setPrices(Object.fromEntries(entries)),
-    );
-    return () => {
-      alive = false;
-    };
-  }, [shown, cards]);
-
+  const prices = all?.prices;
   const ordered = useMemo(() => {
-    if (!cards || !prices) return cards;
-    const priced = cards.filter((card) => highPrice(prices[card.img])).sort((a, b) => prices[b.img] - prices[a.img]);
+    if (!cards) return cards;
+    const priced = cards.filter((card) => prices[card.img]).sort((a, b) => prices[b.img] - prices[a.img]);
     return [...priced, ...cards.filter((card) => !priced.includes(card))];
   }, [cards, prices]);
 
@@ -215,10 +192,7 @@ function CardsPanel({ dex, name }) {
     drag.current = null;
   };
 
-  const toggle = () => {
-    setOpen((v) => !v);
-    setShown(true);
-  };
+  const toggle = () => setOpen((v) => !v);
 
   return (
     <section className="panel">
@@ -236,39 +210,48 @@ function CardsPanel({ dex, name }) {
             </>
           )}
         </button>
-        <div className="collapse" aria-hidden={!open}>
-          <div className="collapse-inner">
-            {shown && !prices && <p className="card-loading">載入中</p>}
-            {shown && prices && (
-              <ul
-                className="card-strip"
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                onPointerLeave={onPointerLeave}
-                onClickCapture={onClickCapture}
-              >
-                {ordered.map((card, i) => (
-                  <li key={card.img}>
-                    <button type="button" className="card-thumb" onClick={() => setViewing(i)}>
-                      <CardImage card={card} size="low" alt={`${name} ${card.set} ${card.no}`} lazy />
-                      <span className="card-meta">
-                        {card.img.startsWith("en/") && <em>EN</em>}
-                        {card.set}
-                      </span>
-                      {highPrice(prices[card.img]) && (
-                        <span className="card-price">市價 {highPrice(prices[card.img])}</span>
-                      )}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
+        <ul
+          className={`card-strip ${open ? "" : "is-closed"}`}
+          aria-hidden={!open}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerLeave={onPointerLeave}
+          onClickCapture={onClickCapture}
+        >
+          {ordered.map((card, i) => (
+            <li key={card.img}>
+              <button type="button" className="card-thumb" disabled={!open} onClick={() => setViewing(i)}>
+                {open ? (
+                  <CardImage card={card} size="low" alt={`${name} ${card.set} ${card.no}`} lazy />
+                ) : (
+                  <span className="card-back" />
+                )}
+                <span className="card-meta">
+                  {card.img.startsWith("en/") && <em>EN</em>}
+                  {card.set}
+                </span>
+                {prices[card.img] && (
+                  <span className="card-price">
+                    {formatPrice(prices[card.img])}
+                    <span className="card-price-date">{all.priceDate}</span>
+                  </span>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
       {viewing !== null && (
-        <CardViewer cards={ordered} index={viewing} name={name} prices={prices} onIndex={setViewing} onClose={() => setViewing(null)} />
+        <CardViewer
+          cards={ordered}
+          index={viewing}
+          name={name}
+          prices={prices}
+          priceDate={all.priceDate}
+          onIndex={setViewing}
+          onClose={() => setViewing(null)}
+        />
       )}
     </section>
   );
