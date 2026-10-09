@@ -97,7 +97,6 @@ function App() {
           />
         ) : results === null ? (
           <section className="home">
-            <p className="home-text">輸入編號、名稱、屬性或進化條件</p>
             <div className="chips">
               {EXAMPLES.map((ex) => (
                 <button key={ex} type="button" className="chip" onClick={() => runExample(ex)}>

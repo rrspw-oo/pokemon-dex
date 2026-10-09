@@ -88,7 +88,7 @@ function SearchBox({ onSearch, onSelect, resetKey, presetQuery }) {
           enterKeyHint="search"
           className="search-input"
           value={query}
-          placeholder="編號 / 名稱 / 屬性"
+          placeholder="輸入編號、名稱、屬性或進化條件"
           aria-label="搜尋寶可夢"
           autoComplete="off"
           autoCorrect="off"
