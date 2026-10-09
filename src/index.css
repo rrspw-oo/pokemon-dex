@@ -801,13 +801,8 @@ p {
   font-size: 12px;
 }
 
-.collab {
-  margin-top: 6px;
-  font-size: 12px;
-}
-
-.collab a {
-  color: var(--shell-ink);
+.copyright a {
+  color: inherit;
 }
 
 .disclaimer {

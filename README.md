@@ -101,4 +101,4 @@ PokeAPI 回應會快取在 `node_modules/.cache/pokeapi`，重跑不會重複下
 - `src/customContent/` 內的自訂圖片不在 MIT 授權範圍內
 - PvPoke 資料：MIT，授權檔在 `src/data/LICENSE-PvPoke.txt`
 - 字型 Cubic 11、Press Start 2P：SIL Open Font License，授權檔在 `src/assets/fonts/`
-- Pokémon 及相關名稱、圖像之版權屬於 Nintendo、Creatures、GAME FREAK 與 The Pokémon Company；Pokémon GO 遊戲資料與盃賽圖示屬於 Niantic。本專案為非官方粉絲作品，與上述公司無關。網頁底部顯示版權歸屬、資料來源，以及合作聯絡連結「collab」（wpsrrr@gmail.com）
+- Pokémon 及相關名稱、圖像之版權屬於 Nintendo、Creatures、GAME FREAK 與 The Pokémon Company；Pokémon GO 遊戲資料與盃賽圖示屬於 Niantic。本專案為非官方粉絲作品，與上述公司無關。網頁底部顯示版權歸屬、資料來源，版權行的「R_R」是合作聯絡的 email 連結（wpsrrr@gmail.com）
