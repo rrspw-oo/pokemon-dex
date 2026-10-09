@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import sharp from "sharp";
 import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { bestIv, computeCp } from "../src/utils/pvpIv.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, "../src/data/cups.json");
@@ -24,7 +25,15 @@ const PVPOKE_CUP = {
   COMBAT_LEAGUE_VS_SEEKER_MASTER_PREMIER: ["premier", 10000],
   COMBAT_LEAGUE_VS_SEEKER_ULTRA_PREMIER: ["premier", 2500],
   COMBAT_LEAGUE_VS_SEEKER_MASTER_CLASSIC: ["classic", 10000],
+  COMBAT_LEAGUE_VS_SEEKER_GREAT_MEGAS: ["mega", 1500],
+  COMBAT_LEAGUE_VS_SEEKER_ULTRA_MEGAS: ["mega", 2500],
+  COMBAT_LEAGUE_VS_SEEKER_MASTER_MEGAS: ["mega", 10000],
 };
+const TITLE_FALLBACK = {
+  COMBAT_LEAGUE_VS_SEEKER_GREAT_MEGAS: "超級聯盟：超級版",
+  COMBAT_LEAGUE_VS_SEEKER_ULTRA_MEGAS: "高級聯盟：超級版",
+};
+const MEGA_ID = /_mega(_[xy])?$|_primal$/;
 const STANDARD = {
   COMBAT_LEAGUE_VS_SEEKER_GREAT: 1500,
   COMBAT_LEAGUE_VS_SEEKER_ULTRA: 2500,
@@ -99,6 +108,7 @@ async function main() {
     const m = tpl.templateId.match(/^V(\d{4})_POKEMON_/);
     if (ps && m && !ps.form) goNameByDex.set(Number(m[1]), ps.pokemonId);
   }
+  const dexByGoName = new Map([...goNameByDex].map(([dex, name]) => [name, dex]));
   const pokemonById = new Map(pvpoke.pokemon.map((p) => [p.speciesId, p]));
   const linked = new Set(Object.keys(pvp.pokemon));
 
@@ -120,9 +130,9 @@ async function main() {
 
   const seenTitles = new Set();
   const leagues = gm
-    .filter((tpl) => tpl.data.combatLeague && tpl.templateId.startsWith("COMBAT_LEAGUE_VS_SEEKER_") && !tpl.templateId.includes("MEGAS"))
+    .filter((tpl) => tpl.data.combatLeague && tpl.templateId.startsWith("COMBAT_LEAGUE_VS_SEEKER_"))
     .reverse()
-    .map((tpl) => ({ id: tpl.templateId, league: tpl.data.combatLeague, zh: t.get(tpl.data.combatLeague.title.toLowerCase()) }))
+    .map((tpl) => ({ id: tpl.templateId, league: tpl.data.combatLeague, zh: t.get(tpl.data.combatLeague.title.toLowerCase()) || TITLE_FALLBACK[tpl.templateId] }))
     .filter((l) => {
       if (!l.zh || seenTitles.has(l.zh)) return false;
       seenTitles.add(l.zh);
@@ -171,17 +181,31 @@ async function main() {
         for (const m of r.counters || []) add(beats, m.opponent, r.speciesId);
       }
     }
+    const keep = (list) =>
+      (list || [])
+        .filter((o) => linked.has(o.replace(/_shadow$/, "")) && (source || eligible(o)))
+        .slice(0, 5)
+        .map(ref);
+    const row = (r) => [ref(r.speciesId), r.score, r.moveset.filter((m) => m !== "none"), keep(beats.get(r.speciesId)), keep(losesTo.get(r.speciesId))];
     const top = [];
+    const megaTop = [];
+    let rank = 0;
     for (const r of ranking) {
-      if (top.length >= TOP) break;
+      if (top.length >= TOP && (!league.allowTempEvos || megaTop.length >= TOP)) break;
       if (!linked.has(r.speciesId.replace(/_shadow$/, ""))) continue;
       if (!source && !eligible(r.speciesId)) continue;
-      const keep = (list) =>
-        (list || [])
-          .filter((o) => linked.has(o.replace(/_shadow$/, "")) && (source || eligible(o)))
-          .slice(0, 5)
-          .map(ref);
-      top.push([ref(r.speciesId), r.score, r.moveset.filter((m) => m !== "none"), keep(beats.get(r.speciesId)), keep(losesTo.get(r.speciesId))]);
+      rank++;
+      if (top.length < TOP) top.push(row(r));
+      if (league.allowTempEvos && MEGA_ID.test(r.speciesId) && megaTop.length < TOP) {
+        const entry = [...row(r), rank];
+        if (maxCp < 6000) {
+          const best = bestIv(pvp.pokemon[r.speciesId].s, maxCp, pvp.cpm);
+          const m = pvp.cpm.find(([level]) => level === best.level)[1];
+          const base = pvp.pokemon[r.speciesId.replace(MEGA_ID, "")];
+          entry.push([best.iv, best.level, best.cp, computeCp(base.s, best.iv, m)]);
+        }
+        megaTop.push(entry);
+      }
     }
     if (top.length === 0) continue;
 
@@ -213,6 +237,8 @@ async function main() {
     if (caughtWindow) rules.push("限賽季期間捕捉的寶可夢");
     if (banned.has("MEWTWO") || banned.has("MEW")) rules.push("禁用傳說、幻之寶可夢等");
     else if (banned.size > 2) rules.push(`禁用 ${banned.size} 種寶可夢`);
+    else if (banned.size) rules.push(`禁用 ${[...banned].map((name) => zhByGoId.get(name.toLowerCase()) || t.get(`pokemon_name_${String(dexByGoName.get(name)).padStart(4, "0")}`) || name).join("、")}`);
+    if (league.allowTempEvos) rules.push(maxCp < 6000 ? "可超級進化，CP 超過上限時對戰中自動調降" : "可超級進化");
 
     allowedByCup.set(zh.replace(/\s+/g, ""), new Set(pool.filter((p) => eligible(p.speciesId)).map(zhOf)));
     cups.push({
@@ -224,6 +250,7 @@ async function main() {
       rules,
       source: source ? "pvpoke" : "derived",
       top,
+      ...(megaTop.length ? { megaTop } : {}),
     });
   }
 

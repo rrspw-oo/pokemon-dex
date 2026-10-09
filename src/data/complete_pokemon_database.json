@@ -718,6 +718,50 @@
     "go_id": "raichu_alolan"
   },
   {
+    "id": 26,
+    "name_en": "Raichu",
+    "name_zh_tw": "雷丘",
+    "types": [
+      "Electric"
+    ],
+    "total_stats": 585,
+    "stats": {
+      "hp": 60,
+      "attack": 135,
+      "defense": 95,
+      "sp_attack": 90,
+      "sp_defense": 95,
+      "speed": 110
+    },
+    "is_variant": true,
+    "sprite": "10304",
+    "form_zh": "超級雷丘Ｘ",
+    "form_en": "Mega Raichu X",
+    "go_id": "raichu_mega_x"
+  },
+  {
+    "id": 26,
+    "name_en": "Raichu",
+    "name_zh_tw": "雷丘",
+    "types": [
+      "Electric"
+    ],
+    "total_stats": 585,
+    "stats": {
+      "hp": 60,
+      "attack": 100,
+      "defense": 55,
+      "sp_attack": 160,
+      "sp_defense": 80,
+      "speed": 130
+    },
+    "is_variant": true,
+    "sprite": "10305",
+    "form_zh": "超級雷丘Ｙ",
+    "form_en": "Mega Raichu Y",
+    "go_id": "raichu_mega_y"
+  },
+  {
     "id": 27,
     "name_en": "Sandshrew",
     "name_zh_tw": "穿山鼠",
@@ -1861,6 +1905,29 @@
     },
     "is_variant": false,
     "go_id": "victreebel"
+  },
+  {
+    "id": 71,
+    "name_en": "Victreebel",
+    "name_zh_tw": "大食花",
+    "types": [
+      "Grass",
+      "Poison"
+    ],
+    "total_stats": 590,
+    "stats": {
+      "hp": 80,
+      "attack": 125,
+      "defense": 85,
+      "sp_attack": 135,
+      "sp_defense": 95,
+      "speed": 70
+    },
+    "is_variant": true,
+    "sprite": "10279",
+    "form_zh": "超級大食花",
+    "form_en": "Mega Victreebel",
+    "go_id": "victreebel_mega"
   },
   {
     "id": 72,
@@ -3248,6 +3315,29 @@
     "go_id": "starmie"
   },
   {
+    "id": 121,
+    "name_en": "Starmie",
+    "name_zh_tw": "寶石海星",
+    "types": [
+      "Water",
+      "Psychic"
+    ],
+    "total_stats": 620,
+    "stats": {
+      "hp": 60,
+      "attack": 100,
+      "defense": 105,
+      "sp_attack": 130,
+      "sp_defense": 105,
+      "speed": 120
+    },
+    "is_variant": true,
+    "sprite": "10280",
+    "form_zh": "超級寶石海星",
+    "form_en": "Mega Starmie",
+    "go_id": "starmie_mega"
+  },
+  {
     "id": 122,
     "name_en": "Mr. Mime",
     "name_zh_tw": "魔牆人偶",
@@ -4023,6 +4113,29 @@
     },
     "is_variant": false,
     "go_id": "dragonite"
+  },
+  {
+    "id": 149,
+    "name_en": "Dragonite",
+    "name_zh_tw": "快龍",
+    "types": [
+      "Dragon",
+      "Flying"
+    ],
+    "total_stats": 700,
+    "stats": {
+      "hp": 91,
+      "attack": 124,
+      "defense": 115,
+      "sp_attack": 145,
+      "sp_defense": 125,
+      "speed": 100
+    },
+    "is_variant": true,
+    "sprite": "10281",
+    "form_zh": "超級快龍",
+    "form_en": "Mega Dragonite",
+    "go_id": "dragonite_mega"
   },
   {
     "id": 150,
@@ -5818,6 +5931,29 @@
     },
     "is_variant": false,
     "go_id": "skarmory"
+  },
+  {
+    "id": 227,
+    "name_en": "Skarmory",
+    "name_zh_tw": "盔甲鳥",
+    "types": [
+      "Steel",
+      "Flying"
+    ],
+    "total_stats": 565,
+    "stats": {
+      "hp": 65,
+      "attack": 140,
+      "defense": 110,
+      "sp_attack": 40,
+      "sp_defense": 100,
+      "speed": 110
+    },
+    "is_variant": true,
+    "sprite": "10284",
+    "form_zh": "超級盔甲鳥",
+    "form_en": "Mega Skarmory",
+    "go_id": "skarmory_mega"
   },
   {
     "id": 228,
@@ -15705,6 +15841,29 @@
     "go_id": "chesnaught"
   },
   {
+    "id": 652,
+    "name_en": "Chesnaught",
+    "name_zh_tw": "布里卡隆",
+    "types": [
+      "Grass",
+      "Fighting"
+    ],
+    "total_stats": 630,
+    "stats": {
+      "hp": 88,
+      "attack": 137,
+      "defense": 172,
+      "sp_attack": 74,
+      "sp_defense": 115,
+      "speed": 44
+    },
+    "is_variant": true,
+    "sprite": "10292",
+    "form_zh": "超級布里卡隆",
+    "form_en": "Mega Chesnaught",
+    "go_id": "chesnaught_mega"
+  },
+  {
     "id": 653,
     "name_en": "Fennekin",
     "name_zh_tw": "火狐狸",
@@ -15763,6 +15922,29 @@
     "go_id": "delphox"
   },
   {
+    "id": 655,
+    "name_en": "Delphox",
+    "name_zh_tw": "妖火紅狐",
+    "types": [
+      "Fire",
+      "Psychic"
+    ],
+    "total_stats": 634,
+    "stats": {
+      "hp": 75,
+      "attack": 69,
+      "defense": 72,
+      "sp_attack": 159,
+      "sp_defense": 125,
+      "speed": 134
+    },
+    "is_variant": true,
+    "sprite": "10293",
+    "form_zh": "超級妖火紅狐",
+    "form_en": "Mega Delphox",
+    "go_id": "delphox_mega"
+  },
+  {
     "id": 656,
     "name_en": "Froakie",
     "name_zh_tw": "呱呱泡蛙",
@@ -15819,6 +16001,29 @@
     },
     "is_variant": false,
     "go_id": "greninja"
+  },
+  {
+    "id": 658,
+    "name_en": "Greninja",
+    "name_zh_tw": "甲賀忍蛙",
+    "types": [
+      "Water",
+      "Dark"
+    ],
+    "total_stats": 630,
+    "stats": {
+      "hp": 72,
+      "attack": 125,
+      "defense": 77,
+      "sp_attack": 133,
+      "sp_defense": 81,
+      "speed": 142
+    },
+    "is_variant": true,
+    "sprite": "10294",
+    "form_zh": "超級甲賀忍蛙",
+    "form_en": "Mega Greninja",
+    "go_id": "greninja_mega"
   },
   {
     "id": 659,
@@ -16445,6 +16650,29 @@
     },
     "is_variant": false,
     "go_id": "malamar"
+  },
+  {
+    "id": 687,
+    "name_en": "Malamar",
+    "name_zh_tw": "烏賊王",
+    "types": [
+      "Dark",
+      "Psychic"
+    ],
+    "total_stats": 582,
+    "stats": {
+      "hp": 86,
+      "attack": 102,
+      "defense": 88,
+      "sp_attack": 98,
+      "sp_defense": 120,
+      "speed": 88
+    },
+    "is_variant": true,
+    "sprite": "10297",
+    "form_zh": "超級烏賊王",
+    "form_en": "Mega Malamar",
+    "go_id": "malamar_mega"
   },
   {
     "id": 688,
@@ -20433,6 +20661,28 @@
     },
     "is_variant": false,
     "go_id": "falinks"
+  },
+  {
+    "id": 870,
+    "name_en": "Falinks",
+    "name_zh_tw": "列陣兵",
+    "types": [
+      "Fighting"
+    ],
+    "total_stats": 570,
+    "stats": {
+      "hp": 65,
+      "attack": 135,
+      "defense": 135,
+      "sp_attack": 70,
+      "sp_defense": 65,
+      "speed": 100
+    },
+    "is_variant": true,
+    "sprite": "10303",
+    "form_zh": "超級列陣兵",
+    "form_en": "Mega Falinks",
+    "go_id": "falinks_mega"
   },
   {
     "id": 871,
