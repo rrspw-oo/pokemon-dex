@@ -14,6 +14,9 @@ function Footer() {
         <p className="disclaimer">
           Pokémon 及相關名稱、圖像之版權屬於 Nintendo、Creatures、GAME FREAK、The Pokémon Company 與 Niantic。資料來源：PokeAPI、PvPoke、PokeMiners。
         </p>
+        <p className="collab">
+          <a href="mailto:wpsrrr@gmail.com">collab</a>
+        </p>
       </div>
     </footer>
   );

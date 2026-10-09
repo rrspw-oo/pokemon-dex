@@ -160,7 +160,7 @@ function App() {
         <span className="power-led" aria-hidden="true" />
         <h1 className="title">
           <button type="button" onClick={reset} aria-label="重設搜尋">
-            Pokemon Search Tool
+            Pok<span className="title-acute">e</span>mon OmniSearch
           </button>
         </h1>
       </header>
