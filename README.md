@@ -104,7 +104,7 @@ PokeAPI 回應會快取在 `node_modules/.cache/pokeapi`，重跑不會重複下
 
 ## 授權
 
-- 程式碼以 MIT 授權釋出，見 `LICENSE`
+- 程式碼以 MIT 授權釋出，版權人 yRwRy，見 `LICENSE`
 - `src/customContent/` 內的自訂圖片不在 MIT 授權範圍內
 - PvPoke 資料：MIT，授權檔在 `src/data/LICENSE-PvPoke.txt`
 - 字型 Cubic 11、Press Start 2P：SIL Open Font License，授權檔在 `src/assets/fonts/`
