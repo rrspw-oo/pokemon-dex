@@ -1,6 +1,6 @@
 {
-  "name": "Pokemon Dex React",
-  "short_name": "PokeDex",
+  "name": "POKÉMON OMNISEARCH",
+  "short_name": "POKÉMON OMNISEARCH",
   "description": "A comprehensive Pokemon database with Chinese and English names, featuring shiny Pokemon support",
   "start_url": "/pokemon-dex/",
   "display": "standalone",
