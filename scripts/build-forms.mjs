@@ -5,6 +5,14 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = resolve(__dirname, "../src/data/complete_pokemon_database.json");
 const CACHE_DIR = resolve(__dirname, "../node_modules/.cache/pokeapi");
+const GM_CACHE = resolve(__dirname, "../node_modules/.cache/pogo/game_master.json");
+const GM_URL = "https://raw.githubusercontent.com/PokeMiners/game_masters/master/latest/latest.json";
+const TEMP_EVO_SUFFIX = {
+  TEMP_EVOLUTION_MEGA: "-mega",
+  TEMP_EVOLUTION_MEGA_X: "-mega-x",
+  TEMP_EVOLUTION_MEGA_Y: "-mega-y",
+  TEMP_EVOLUTION_PRIMAL: "-primal",
+};
 const API = "https://pokeapi.co/api/v2";
 const CONCURRENCY = 16;
 const SPRITE_PREFIX = "/sprites/pokemon/";
@@ -167,6 +175,56 @@ async function formNames(cand) {
   };
 }
 
+function megaZh(name, base) {
+  const m = name.match(/-(mega|primal)(?:-([xy]))?$/);
+  if (!m) return null;
+  if (m[1] === "primal") return `原始${base}`;
+  return `超級${base}${m[2] ? (m[2] === "x" ? "Ｘ" : "Ｙ") : ""}`;
+}
+
+async function goMegaNames() {
+  if (!existsSync(GM_CACHE)) {
+    const res = await fetch(GM_URL);
+    if (!res.ok) throw new Error(`Failed: ${GM_URL}`);
+    mkdirSync(dirname(GM_CACHE), { recursive: true });
+    writeFileSync(GM_CACHE, Buffer.from(await res.arrayBuffer()));
+  }
+  const out = new Map();
+  for (const tpl of JSON.parse(readFileSync(GM_CACHE, "utf8"))) {
+    const ps = tpl.data.pokemonSettings;
+    const m = tpl.templateId.match(/^V(\d{4})_POKEMON_/);
+    if (!ps?.tempEvoOverrides || !m || (ps.form && !ps.form.endsWith("_NORMAL"))) continue;
+    for (const o of ps.tempEvoOverrides) {
+      if (o.tempEvoId) out.set(`${ps.pokemonId.toLowerCase()}${TEMP_EVO_SUFFIX[o.tempEvoId]}`, Number(m[1]));
+    }
+  }
+  return out;
+}
+
+async function addMissingMegas(db) {
+  const added = [];
+  for (const [name, id] of await goMegaNames()) {
+    const pokemon = await getJson(`${API}/pokemon/${name}`);
+    if (!pokemon) continue;
+    const sprite = stemOf(pokemon.sprites.front_default);
+    if (db.some((e) => e.id === id && e.sprite === sprite)) continue;
+    const base = db.find((e) => e.id === id && !e.is_variant);
+    const stats = STAT_KEYS.map((k) => pokemon.stats.find((st) => st.stat.name === k).base_stat);
+    db.push({
+      id,
+      name_en: base.name_en,
+      name_zh_tw: base.name_zh_tw,
+      types: pokemon.types.map((t) => t.type.name[0].toUpperCase() + t.type.name.slice(1)),
+      total_stats: stats.reduce((a, b) => a + b, 0),
+      stats: Object.fromEntries(DB_STAT_KEYS.map((k, i) => [k, stats[i]])),
+      is_variant: true,
+    });
+    added.push(name);
+  }
+  db.sort((a, b) => a.id - b.id || a.is_variant - b.is_variant);
+  return added;
+}
+
 function compose(base, full, form) {
   if (full) return full;
   if (!form) return null;
@@ -176,6 +234,7 @@ function compose(base, full, form) {
 
 async function main() {
   const db = JSON.parse(readFileSync(DB_PATH, "utf8"));
+  const addedMegas = await addMissingMegas(db);
   const bySpecies = new Map();
   db.forEach((e) => {
     if (!bySpecies.has(e.id)) bySpecies.set(e.id, []);
@@ -241,7 +300,8 @@ async function main() {
         const names = await formNames(cand);
         const zh =
           FORM_ZH_OVERRIDE[cand.name] ||
-          compose(base.name_zh_tw, names.zhFull, names.zhForm || dictionaryZh(cand));
+          compose(base.name_zh_tw, names.zhFull, names.zhForm || dictionaryZh(cand)) ||
+          megaZh(cand.name, base.name_zh_tw);
         const enBase = base.name_en.replace(/\s*\(.*$/, "");
         const en = compose(enBase, names.enFull, names.enForm) || cand.name;
         if (entry.name_zh_tw === base.name_zh_tw && zh) entry.form_zh = zh.replace(/的樣子/g, "");
@@ -256,7 +316,7 @@ async function main() {
   writeFileSync(DB_PATH, JSON.stringify(db, null, 2) + "\n");
   writeFileSync(resolve(CACHE_DIR, "../forms-report.json"), JSON.stringify(report, null, 2));
   console.log(
-    `entries ${db.length}, nameFixes ${report.nameFixes.length}, unmatched ${report.unmatched.length}, weak ${report.weak.length}, statDiffs ${report.statDiffs.length}, typeDiffs ${report.typeDiffs.length}, forms ${report.forms.length}`
+    `added megas ${addedMegas.length} ${addedMegas.join(" ")}, entries ${db.length}, nameFixes ${report.nameFixes.length}, unmatched ${report.unmatched.length}, weak ${report.weak.length}, statDiffs ${report.statDiffs.length}, typeDiffs ${report.typeDiffs.length}, forms ${report.forms.length}`
   );
 }
 
