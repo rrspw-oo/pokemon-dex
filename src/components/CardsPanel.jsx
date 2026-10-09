@@ -223,38 +223,34 @@ function CardsPanel({ dex, name }) {
           )}
         </button>
         {open && visible.length === 0 && <p className="card-loading">此寶可夢暫搜尋不到卡牌</p>}
-        <ul
-          hidden={open && visible.length === 0}
-          className={`card-strip ${open ? "" : "is-closed"}`}
-          aria-hidden={!open}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerLeave={onPointerLeave}
-          onClickCapture={onClickCapture}
-        >
-          {visible.map((card, i) => (
-            <li key={card.img}>
-              <button type="button" className="card-thumb" disabled={!open} onClick={() => setViewing(i)}>
-                {open ? (
+        {open && visible.length > 0 && (
+          <ul
+            className="card-strip"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerLeave={onPointerLeave}
+            onClickCapture={onClickCapture}
+          >
+            {visible.map((card, i) => (
+              <li key={card.img}>
+                <button type="button" className="card-thumb" onClick={() => setViewing(i)}>
                   <CardImage card={card} size="low" alt={`${name} ${card.set} ${card.no}`} lazy onFail={onFail} />
-                ) : (
-                  <span className="card-back" />
-                )}
-                <span className="card-meta">
-                  {card.img.startsWith("en/") && <em>EN</em>}
-                  {card.set}
-                </span>
-                {prices[card.img] && (
-                  <span className="card-price">
-                    {formatPrice(prices[card.img])}
-                    <span className="card-price-date">{all.priceDate}</span>
+                  <span className="card-meta">
+                    {card.img.startsWith("en/") && <em>EN</em>}
+                    {card.set}
                   </span>
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
+                  {prices[card.img] && (
+                    <span className="card-price">
+                      {formatPrice(prices[card.img])}
+                      <span className="card-price-date">{all.priceDate}</span>
+                    </span>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       {viewing !== null && (
         <CardViewer
