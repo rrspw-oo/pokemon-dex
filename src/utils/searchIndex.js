@@ -48,7 +48,7 @@ function typeOf(query) {
 }
 
 function conditionMatches(query) {
-  const q = query.replace(/\s+/g, "");
+  const q = query.replace(/\s+/g, "").replace(/誘餌(模組)?/g, "模組");
   const out = new Map();
   for (const c of conditions) {
     if (!(c.norm.includes(q) || Array.from(q).every((ch) => c.norm.includes(ch)))) continue;
@@ -142,7 +142,10 @@ export function search(rawQuery) {
       lines.get(c.line).push(c.form ? `${target.zh}（${c.form}）` : target.zh);
     }
     for (const { base, lines } of hints.values()) {
-      const hint = [...lines].map(([line, targets]) => `進化成${targets.join("、")}：${line}`).join("；");
+      const single = new Set([...lines.values()].flat()).size === 1;
+      const hint = [...lines]
+        .map(([line, targets]) => (single ? `${line}才可進化` : `${targets.join("、")}：${line}`))
+        .join("；");
       scored.push({ r: { ...base, hint }, s: 45 });
     }
   } else {
