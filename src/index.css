@@ -1107,6 +1107,19 @@ p {
   line-height: 1.2;
 }
 
+.rank-names {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rank-en {
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
 .rank-head .type-badges {
   margin-left: auto;
 }
@@ -1147,7 +1160,8 @@ p {
 }
 
 @media (min-width: 600px) {
-  .rank-moves-collapsible {
+  .rank-moves-collapsible,
+  .rank-row .matchups:has(> .rank-moves-collapsible:only-child) {
     display: none;
   }
 }

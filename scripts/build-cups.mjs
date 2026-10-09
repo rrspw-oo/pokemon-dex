@@ -155,13 +155,33 @@ async function main() {
 
     const source = PVPOKE_CUP[id] || (STANDARD[id] && ["all", STANDARD[id]]);
     const ranking = source ? await rankingFile(source[0], source[1]) : await rankingFile("all", cp);
+    const beats = new Map();
+    const losesTo = new Map();
+    const add = (map, key, id) => {
+      if (!map.has(key)) map.set(key, []);
+      if (!map.get(key).includes(id)) map.get(key).push(id);
+    };
+    for (const r of ranking) {
+      for (const m of r.matchups || []) add(beats, r.speciesId, m.opponent);
+      for (const m of r.counters || []) add(losesTo, r.speciesId, m.opponent);
+    }
+    if (!source) {
+      for (const r of ranking) {
+        for (const m of r.matchups || []) add(losesTo, m.opponent, r.speciesId);
+        for (const m of r.counters || []) add(beats, m.opponent, r.speciesId);
+      }
+    }
     const top = [];
     for (const r of ranking) {
       if (top.length >= TOP) break;
       if (!linked.has(r.speciesId.replace(/_shadow$/, ""))) continue;
       if (!source && !eligible(r.speciesId)) continue;
-      const keep = (list) => (list || []).map((m) => m.opponent).filter((o) => linked.has(o.replace(/_shadow$/, "")) && (source || eligible(o))).map(ref);
-      top.push([ref(r.speciesId), r.score, r.moveset.filter((m) => m !== "none"), keep(r.matchups), keep(r.counters)]);
+      const keep = (list) =>
+        (list || [])
+          .filter((o) => linked.has(o.replace(/_shadow$/, "")) && (source || eligible(o)))
+          .slice(0, 5)
+          .map(ref);
+      top.push([ref(r.speciesId), r.score, r.moveset.filter((m) => m !== "none"), keep(beats.get(r.speciesId)), keep(losesTo.get(r.speciesId))]);
     }
     if (top.length === 0) continue;
 

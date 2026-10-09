@@ -63,12 +63,16 @@ export function Matchups({ matchups, counters, onSelect, children }) {
   return (
     <div className="matchups">
       {children}
-      <Collapsible title="擅長對付">
-        <OpponentList ids={matchups} onSelect={onSelect} />
-      </Collapsible>
-      <Collapsible title="剋星">
-        <OpponentList ids={counters} onSelect={onSelect} />
-      </Collapsible>
+      {matchups.length > 0 && (
+        <Collapsible title="擅長對付">
+          <OpponentList ids={matchups} onSelect={onSelect} />
+        </Collapsible>
+      )}
+      {counters.length > 0 && (
+        <Collapsible title="剋星">
+          <OpponentList ids={counters} onSelect={onSelect} />
+        </Collapsible>
+      )}
     </div>
   );
 }

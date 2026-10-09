@@ -5,7 +5,7 @@ import { Collapsible, Matchups, MoveChips } from "./Opponents";
 import { shortName } from "../utils/format";
 
 function RankRow({ rank, pokemon, tags = [], moveset, moves, matchups, counters, onSelect }) {
-  const expandable = Boolean(matchups || counters);
+  const expandable = Boolean(matchups?.length || counters?.length || moveset);
 
   return (
     <li className={`rank-row ${pokemon.shadow ? "is-shadow" : ""}`}>
@@ -15,9 +15,12 @@ function RankRow({ rank, pokemon, tags = [], moveset, moves, matchups, counters,
           <Sprite key={pokemon.image[0]} urls={pokemon.image} alt={pokemon.zh} />
           <span className="rank-body">
             <span className="rank-head">
-              <span className="rank-name">
-                {pokemon.shadow && <ShadowIcon />}
-                {shortName(pokemon.zh)}
+              <span className="rank-names">
+                <span className="rank-name">
+                  {pokemon.shadow && <ShadowIcon />}
+                  {shortName(pokemon.zh)}
+                </span>
+                <span className="rank-en">{pokemon.en}</span>
               </span>
               <TypeBadges types={pokemon.types} />
             </span>
