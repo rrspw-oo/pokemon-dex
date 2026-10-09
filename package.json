@@ -14,7 +14,8 @@
     "data:go": "node scripts/build-go-evolutions.mjs",
     "data:pvp": "node scripts/build-pvp.mjs",
     "data:cups": "node scripts/build-cups.mjs",
-    "data:fonts": "node scripts/build-fonts.mjs"
+    "data:fonts": "node scripts/build-fonts.mjs",
+    "data:cards": "node scripts/build-cards.mjs"
   },
   "dependencies": {
     "react": "^19.1.1",

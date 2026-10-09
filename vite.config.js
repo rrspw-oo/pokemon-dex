@@ -35,6 +35,20 @@ export default defineConfig({
             }
           },
           {
+            urlPattern: /^https:\/\/assets\.tcgdex\.net\/.*\.webp$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'cards-cache',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 30
+              },
+              cacheableResponse: {
+                statuses: [200]
+              }
+            }
+          },
+          {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
             handler: 'CacheFirst',
             options: {

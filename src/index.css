@@ -953,6 +953,114 @@ p {
   padding-bottom: 8px;
 }
 
+.card-block {
+  border-top: 2px dashed var(--line);
+}
+
+.card-strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(40%, 160px);
+  gap: 10px;
+  margin: 0;
+  padding: 0 0 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  list-style: none;
+}
+
+.card-strip li {
+  scroll-snap-align: start;
+}
+
+.card-thumb {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.card-thumb img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 63 / 88;
+  object-fit: contain;
+}
+
+.card-missing {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 63 / 88;
+  border: 2px dashed var(--line);
+  color: var(--ink-soft);
+  font-family: var(--font-pixel);
+  font-size: 16px;
+}
+
+.card-meta {
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.card-meta em {
+  margin-right: 4px;
+  padding: 0 3px;
+  border: 2px solid var(--ink-soft);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  font-style: normal;
+  vertical-align: 1px;
+}
+
+.card-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(34, 37, 46, 0.9);
+  touch-action: pan-y;
+}
+
+.card-viewer img {
+  max-width: min(90vw, 420px);
+  max-height: 72vh;
+  object-fit: contain;
+}
+
+.card-viewer .card-missing {
+  width: min(70vw, 300px);
+  color: var(--paper-hi);
+}
+
+.card-viewer-caption {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  color: var(--paper-hi);
+  font-size: 14px;
+}
+
+.card-viewer-count {
+  color: var(--line);
+}
+
+.card-viewer-actions {
+  display: flex;
+  gap: 12px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .collapse,
   .matchup-toggle::before {

@@ -2,6 +2,7 @@ import { Fragment, useMemo, useState } from "react";
 import Sprite from "./Sprite";
 import TypeBadges from "./TypeBadges";
 import PvpPanel from "./PvpPanel";
+import CardsPanel from "./CardsPanel";
 import { getFamily, getFormChanges } from "../services/pokemonApi";
 import { formatId } from "../utils/format";
 
@@ -236,6 +237,7 @@ function PokemonDetail({ pokemon, onSelect, onBack, backLabel, onTypeClick }) {
           </section>
         )}
         {pokemon.goId && <PvpPanel goId={pokemon.goId} onSelect={onSelect} />}
+        {!pokemon.isCustom && <CardsPanel key={pokemon.key} dex={pokemon.id} name={pokemon.zh} />}
       </div>
     </article>
   );
