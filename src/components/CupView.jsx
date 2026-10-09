@@ -87,14 +87,12 @@ function CupList({ cups, league, onLeague, onOpen }) {
 
 function megaNote(info) {
   if (!info) return null;
-  const [iv, level, cp, baseCp] = info;
+  const [iv, , cp, baseCp] = info;
   return (
     <>
       <span>進化前 CP {baseCp}</span>
       <span>超級進化 CP {cp}</span>
-      <span>
-        Lv {level}・IV {iv.join("/")}
-      </span>
+      <span>IV {iv.join("/")}</span>
     </>
   );
 }
