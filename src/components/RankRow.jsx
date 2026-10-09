@@ -2,7 +2,6 @@ import Sprite from "./Sprite";
 import TypeBadges from "./TypeBadges";
 import ShadowIcon from "./ShadowIcon";
 import { Collapsible, Matchups, MoveChips } from "./Opponents";
-import { shortName } from "../utils/format";
 
 function RankRow({ rank, pokemon, tags = [], moveset, moves, matchups, counters, onSelect }) {
   const expandable = Boolean(matchups?.length || counters?.length || moveset);
@@ -18,7 +17,7 @@ function RankRow({ rank, pokemon, tags = [], moveset, moves, matchups, counters,
               <span className="rank-names">
                 <span className="rank-name">
                   {pokemon.shadow && <ShadowIcon />}
-                  {shortName(pokemon.zh)}
+                  {pokemon.zh}
                 </span>
                 <span className="rank-en">{pokemon.en}</span>
               </span>
