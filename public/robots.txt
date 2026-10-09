@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rrspw-oo.github.io/pokemon-dex/sitemap.xml

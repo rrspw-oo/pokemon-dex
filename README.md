@@ -1,118 +1,91 @@
-# 寶可夢圖鑑搜尋器
+# POKÉMON OMNISEARCH
 
-一個基於 React 的寶可夢圖鑑搜尋工具，Game Boy 機身外觀、彩色點陣圖、手機優先。
+English | [繁體中文](README.zh-TW.md)
 
-## 功能特色
+![POKÉMON OMNISEARCH on a phone](docs/images/screens-en.png)
 
-### 語言
-- 繁體中文與英文兩種介面，標題列右側的 TW / EN 切換；第一次開啟依網址 `?lang=zh` / `?lang=en`、上次的選擇、瀏覽器語言決定
-- 英文版完全不顯示中文：寶可夢名稱、屬性、招式、Pokémon GO 進化條件、型態、盃賽名稱與規則都用英文（來自 Pokémon GO 官方英文文字檔與 PvPoke），卡牌只顯示英文卡；英文也能搜尋進化條件，例如 `catch dark`、`magnetic lure`、`walk`
+One search box for everything about a Pokémon: Pokémon GO evolution requirements, PvP moves and ranks, best IVs, GO Battle League cup rankings, Mega Evolution costs, form changes, and the trading cards it appears on.
 
-### 搜尋
-- 支援中文、英文名稱與編號（`25`、`#25`）搜尋，全部在瀏覽器內完成，不需連線查詢
-- 英文拼錯也找得到（例如 `charzard`、`garchmp`）
-- 可用型態關鍵字搜尋：`mega`、`超級`、`阿羅拉`、`伽勒爾`、`洗翠`、`帕底亞`
-- 屬性搜尋：`惡`、`惡屬性`、`dark` 會列出該屬性的寶可夢
-- Pokémon GO 進化條件搜尋：例如 `捕捉惡屬性`、`步行`、`心心`、`誘餌`、`神奧之石`、`交換`，會列出需要拿來進化的寶可夢，卡片下方顯示符合的條件（例如頑皮熊貓顯示「設為夥伴捕捉 32 隻惡屬性進化」，一隻有多種進化時會標出進化後的名字），社群日或活動時可以馬上找到該帶哪隻當夥伴
-- 輸入時顯示建議清單（含縮圖），可用方向鍵、Enter、Esc 操作
+Live: https://rrspw-oo.github.io/pokemon-dex/ (installable as an app on your phone)
 
-### 分頁
-- 搜尋框下方有「圖鑑 / 屬性 / 盃賽」三個分頁，支援瀏覽器返回鍵
+## why
 
-### 屬性
-- 選擇屬性後可再選「第二屬性」（只列出實際存在的組合與數量），也可從圖鑑頁點屬性標籤直接進入
-- 依超級 / 高級 / 大師聯盟顯示該屬性最強前五名，可展開看全部排名；每隻顯示在三個聯盟前 100 名內的名次標籤，暗影寶可夢獨立一列並標示暗影圖示；每隻都有可收合的「推薦招式」「擅長對付」「剋星」
-- 下方列出該屬性（或屬性組合）的全部寶可夢
+When I play Pokémon GO I end up with five tabs open for one Pokémon. One site for what it needs to evolve, another for its PvP moveset and rank, a calculator for IVs, a page for the current cup rules, and somewhere else again if I want to see its cards. Most of them only exist in one language, and none of them talk to each other.
 
-### 盃賽
-- 先選小小盃（CP 500）、超級聯盟（CP 1500）、高級聯盟（CP 2500）、大師聯盟，再列出該 CP 的所有官方 GO 對戰聯盟盃賽（依 Pokémon GO 遊戲資料），顯示 CP 上限、限定屬性、禁用屬性與寶可夢、等級上限等規則；四個聯盟選項的圖示為自繪點陣精靈球
-- 超級版盃賽（超級聯盟：超級版、高級聯盟：超級版、大師聯盟：超級版）可以使用超級進化，排名來自 PvPoke 的超級版排名。排名上方可切換「全部 / 只看超級進化」；只看超級進化時保留在全部排名中的名次，並顯示推薦 IV 與該 IV 下的「進化前 CP」「超級進化 CP」。例如超級勾魂眼在超級聯盟排第 2，IV 0/15/12 練到 Lv 30，進化前 CP 1132、超級進化後 CP 1499。官方公告超級進化後 CP 超過上限時，對戰中會自動調降，但沒有說明調降方式，所以進化前 CP 是「自己壓在上限內」的參考值
-- 盃賽列表只顯示圖示與名稱，規則在點進盃賽後才顯示；Remix 盃賽的卡片會簡短寫出與一般版的差異（例如「多禁 13 種」「多開放 1 種」），點進去可看到被禁與新開放的寶可夢名單
-- 每個盃賽卡片顯示官方盃賽圖示（建置時下載並縮成 24x24 點陣圖，存在 `public/cup-icons/`，執行時不連到官方網址）；列表中省略「：高級聯盟版」「：迷你版」「小小」等與所選聯盟重複的字樣，Remix 改成名稱右上角的小字，「：」後的副標題（如「超越時間的旅程」）縮小放在名稱下方，進入盃賽後仍顯示完整名稱
-- 每個盃賽顯示前 30 名推薦寶可夢、推薦招式，以及可收合的「擅長對付 / 剋星」；推薦招式（手機與電腦版都一樣）也是收合，放在「擅長對付」上方。收合按鈕不用箭頭，是淺灰底色的橫條，展開時變成淡黃色
-- 有 PvPoke 盃賽排名的盃賽直接使用；其餘盃賽是用該聯盟的總排名套用盃賽規則篩選而來（畫面上不另外標示）。這些盃賽的「擅長對付 / 剋星」是把總排名雙向反查（B 把 A 列為剋星，就代表 A 擅長對付 B），再只留下能參賽的寶可夢；單一屬性或舊地區盃賽（如格鬥盃、超能力盃、電氣盃、神奧盃、洗翠盃）因為總排名裡很少有相關對戰，多數寶可夢沒有資料，沒有資料的區塊不會顯示
-- 排名列中文名稱下方顯示英文名稱
+So I pulled all of that together at build time and put it behind a single search box. Type a name, a dex number, a type, or even an evolution requirement like `catch dark` or `lure`, and everything about the Pokémon is on one page. The cards are extra: a quick look at which card styles a Pokémon has and which ones are worth a lot.
 
-### 圖鑑頁
-- 點選建議或結果卡片進入圖鑑頁：大圖、屬性；卡片左上角「上一隻」回到上一個看過的寶可夢，從搜尋結果進來時顯示「全部結果」；搜尋只找到一筆時也會先顯示結果列表
-- 一般 / 閃光 / 超極巨化 外觀切換（有資料才會出現）
-- 進化：橫向列出整條進化鏈，分支進化在同一階段內排成小格，4 隻以上時每排 4 隻（例如伊布的 8 種進化排成 2 排）；不會進化的寶可夢會標示「此寶可夢不會進化」。一律顯示完整的進化鏈，目前這隻以底色和底線標示，下方顯示牠「進化成下一隻」的 GO 條件（例如黏美兒顯示「進化成黏美龍：100 顆糖果 + 雨露模組或雨天」），最終型態則顯示由誰進化而來；伊布這種有 3 種以上進化的，改為提示點選進化後的寶可夢查看條件。點進化鏈中的其他寶可夢會直接切換成牠的頁面（圖、PvP、卡牌都跟著換），畫面停在進化區塊不跳回頂端，按「上一隻」或返回鍵可回到前一隻
-- Pokémon GO 進化條件涵蓋範圍：game master 中全部 478 條進化（含地區型態條件不同的版本，例如伽勒爾呆呆獸要捕捉 30 隻毒屬性）。不包含社群日與夥伴活動期間的限定條件、淨化寶可夢的糖果折扣，以及伊布取名進化。資料時間以 PokeMiners 最後更新為準
-- Pokémon GO 進化條件：進化鏈下方顯示在 Pokémon GO 進化所需的條件（糖果、道具、誘餌模組、夥伴步行公里數或心心、任務、性別、時段、限地區型態、交換免糖果）。例如仙子伊布為 25 顆糖果與和夥伴獲得 70 顆心心，流氓熊貓為 50 顆糖果與「設為夥伴捕捉 32 隻惡屬性」
-- PvP 推薦（在圖鑑頁最下方）：選擇超級聯盟 / 高級聯盟 / 大師聯盟，可切換「暗影」，顯示 PvPoke 推薦的一般招式與特殊招式（需要菁英招式學習器的會標「菁英」）、PvPoke 排名與分數，以及在該聯盟 CP 上限內能力乘積最高的 IV、等級與 CP（等級上限 50，不含最佳夥伴加成；畫面上不另外顯示這段說明），以及可收合的「擅長對付 / 剋星」各 5 隻。PvP 資料只在打開圖鑑頁時才載入
-- 型態變化：多麗米亞、酋雷姆、奈克洛茲瑪、謝米、胡帕、基格爾德、蒼響、藏瑪然特在 Pokémon GO 可以變換型態。點選型態會顯示變換條件（糖果、星星沙子、合體能量、合體對象、需學會的招式），沒有對應條件的型態標示「目前無法透過型態變化獲得，在官方有活動時方可進化」；資料庫裡有的型態可直接前往其圖鑑頁
-- 超級進化：點選能超級進化的寶可夢（例如雷丘、噴火龍），進化區塊會多出「超級進化」，列出超級進化型態的圖（點了可打開牠的頁面）與超級能量（例如雷丘首次 300、之後 60）。勾魂眼這類不會進化但能超級進化的寶可夢也會顯示；蓋歐卡、固拉多顯示「原始回歸」。Pokémon GO 的 61 種超級進化與原始回歸全部收錄，其中超級雷丘 X/Y、超級烏賊王等 11 種較新的由腳本自動補進資料庫，中文名稱依官方命名規則組成
-- 其他型態：地區型態、形態變化等，每個型態都有自己的圖；已在「超級進化」顯示的型態不重複列出。Pokémon GO 沒有的搭檔皮卡丘、搭檔伊布已移除
-- 搜尋時全形、半形英文字母視為相同，輸入「超級噴火龍X」也找得到「超級噴火龍Ｘ」
-- 電腦版版面：外殼最寬 1280px，搜尋框在上、「圖鑑 / 屬性 / 盃賽」分頁鈕在下方撐滿整行。圖鑑頁分左右兩欄：左欄是寶可夢、進化、型態變化與其他型態，右欄是 PvP 推薦與卡牌（直接展開，左右拖曳），兩欄高度相近，整頁正常捲動；手機版由上而下依序是寶可夢、進化、型態、PvP、卡牌
-- 卡牌：圖鑑頁最下方的「卡牌」區塊。電腦版（寬度 860px 以上）不收合，直接顯示卡牌，畫面不會因為展開而跳動；手機版收合時只顯示「發卡」按鈕（旁邊圓形數字為張數），按下後才出現卡牌，按「收卡」收起；沒有展開動畫與載入等待，按鈕位置不會跳動（只有捲到頁面最底部再收卡時，因頁面變短會往下移）。繁體中文卡與英文卡各自最多 6 張（英文卡標示「EN」，不收 TCG Pocket 卡），每隻最多 12 張；全部 1025 種寶可夢都有英文卡，其中 724 種另有繁中卡。挑卡以特殊與高價為主：繁中卡優先挑卡號超出正式卡數的特殊卡；英文卡先挑最貴的 3 張（US$100 以上），其餘依稀有度（特殊插畫、超稀有等）挑選。US$100 以上的英文卡在縮圖與大圖顯示價格（例如 US$3,000），下方小字標示查價月份（例如 2026.10），並依價格由高到低排在最前面。價格是建置時一次查好的 TCGplayer 成交市價（取該卡各版本中最低者），不會隨市場即時更新，執行時也不再查價。點卡片看大圖（先顯示已載入的小圖，大圖下載完再替換，並預先載入前後張，因為 TCGdex 圖床下載大圖常需數秒），大圖下方有「關閉 / 下一張」（最後一張為「上一張 / 關閉」），左右滑動可切換卡片；縮圖列也可以左右滑動（電腦上可用滑鼠拖曳）。卡圖只在發卡後才載入，發卡時就先開始下載全部縮圖，圖片出現前顯示灰色卡形底色。卡圖經由 wsrv.nl 圖片代理（Cloudflare，有香港節點）取得：TCGdex 圖床是單一台伺服器，從台灣實測縮圖中位數約 2.5 秒、最慢 8 秒，經代理約 0.6 秒（已快取約 0.3 秒）。代理失敗時改連 TCGdex 原站（webp，再試 jpg），仍失敗的卡直接不顯示，全部失敗時顯示「此寶可夢暫搜尋不到卡牌」
-- 型態名稱一律不加「的樣子」，例如「雷丘(阿羅拉)」「肯泰羅(帕底亞・水瀾種)」，進化條件也寫成「限伽勒爾」
-- 支援瀏覽器返回鍵；重新整理時會停留在目前的寶可夢
+If this solves the same problem for you, a star helps. For collaboration, write to wpsrrr@gmail.com.
 
-### 圖片
-- 所有寶可夢（含型態）一律使用 PokeAPI 的點陣圖（96x96），閃光與超極巨化也是點陣圖
-- 主要來源 raw.githubusercontent.com，失敗時改用 jsDelivr
-- 安裝到主畫面的 App 名稱為 POKÉMON OMNISEARCH
-- PWA 會把看過的圖存在 `sprites-cache`，看過的卡圖存在 `cards-cache`，離線也看得到
-- 加到手機桌面後會自動更新：每次從背景切回 App、以及開著時每 30 分鐘，都會檢查新版本，有新版就自動重新載入；首頁由 service worker 提供，不會因瀏覽器快取而停在舊版
-- 加到手機桌面（PWA）後，頁面內容不需要捲動時（例如首頁）手指上下拉不會整頁回彈；內容較長的頁面照常捲動，只是到頂或到底不再回彈。一般瀏覽器分頁不受影響
+![Desktop detail page](docs/images/desktop-en.png)
 
-## 使用說明
+## what's in it
 
-1. 在搜尋框輸入寶可夢名稱或編號，從建議清單直接選擇，或按 GO / Enter 列出所有結果
-2. 點選卡片進入圖鑑頁，查看進化鏈與其他型態
-3. 點進化鏈或型態中的寶可夢可直接切換
-4. 點標題「POKÉMON OMNISEARCH」清除搜尋
+- **Search**: names in English and Traditional Chinese, dex numbers, types, regional forms, typo tolerance (`charzard`), and Pokémon GO evolution requirements (`catch dark`, `magnetic lure`, `walk`). All 1217 records are searched in the browser in under 5 ms, no server.
+- **Evolution**: the full chain with the Pokémon GO requirement for each step: Candy, items, Lure Modules, buddy distance, hearts, quests, time of day, gender, trade discounts. 478 evolution targets from the game master, including regional variants with different requirements.
+- **Mega Evolution and form changes**: all 61 Mega and Primal forms with Mega Energy costs, and form changes (Hoopa, Kyurem, Necrozma, Zygarde and more) with their Candy, Stardust and move requirements.
+- **PvP**: recommended fast and charged moves (Elite TM marked), league rank and score, best stat-product IVs under the CP cap, and the opponents it beats and loses to, for Great, Ultra and Master League, normal and Shadow.
+- **Types**: the strongest Pokémon of a type or type pair in each league.
+- **Cups**: all 58 GO Battle League cups with their official icons, rules, Remix differences and a top 30 with moves, matchups and counters. Mega Edition cups show the Mega CP before and after evolving.
+- **Cards**: up to 12 special or valuable trading cards per Pokémon (English and Traditional Chinese), with TCGplayer prices for cards worth US$100 or more.
+- **Two languages**: a TW / EN switch. The English interface shows no Chinese at all; names, moves, requirements and cup rules come from the official Pokémon GO English text.
+- **PWA**: works offline for anything you have already looked at, and updates itself.
 
-## 開發
+## quick start
 
 ```bash
 npm install
 npm run dev
+```
+
+```bash
 npm run build
 npm run lint
 ```
 
-## 資料更新
+## data
 
-寶可夢資料都打包在前端，執行期不呼叫 PokeAPI。資料來源更新後依序執行：
+Everything the app shows is generated into `src/data/` by the scripts in `scripts/`. Nothing is fetched from these APIs at runtime except sprites and card images.
 
-```bash
-npm run data:evolutions
-npm run data:forms
-npm run data:go
-npm run data:pvp
-npm run data:cups
-npm run data:cards
-npm run data:fonts
+| script | output | sources |
+| --- | --- | --- |
+| `npm run data:evolutions` | `evolution_chains.json` | PokeAPI |
+| `npm run data:forms` | forms, sprites, Mega records in `complete_pokemon_database.json` | PokeAPI, game master |
+| `npm run data:go` | `go_evolutions.json`, `go_forms.json` | game master, official GO text (zh-TW, en) |
+| `npm run data:pvp` | `pvp.json` | PvPoke, game master |
+| `npm run data:cups` | `cups.json`, `public/cup-icons/` | game master, PvPoke |
+| `npm run data:cards` | `cards.json` | TCGdex |
+| `npm run data:fonts` | font subsets in `src/assets/fonts/` | the app's own text |
+
+Run `data:forms` before `data:pvp`, `data:pvp` before `data:cups`, and `data:fonts` last. Downloads are cached in `node_modules/.cache/`; pass `-- --refresh` to fetch again.
+
+## repo
+
+```
+scripts/              data and font generation
+src/App.jsx           views, history, language
+src/i18n.js           English strings and language state
+src/components/       search, detail, PvP, types, cups, cards
+src/services/         record to view model, lazy data loading
+src/utils/            search index, IV math, type tables
+src/data/             generated data
+docs/ARCHITECTURE.md  how every part works, data formats, design rules
 ```
 
-| 指令 | 作用 |
-| --- | --- |
-| `data:evolutions` | 從 PokeAPI 產生 `src/data/evolution_chains.json`（進化鏈與條件） |
-| `data:forms` | 依屬性、種族值與名稱把資料庫每一筆對應到 PokeAPI 的型態，寫入 `sprite`、`gmax_sprite`、`form_zh`、`form_en`，並以 PokeAPI 校正中文名稱與種族值；報告寫到 `node_modules/.cache/forms-report.json` |
-| `data:go` | 從 PokeMiners 的 Pokémon GO game master 與官方繁體中文文字檔產生 `src/data/go_evolutions.json`（以進化後的圖鑑編號為鍵，條件文字已組好）與 `src/data/go_forms.json`（型態變化，圖片由 PokeAPI 的 pokemon-form 取得）。下載檔快取在 `node_modules/.cache/pogo`，加 `-- --refresh` 重新下載最新版 |
-| `data:pvp` | 從 PvPoke 的 gamemaster 與三個聯盟的排名產生 `src/data/pvp.json`（GO 能力值、CP 倍率表、推薦招式、排名、菁英招式），並把對應的 PvPoke 編號寫入資料庫的 `go_id`。招式中文名優先用 GO 官方文字檔，沒有時用 PokeAPI。比對報告在 `node_modules/.cache/pogo/pvp-report.json`；加 `-- --refresh` 重新下載 |
-| `data:cups` | 從 game master 的 `combatLeague` 產生 `src/data/cups.json`（官方盃賽中文名、規則、前 30 名、推薦招式、擅長對付與剋星），並下載盃賽圖示到 `public/cup-icons/`（已存在的檔案不重抓，`--refresh` 會重抓）。須在 `data:pvp` 之後執行 |
-| `data:cards` | 從 TCGdex 產生 `src/data/cards.json`（每個圖鑑編號繁中卡與英文卡各最多 6 張：繁中卡依卡名比對，去掉 V / ex / VMAX / VSTAR / GX 等後綴與地區前綴，優先挑卡號超出正式卡數的特殊卡；英文卡依圖鑑編號嚴格比對查詢並排除 TCG Pocket，逐張查詢稀有度與 TCGplayer 價格，先挑最貴的 3 張再依稀有度補滿；US$100 以上的價格與查價月份一併寫入）。卡名、圖片與系列資訊由各系列明細一次取得；API 回應快取在 `node_modules/.cache/tcgdex`，加 `-- --refresh` 重新下載並更新價格（完整重抓約 30 分鐘）；比對不到的繁中卡名與未分級的稀有度寫在同目錄的 `cards-report.json` |
-| `data:fonts` | 依程式與資料中實際用到的字，產生 Cubic 11 與 Press Start 2P 的子集字型到 `src/assets/fonts/` |
+The detailed write-up of behavior, data formats and design decisions is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-PokeAPI 回應會快取在 `node_modules/.cache/pokeapi`，重跑不會重複下載。
+## built with
 
-## 技術堆疊
+React 19, Vite 7, vite-plugin-pwa. Fonts: Cubic 11 and Press Start 2P (SIL OFL).
 
-- React 19
-- Vite 7 + vite-plugin-pwa
-- PokeAPI（建置時資料來源與點陣圖）
-- PvPoke（MIT 授權，授權檔在 `src/data/LICENSE-PvPoke.txt`）：PvP 推薦招式、排名與 GO 能力值
-- PokeMiners game_masters 與 pogo_assets（Pokémon GO 進化條件，建置時使用；為社群解包的遊戲資料，未附授權條款）
-- TCGdex（卡牌清單於建置時取得，卡圖執行時經 wsrv.nl 圖片代理外連 `assets.tcgdex.net`，不打包進專案；英文卡價格為建置時由 TCGdex 轉提供的 TCGplayer 資料一次查好）
-- 字型：Cubic 11 俐方體11號、Press Start 2P（皆為 SIL OFL，授權檔在 `src/assets/fonts/`）
+## acknowledgements
 
-## 授權
+- [PokeAPI](https://pokeapi.co/) for species, forms and sprites
+- [PvPoke](https://github.com/pvpoke/pvpoke) (MIT) for PvP rankings and movesets
+- [PokeMiners](https://github.com/PokeMiners) for the Pokémon GO game master and text files
+- [TCGdex](https://tcgdex.dev/) for trading card data, images through [wsrv.nl](https://wsrv.nl/)
 
-- 程式碼以 MIT 授權釋出，版權人 yRwRy，見 `LICENSE`
-- `src/customContent/` 內的自訂圖片不在 MIT 授權範圍內
-- PvPoke 資料：MIT，授權檔在 `src/data/LICENSE-PvPoke.txt`
-- 字型 Cubic 11、Press Start 2P：SIL Open Font License，授權檔在 `src/assets/fonts/`
-- Pokémon 及相關名稱、圖像之版權屬於 Nintendo、Creatures、GAME FREAK 與 The Pokémon Company；Pokémon GO 遊戲資料與盃賽圖示屬於 Niantic；集換式卡牌圖像屬於 The Pokémon Company。本專案為非官方粉絲作品，與上述公司無關。網頁底部顯示版權歸屬、資料來源，版權行的「yRwRy」是合作聯絡的 email 連結（wpsrrr@gmail.com）
+## license
+
+MIT, see [LICENSE](LICENSE). Images in `src/customContent/` are not covered. PvPoke data is MIT (`src/data/LICENSE-PvPoke.txt`); the fonts are SIL OFL (`src/assets/fonts/`).
+
+Pokémon and all related names and images are trademarks of Nintendo, Creatures, GAME FREAK and The Pokémon Company. Pokémon GO game data and cup icons belong to Niantic. This is an unofficial fan project and is not affiliated with any of them.

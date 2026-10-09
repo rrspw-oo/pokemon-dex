@@ -79,7 +79,7 @@ export default defineConfig({
       manifest: {
         name: 'POKÉMON OMNISEARCH',
         short_name: 'POKÉMON OMNISEARCH',
-        description: 'A comprehensive Pokemon database with Chinese and English names, featuring shiny Pokemon support',
+        description: 'Pokédex, Pokémon GO evolutions, PvP rankings, cups and trading cards in one search.',
         theme_color: '#c9c6be',
         background_color: '#c9c6be',
         display: 'standalone',
