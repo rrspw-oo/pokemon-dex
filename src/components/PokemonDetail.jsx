@@ -20,31 +20,41 @@ function MiniCard({ pokemon, label, current, selected, onClick }) {
   );
 }
 
-function GoCondition({ title, options, emptyText, target, onSelect }) {
+function GoBlock({ title, options, emptyText }) {
   return (
-    <div className="go-condition" aria-live="polite">
+    <div className="go-block">
       <p className="go-condition-title">
         <span className="go-badge">GO</span>
         {title}
       </p>
       {options.length > 0
         ? options.map((option, i) => (
-            <div key={i} className="go-option">
-              {(option.form || option.from) && <p className="go-option-form">{option.form || `從${option.from}`}</p>}
-              <ul>
-                {option.lines.map((line) => (
-                  <li key={line}>{line}</li>
+            <div key={i} className="go-line">
+              {option.label && <p className="go-line-label">{option.label}</p>}
+              <ul className="go-chips">
+                {option.lines.map((line, j) => (
+                  <Fragment key={line}>
+                    {j > 0 && (
+                      <li className="go-plus" aria-hidden="true">
+                        +
+                      </li>
+                    )}
+                    <li>{line}</li>
+                  </Fragment>
                 ))}
               </ul>
             </div>
           ))
         : emptyText && <p className="go-option-empty">{emptyText}</p>}
-      {target && (
-        <button type="button" className="pixel-button go-open" onClick={() => onSelect(target)}>
-          查看{target.zh} →
-        </button>
-      )}
     </div>
+  );
+}
+
+function GoOpen({ target, onSelect }) {
+  return (
+    <button type="button" className="pixel-button go-open" onClick={() => onSelect(target)}>
+      查看{target.zh} →
+    </button>
   );
 }
 
@@ -57,12 +67,23 @@ function GoHint({ text }) {
   );
 }
 
+const optionsFrom = (member, fromId) =>
+  (member.go || []).filter((o) => fromId == null || o.from === fromId).map((o) => ({ label: o.form, lines: o.lines }));
+
 function EvolutionPanel({ pokemon, family, onSelect }) {
+  const all = family.stages.flatMap((stage, i) => stage.map((m) => ({ ...m, stage: i })));
   const stages = family.stages[0]?.some((m) => m.pokemon.id === pokemon.id) ? family.stages.slice(1) : family.stages;
-  const members = stages.flat();
   const [pickedKey, setPickedKey] = useState(null);
+  const visible = all.filter((m) => stages.some((stage) => stage.some((x) => x.pokemon.key === m.pokemon.key)));
+  const linked = (child, parent) =>
+    child.go ? child.go.some((o) => o.from === parent.pokemon.id) : family.stages[parent.stage].length === 1;
+  const nextOf = (member) => all.filter((m) => m.stage === member.stage + 1 && linked(m, member));
+  const current = all.find((m) => m.pokemon.id === pokemon.id);
   const picked =
-    members.find((m) => m.pokemon.key === pickedKey) || members.find((m) => m.pokemon.id === pokemon.id);
+    visible.find((m) => m.pokemon.key === pickedKey) ||
+    (current && (visible.includes(current) || nextOf(current).length <= 2) ? current : null);
+  const nexts = picked ? nextOf(picked) : [];
+  const prevs = picked && nexts.length === 0 ? all.filter((m) => m.stage === picked.stage - 1 && linked(picked, m)) : [];
 
   return (
     <section className="panel">
@@ -90,13 +111,25 @@ function EvolutionPanel({ pokemon, family, onSelect }) {
             ))}
           </div>
           {picked ? (
-            <GoCondition
-              title={picked.isBase ? `${picked.pokemon.zh}是進化起點` : `進化成${picked.pokemon.zh}`}
-              options={picked.isBase || !picked.go ? [] : picked.go.map(({ form, lines }) => ({ form, lines }))}
-              emptyText={picked.isBase ? null : "Pokémon GO 目前沒有這個進化"}
-              target={picked.pokemon.id === pokemon.id ? null : picked.pokemon}
-              onSelect={onSelect}
-            />
+            <div className="go-condition" aria-live="polite">
+              {nexts.map((next) => (
+                <GoBlock
+                  key={next.pokemon.key}
+                  title={`進化成${next.pokemon.zh}`}
+                  options={optionsFrom(next, picked.pokemon.id)}
+                  emptyText="Pokémon GO 目前沒有這個進化"
+                />
+              ))}
+              {prevs.map((prev) => (
+                <GoBlock
+                  key={prev.pokemon.key}
+                  title={`由${prev.pokemon.zh}進化成${picked.pokemon.zh}`}
+                  options={optionsFrom(picked, prev.pokemon.id)}
+                  emptyText="Pokémon GO 目前沒有這個進化"
+                />
+              ))}
+              {picked.pokemon.id !== pokemon.id && <GoOpen target={picked.pokemon} onSelect={onSelect} />}
+            </div>
           ) : (
             <GoHint text="點選寶可夢查看 Pokémon GO 進化條件" />
           )}
@@ -126,13 +159,14 @@ function FormChangePanel({ pokemon, formChanges, onSelect }) {
         ))}
       </div>
       {picked ? (
-        <GoCondition
-          title={`變換成${picked.label}`}
-          options={picked.options}
-          emptyText="目前無法透過型態變化獲得，在官方有活動時方可進化"
-          target={picked.linked && picked.pokemon.key !== pokemon.key ? picked.pokemon : null}
-          onSelect={onSelect}
-        />
+        <div className="go-condition" aria-live="polite">
+          <GoBlock
+            title={`變換成${picked.label}`}
+            options={picked.options.map((o) => ({ label: o.from && `從${o.from}`, lines: o.lines }))}
+            emptyText="目前無法透過型態變化獲得，在官方有活動時方可進化"
+          />
+          {picked.linked && picked.pokemon.key !== pokemon.key && <GoOpen target={picked.pokemon} onSelect={onSelect} />}
+        </div>
       ) : (
         <GoHint text="點選型態查看 Pokémon GO 變換條件" />
       )}
@@ -140,7 +174,7 @@ function FormChangePanel({ pokemon, formChanges, onSelect }) {
   );
 }
 
-function PokemonDetail({ pokemon, onSelect, onBack, backLabel }) {
+function PokemonDetail({ pokemon, onSelect, onBack, backLabel, onTypeClick }) {
   const [mode, setMode] = useState("normal");
   const family = useMemo(() => getFamily(pokemon), [pokemon]);
   const formChanges = useMemo(() => getFormChanges(pokemon), [pokemon]);
@@ -162,7 +196,7 @@ function PokemonDetail({ pokemon, onSelect, onBack, backLabel }) {
           </button>
           <span className="detail-meta">
             <span className="dex-no">{formatId(pokemon.id)}</span>
-            <TypeBadges types={pokemon.types} />
+            <TypeBadges types={pokemon.types} onTypeClick={pokemon.isCustom ? undefined : onTypeClick} />
           </span>
         </div>
         <div className={`sprite-tile sprite-tile-large ${mode}`}>
@@ -189,7 +223,6 @@ function PokemonDetail({ pokemon, onSelect, onBack, backLabel }) {
       </section>
 
       <div className="detail-side">
-        {pokemon.goId && <PvpPanel goId={pokemon.goId} />}
         {!pokemon.isCustom && <EvolutionPanel pokemon={pokemon} family={family} onSelect={onSelect} />}
         {formChanges && <FormChangePanel pokemon={pokemon} formChanges={formChanges} onSelect={onSelect} />}
         {otherForms.length > 0 && (
@@ -202,6 +235,7 @@ function PokemonDetail({ pokemon, onSelect, onBack, backLabel }) {
             </div>
           </section>
         )}
+        {pokemon.goId && <PvpPanel goId={pokemon.goId} onSelect={onSelect} />}
       </div>
     </article>
   );

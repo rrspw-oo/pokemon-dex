@@ -109,3 +109,33 @@ export function getFormChanges(pokemon) {
   });
   return { forms, linkedKeys: new Set(forms.filter((f) => f.linked).map((f) => f.pokemon.key)) };
 }
+
+const recordByGoId = new Map(records.filter((r) => r.go_id).map((r) => [r.go_id, r]));
+
+export function getPokemonByGoId(goId) {
+  const shadow = goId.endsWith("_shadow");
+  const record = recordByGoId.get(shadow ? goId.slice(0, -7) : goId);
+  if (!record) return null;
+  return { ...fromRecord(record), shadow };
+}
+
+export function getPokemonOfType(type, type2) {
+  return records
+    .filter((r) => {
+      const types = r.types.map((t) => t.toLowerCase());
+      return types.includes(type) && (!type2 || types.includes(type2));
+    })
+    .map(fromRecord);
+}
+
+export function getSecondTypes(type) {
+  const counts = new Map();
+  for (const r of records) {
+    const types = r.types.map((t) => t.toLowerCase());
+    if (!types.includes(type)) continue;
+    for (const t of types) if (t !== type) counts.set(t, (counts.get(t) || 0) + 1);
+  }
+  return counts;
+}
+
+export const typeInfo = (name) => toTypes([name])[0];

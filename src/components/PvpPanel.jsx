@@ -1,35 +1,39 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { bestIv } from "../utils/pvpIv";
-import { TYPE_COLOR } from "../utils/types";
+import { LEAGUES, usePvpData } from "../services/pvpData";
+import { Matchups, MoveChips } from "./Opponents";
+import ShadowIcon from "./ShadowIcon";
 
-const LEAGUES = [
-  [1500, "超級聯盟"],
-  [2500, "高級聯盟"],
-  [10000, "大師聯盟"],
-];
-
-function PvpPanel({ goId }) {
-  const [data, setData] = useState(null);
+function PvpPanel({ goId, onSelect }) {
+  const data = usePvpData();
   const [league, setLeague] = useState(1500);
+  const [shadow, setShadow] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
-    import("../data/pvp.json").then((m) => alive && setData(m.default));
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  const entry = data?.pokemon[goId];
+  const hasShadow = Boolean(data?.pokemon[`${goId}_shadow`]);
+  const entry = data?.pokemon[shadow && hasShadow ? `${goId}_shadow` : goId];
   const best = useMemo(() => entry && bestIv(entry.s, league, data.cpm), [entry, league, data]);
 
   if (data && !entry) return null;
 
   const ranking = entry?.[league];
+  const opponentIds = (list) => list.map((i) => data.ids[i]);
 
   return (
     <section className="panel">
-      <h3 className="panel-title">PvP 推薦</h3>
+      <h3 className="panel-title panel-title-row">
+        PvP 推薦
+        {hasShadow && (
+          <button
+            type="button"
+            className={`shadow-toggle ${shadow ? "is-on" : ""}`}
+            aria-pressed={shadow}
+            onClick={() => setShadow((v) => !v)}
+          >
+            <ShadowIcon />
+            暗影
+          </button>
+        )}
+      </h3>
       {!data ? (
         <p className="panel-empty">載入中</p>
       ) : (
@@ -57,14 +61,11 @@ function PvpPanel({ goId }) {
                 <div className="pvp-row" key={label}>
                   <dt>{label}</dt>
                   <dd>
-                    {ranking[2]
-                      .filter((id) => data.moves[id][2] === fast)
-                      .map((id) => (
-                        <span key={id} className="move-chip" style={{ "--type-color": TYPE_COLOR[data.moves[id][1]] }}>
-                          {data.moves[id][0]}
-                          {ranking[3].includes(id) && <em>菁英</em>}
-                        </span>
-                      ))}
+                    <MoveChips
+                      moveset={ranking[2].filter((id) => data.moves[id]?.[2] === fast)}
+                      moves={data.moves}
+                      elite={ranking[3]}
+                    />
                   </dd>
                 </div>
               ))
@@ -98,6 +99,9 @@ function PvpPanel({ goId }) {
             </div>
           </dl>
 
+          {ranking && (
+            <Matchups matchups={opponentIds(ranking[4])} counters={opponentIds(ranking[5])} onSelect={onSelect} />
+          )}
         </>
       )}
     </section>

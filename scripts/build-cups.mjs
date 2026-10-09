@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, "../src/data/cups.json");
 const PVP = resolve(__dirname, "../src/data/pvp.json");
+const DB = resolve(__dirname, "../src/data/complete_pokemon_database.json");
 const CACHE_DIR = resolve(__dirname, "../node_modules/.cache/pogo");
 const REFRESH = process.argv.includes("--refresh");
 const PVPOKE = "https://raw.githubusercontent.com/pvpoke/pvpoke/master/src/data";
@@ -65,6 +66,11 @@ async function main() {
   );
   const pvpoke = await load(`${PVPOKE}/gamemaster.min.json`, "pvpoke_gamemaster.json");
   const pvp = JSON.parse(readFileSync(PVP, "utf8"));
+  const zhByGoId = new Map(
+    JSON.parse(readFileSync(DB, "utf8"))
+      .filter((r) => r.go_id)
+      .map((r) => [r.go_id, r.form_zh || r.name_zh_tw])
+  );
   const t = new Map();
   for (let i = 0; i < textsRaw.data.length; i += 2) t.set(textsRaw.data[i].toLowerCase(), textsRaw.data[i + 1]);
 
@@ -122,12 +128,12 @@ async function main() {
       return true;
     };
 
-    const source = PVPOKE_CUP[id];
+    const source = PVPOKE_CUP[id] || (STANDARD[id] && ["all", STANDARD[id]]);
     const ranking = source ? await rankingFile(source[0], source[1]) : await rankingFile("all", cp);
     const top = [];
     for (const r of ranking) {
       if (top.length >= TOP) break;
-      if (r.speciesId.includes("_shadow") || !linked.has(r.speciesId)) continue;
+      if (!linked.has(r.speciesId.replace(/_shadow$/, ""))) continue;
       if (!source && !eligible(r.speciesId)) continue;
       const keep = (list) => (list || []).map((m) => m.opponent).filter((o) => linked.has(o.replace(/_shadow$/, "")) && (source || eligible(o))).map(ref);
       top.push([ref(r.speciesId), r.score, r.moveset.filter((m) => m !== "none"), keep(r.matchups), keep(r.counters)]);
@@ -137,7 +143,30 @@ async function main() {
     const rules = [maxCp >= 6000 ? "無 CP 上限" : `CP 上限 ${maxCp}`];
     if (types) rules.push(`限 ${types.map((x) => t.get(`pokemon_type_${x}`) || x).join("、")} 屬性`);
     if (whitelist) rules.push(`限指定的 ${new Set(whitelist.map((e) => e.id)).size} 種寶可夢`);
-    if (banlist.length) rules.push(`另禁用 ${banlist.length} 種寶可夢`);
+    if (banlist.length) {
+      const pool = pvpoke.pokemon.filter(
+        (p) => p.released !== false && !p.speciesId.includes("_shadow") && !p.tags?.includes("mega") && goNameByDex.has(p.dex)
+      );
+      const isBanned = (p) =>
+        banned.has(goNameByDex.get(p.dex)) || matchesList(banlist, p, goNameByDex.get(p.dex));
+      const inBanlist = (p) => matchesList(banlist, p, goNameByDex.get(p.dex));
+      const typeNames = [...new Set(pool.flatMap((p) => p.types))].filter((x) => x !== "none");
+      const bannedTypes = typeNames.filter((type) => {
+        const ofType = pool.filter((p) => p.types.includes(type));
+        return ofType.length >= 3 && ofType.filter(isBanned).length / ofType.length >= 0.95;
+      });
+      const exceptions = pool
+        .filter((p) => p.types.some((x) => bannedTypes.includes(x)) && !isBanned(p))
+        .map((p) => (zhByGoId.get(p.speciesId) || p.speciesName).replace(/的樣子\)/, ")"));
+      const others = new Set(
+        pool.filter((p) => inBanlist(p) && !p.types.some((x) => bannedTypes.includes(x))).map((p) => p.dex)
+      ).size;
+      if (bannedTypes.length) {
+        const names = bannedTypes.map((x) => t.get(`pokemon_type_${x}`) || x).join("、");
+        rules.push(`禁用 ${names} 屬性${exceptions.length ? `（${exceptions.join("、")}除外）` : ""}`);
+      }
+      if (others) rules.push(`另禁用 ${others} 種寶可夢`);
+    }
     if (maxLevel && maxLevel < 51) rules.push(`等級上限 ${maxLevel}`);
     if (caughtWindow) rules.push("限賽季期間捕捉的寶可夢");
     if (banned.has("MEWTWO") || banned.has("MEW")) rules.push("禁用傳說、幻之寶可夢等");

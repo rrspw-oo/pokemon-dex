@@ -13,6 +13,7 @@
     "data:forms": "node scripts/build-forms.mjs",
     "data:go": "node scripts/build-go-evolutions.mjs",
     "data:pvp": "node scripts/build-pvp.mjs",
+    "data:cups": "node scripts/build-cups.mjs",
     "data:fonts": "node scripts/build-fonts.mjs"
   },
   "dependencies": {

@@ -150,7 +150,7 @@ async function main() {
   };
   const known = (id) => used.has(id.replace(/_shadow$/, ""));
   for (const p of pvpoke.pokemon) {
-    if (!used.has(p.speciesId)) continue;
+    if (!known(p.speciesId) || p.released === false) continue;
     const entry = { s: [p.baseStats.atk, p.baseStats.def, p.baseStats.hp] };
     const elite = new Set(p.eliteMoves || []);
     LEAGUES.forEach((cp, li) => {
@@ -175,7 +175,11 @@ async function main() {
   }
 
   for (const [id, m] of Object.entries(moveOut)) {
-    if (/^[A-Za-z]/.test(m[0])) m[0] = zhMoves.get(id.replace(/^AEGISLASH_CHARGE_/, "")) || (await pokeapiMoveName(id)) || m[0];
+    if (!/^[A-Za-z]/.test(m[0])) continue;
+    const plus = id.endsWith("_PLUS");
+    const base = id.replace(/^AEGISLASH_CHARGE_/, "").replace(/_PLUS$/, "").replace(/^(GULP_MISSILE|TECHNO_BLAST)_.+$/, "$1");
+    const zh = zhMoves.get(base) || (await pokeapiMoveName(base));
+    if (zh) m[0] = plus ? `${zh}＋` : zh;
   }
 
   writeFileSync(DB_PATH, JSON.stringify(db, null, 2) + "\n");

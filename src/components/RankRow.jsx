@@ -1,0 +1,41 @@
+import Sprite from "./Sprite";
+import TypeBadges from "./TypeBadges";
+import ShadowIcon from "./ShadowIcon";
+import { Matchups, MoveChips } from "./Opponents";
+import { shortName } from "../utils/format";
+
+function RankRow({ rank, pokemon, score, tags = [], moveset, moves, matchups, counters, onSelect }) {
+  const expandable = Boolean(matchups || counters);
+
+  return (
+    <li className={`rank-row ${pokemon.shadow ? "is-shadow" : ""}`}>
+      <div className="rank-main">
+        <span className="rank-no">{rank}</span>
+        <button type="button" className="rank-pokemon" onClick={() => onSelect(pokemon)}>
+          <Sprite key={pokemon.image[0]} urls={pokemon.image} alt={pokemon.zh} />
+          <span className="rank-text">
+            <span className="rank-name">
+              {pokemon.shadow && <ShadowIcon />}
+              {shortName(pokemon.zh)}
+            </span>
+            <TypeBadges types={pokemon.types} />
+          </span>
+        </button>
+        {score != null && <span className="rank-score">{score}</span>}
+      </div>
+      {(tags.length > 0 || moveset) && (
+        <div className="rank-meta">
+          {tags.map((tag) => (
+            <span key={tag.label} className={`league-tag ${tag.active ? "is-active" : ""}`}>
+              {tag.label}
+            </span>
+          ))}
+          {moveset && <MoveChips moveset={moveset} moves={moves} />}
+        </div>
+      )}
+      {expandable && <Matchups matchups={matchups} counters={counters} onSelect={onSelect} />}
+    </li>
+  );
+}
+
+export default RankRow;
