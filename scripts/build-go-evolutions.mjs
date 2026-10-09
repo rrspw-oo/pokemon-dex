@@ -30,7 +30,6 @@ const POKEAPI_FORM = {
   FURFROU_NATURAL: "furfrou",
 };
 const hasCjk = (s) => /[\u3400-\u9fff]/.test(s || "");
-const BUDDY_QUESTS = new Set(["QUEST_BUDDY_EVOLUTION_WALK", "QUEST_BUDDY_EARN_AFFECTION_POINTS", "QUEST_BUDDY_FEED"]);
 
 async function load(url, name) {
   mkdirSync(CACHE_DIR, { recursive: true });
@@ -50,13 +49,41 @@ function textLookup(raw) {
   return (key) => map.get(key.toLowerCase());
 }
 
+function questTypes(goal, t) {
+  for (const c of goal.condition || []) {
+    const list = c.withPokemonType?.pokemonType || c.withOpponentPokemonBattleStatus?.opponentPokemonType;
+    if (list) return list.map((x) => t(x.replace("POKEMON_TYPE_", "pokemon_type_")) || x).join("/");
+  }
+  return null;
+}
+
 function questText(quest, t) {
   const goal = quest.goals[0];
-  let key = quest.display?.description || "";
-  if (goal.target > 1) key = key.replace(/_single(ular)?$/i, "_plural");
-  const template = t(key) || t(quest.display?.description || "");
-  if (!template) return null;
-  return template.replace("{0}", goal.target).replace(/\s+/g, " ").trim();
+  const n = goal.target;
+  const types = questTypes(goal, t);
+  const combat = goal.condition?.find((c) => c.withCombatType)?.withCombatType.combatType || [];
+  const where = combat.some((x) => x.includes("MAX")) ? "在團體戰或極巨對戰" : combat.length ? "在團體戰" : "";
+  switch (quest.questType) {
+    case "QUEST_CATCH_POKEMON":
+      return `設為夥伴捕捉 ${n} 隻${types}屬性`;
+    case "QUEST_FIGHT_POKEMON":
+    case "QUEST_COMPLETE_BATTLE":
+      return `設為夥伴${where}戰勝 ${n} 隻${types}屬性`;
+    case "QUEST_COMPLETE_RAID_BATTLE":
+      return `設為夥伴在團體戰獲勝 ${n} 次`;
+    case "QUEST_BUDDY_EVOLUTION_WALK":
+      return `和夥伴步行 ${n} 公里`;
+    case "QUEST_BUDDY_EARN_AFFECTION_POINTS":
+      return `和夥伴獲得 ${n} 顆心心`;
+    case "QUEST_BUDDY_FEED":
+      return `餵夥伴 ${n} 次點心`;
+    case "QUEST_LAND_THROW":
+      return `設為夥伴投出 ${n} 次 Excellent`;
+    case "QUEST_USE_INCENSE":
+      return n > 1 ? `設為夥伴使用 ${n} 個薰香` : "設為夥伴使用薰香";
+    default:
+      return null;
+  }
 }
 
 function describe(branch, quests, t) {
@@ -81,10 +108,10 @@ function describe(branch, quests, t) {
   for (const quest of questLines) {
     const text = questText(quest, t);
     if (!text) continue;
-    lines.push(BUDDY_QUESTS.has(quest.questType) ? text : `設為夥伴時${text}`);
+    lines.push(text);
   }
   if (!questLines.some((q) => q.questType === "QUEST_BUDDY_EVOLUTION_WALK") && branch.kmBuddyDistanceRequirement) {
-    lines.push(`和夥伴一起步行 ${branch.kmBuddyDistanceRequirement} 公里`);
+    lines.push(`和夥伴步行 ${branch.kmBuddyDistanceRequirement} 公里`);
   }
   if (branch.mustBeBuddy && !lines.some((l) => l.includes("夥伴"))) lines.push("須設為夥伴");
   if (branch.noCandyCostViaTrade) lines.push("交換後進化免糖果");
