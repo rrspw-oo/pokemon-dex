@@ -11,6 +11,11 @@ const LEAGUE_GROUPS = [
 ];
 
 const groupOf = (cp) => LEAGUE_GROUPS.find((g) => g.cp === cp);
+const listName = (zh) => zh.replace(/：(超級|高級|大師)聯盟版|：迷你版|HLVer\.|^(UL|ML)(?=紀念)/g, "");
+
+function CupIcon({ icon }) {
+  return <img className="cup-icon" src={`${import.meta.env.BASE_URL}cup-icons/${icon}.png`} alt="" width="24" height="24" />;
+}
 
 function CupList({ cups, league, onLeague, onOpen }) {
   const group = groupOf(league);
@@ -40,7 +45,8 @@ function CupList({ cups, league, onLeague, onOpen }) {
           <div className="cup-grid">
             {list.map((cup) => (
               <button key={cup.id} type="button" className="cup-card" onClick={() => onOpen(cup.id)}>
-                <span className="cup-name">{cup.zh}</span>
+                <CupIcon icon={cup.icon} />
+                <span className="cup-name">{listName(cup.zh)}</span>
                 <span className="cup-rule">{cup.rules.slice(1).join("・") || cup.rules[0]}</span>
               </button>
             ))}
@@ -64,7 +70,7 @@ function CupDetail({ cup, data, onBack, onSelect }) {
           </button>
         </div>
         <h3 className="cup-title">
-          {group && <LeagueIcon league={group.icon} />}
+          <CupIcon icon={cup.icon} />
           {cup.zh}
         </h3>
         <ul className="cup-rules">

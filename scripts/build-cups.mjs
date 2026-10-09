@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import sharp from "sharp";
 import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,6 +8,8 @@ const OUT = resolve(__dirname, "../src/data/cups.json");
 const PVP = resolve(__dirname, "../src/data/pvp.json");
 const DB = resolve(__dirname, "../src/data/complete_pokemon_database.json");
 const CACHE_DIR = resolve(__dirname, "../node_modules/.cache/pogo");
+const ICON_DIR = resolve(__dirname, "../public/cup-icons");
+const ICON_SIZE = 24;
 const REFRESH = process.argv.includes("--refresh");
 const PVPOKE = "https://raw.githubusercontent.com/pvpoke/pvpoke/master/src/data";
 const TOP = 30;
@@ -38,6 +41,22 @@ async function load(url, name) {
     writeFileSync(file, Buffer.from(await res.arrayBuffer()));
   }
   return JSON.parse(readFileSync(file, "utf8"));
+}
+
+async function cupIcon(url) {
+  const stem = decodeURIComponent(url.split("/").pop()).replace(/\.png$/i, "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const out = join(ICON_DIR, `${stem}.png`);
+  if (REFRESH || !existsSync(out)) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed: ${url}`);
+    mkdirSync(ICON_DIR, { recursive: true });
+    await sharp(Buffer.from(await res.arrayBuffer()))
+      .trim()
+      .resize(ICON_SIZE, ICON_SIZE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png({ palette: true, compressionLevel: 9 })
+      .toFile(out);
+  }
+  return stem;
 }
 
 const rankingFile = (cup, cp) => load(`${PVPOKE}/rankings/${cup}/overall/rankings-${cp}.json`, `pvpoke_rankings_${cup}_${cp}.json`);
@@ -177,6 +196,7 @@ async function main() {
       zh: zh.replace(/\s+/g, ""),
       cp,
       standard: Boolean(STANDARD[id]),
+      icon: await cupIcon(league.iconUrl),
       rules,
       source: source ? "pvpoke" : "derived",
       top,

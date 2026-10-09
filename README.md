@@ -21,7 +21,8 @@
 - 下方列出該屬性（或屬性組合）的全部寶可夢
 
 ### 盃賽
-- 先選小小盃（CP 500）、超級聯盟（CP 1500）、高級聯盟（CP 2500）、大師聯盟，再列出該 CP 的所有官方 GO 對戰聯盟盃賽（依 Pokémon GO 遊戲資料），顯示 CP 上限、限定屬性、禁用屬性與寶可夢、等級上限等規則；聯盟圖示為自繪點陣精靈球（不使用遊戲官方圖檔，也不需網路請求）
+- 先選小小盃（CP 500）、超級聯盟（CP 1500）、高級聯盟（CP 2500）、大師聯盟，再列出該 CP 的所有官方 GO 對戰聯盟盃賽（依 Pokémon GO 遊戲資料），顯示 CP 上限、限定屬性、禁用屬性與寶可夢、等級上限等規則；四個聯盟選項的圖示為自繪點陣精靈球
+- 每個盃賽卡片顯示官方盃賽圖示（建置時下載並縮成 24x24 點陣圖，存在 `public/cup-icons/`，執行時不連到官方網址）；列表中省略「：高級聯盟版」「：迷你版」等與所選聯盟重複的字樣，進入盃賽後仍顯示完整名稱
 - 每個盃賽顯示前 30 名推薦寶可夢、推薦招式，以及可收合的「擅長對付 / 剋星」
 - 有 PvPoke 盃賽排名的盃賽直接使用；其餘盃賽是用該聯盟的總排名套用盃賽規則篩選而來（畫面上不另外標示）
 
@@ -77,7 +78,7 @@ npm run data:fonts
 | `data:forms` | 依屬性、種族值與名稱把資料庫每一筆對應到 PokeAPI 的型態，寫入 `sprite`、`gmax_sprite`、`form_zh`、`form_en`，並以 PokeAPI 校正中文名稱與種族值；報告寫到 `node_modules/.cache/forms-report.json` |
 | `data:go` | 從 PokeMiners 的 Pokémon GO game master 與官方繁體中文文字檔產生 `src/data/go_evolutions.json`（以進化後的圖鑑編號為鍵，條件文字已組好）與 `src/data/go_forms.json`（型態變化，圖片由 PokeAPI 的 pokemon-form 取得）。下載檔快取在 `node_modules/.cache/pogo`，加 `-- --refresh` 重新下載最新版 |
 | `data:pvp` | 從 PvPoke 的 gamemaster 與三個聯盟的排名產生 `src/data/pvp.json`（GO 能力值、CP 倍率表、推薦招式、排名、菁英招式），並把對應的 PvPoke 編號寫入資料庫的 `go_id`。招式中文名優先用 GO 官方文字檔，沒有時用 PokeAPI。比對報告在 `node_modules/.cache/pogo/pvp-report.json`；加 `-- --refresh` 重新下載 |
-| `data:cups` | 從 game master 的 `combatLeague` 產生 `src/data/cups.json`（官方盃賽中文名、規則、前 30 名、推薦招式、擅長對付與剋星）。須在 `data:pvp` 之後執行 |
+| `data:cups` | 從 game master 的 `combatLeague` 產生 `src/data/cups.json`（官方盃賽中文名、規則、前 30 名、推薦招式、擅長對付與剋星），並下載盃賽圖示到 `public/cup-icons/`（已存在的檔案不重抓，`--refresh` 會重抓）。須在 `data:pvp` 之後執行 |
 | `data:fonts` | 依程式與資料中實際用到的字，產生 Cubic 11 與 Press Start 2P 的子集字型到 `src/assets/fonts/` |
 
 PokeAPI 回應會快取在 `node_modules/.cache/pokeapi`，重跑不會重複下載。
@@ -97,4 +98,4 @@ PokeAPI 回應會快取在 `node_modules/.cache/pokeapi`，重跑不會重複下
 - `src/customContent/` 內的自訂圖片不在 MIT 授權範圍內
 - PvPoke 資料：MIT，授權檔在 `src/data/LICENSE-PvPoke.txt`
 - 字型 Cubic 11、Press Start 2P：SIL Open Font License，授權檔在 `src/assets/fonts/`
-- Pokémon 及相關名稱、圖像之版權屬於 Nintendo、Creatures、GAME FREAK 與 The Pokémon Company；Pokémon GO 遊戲資料屬於 Niantic。本專案為非官方粉絲作品，與上述公司無關。網頁底部顯示版權歸屬與資料來源
+- Pokémon 及相關名稱、圖像之版權屬於 Nintendo、Creatures、GAME FREAK 與 The Pokémon Company；Pokémon GO 遊戲資料與盃賽圖示屬於 Niantic。本專案為非官方粉絲作品，與上述公司無關。網頁底部顯示版權歸屬與資料來源
