@@ -11,7 +11,29 @@ const LEAGUE_GROUPS = [
 ];
 
 const groupOf = (cp) => LEAGUE_GROUPS.find((g) => g.cp === cp);
-const listName = (zh) => zh.replace(/：(超級|高級|大師)聯盟版|：迷你版|HLVer\.|^(UL|ML)(?=紀念)/g, "");
+const REMIX = /(Remix|Rmix)$/;
+const listName = (zh) =>
+  zh.replace(/：(超級|高級|大師)聯盟版|：迷你版|HLVer\.|^(UL|ML)(?=紀念)/g, "").replace(/(.)小小盃/, "$1盃");
+
+function CupName({ zh }) {
+  const [name, sub] = listName(zh).replace(REMIX, "").split("：");
+  return (
+    <span className="cup-name">
+      {REMIX.test(zh) ? (
+        <>
+          {name.slice(0, -1)}
+          <span className="cup-name-tail">
+            {name.slice(-1)}
+            <sup className="cup-remix">Remix</sup>
+          </span>
+        </>
+      ) : (
+        name
+      )}
+      {sub && <small className="cup-sub">{sub}</small>}
+    </span>
+  );
+}
 
 function CupIcon({ icon }) {
   return <img className="cup-icon" src={`${import.meta.env.BASE_URL}cup-icons/${icon}.png`} alt="" width="24" height="24" />;
@@ -46,7 +68,7 @@ function CupList({ cups, league, onLeague, onOpen }) {
             {list.map((cup) => (
               <button key={cup.id} type="button" className="cup-card" onClick={() => onOpen(cup.id)}>
                 <CupIcon icon={cup.icon} />
-                <span className="cup-name">{listName(cup.zh)}</span>
+                <CupName zh={cup.zh} />
                 {cup.diff && (
                   <span className="cup-rule">
                     <span>多禁 {cup.diff.removed.length} 種</span>
