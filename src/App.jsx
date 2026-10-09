@@ -43,10 +43,9 @@ function App() {
   };
 
   const handleSearch = (q) => {
-    const found = runSearch(q);
+    runSearch(q);
     if (selected) window.history.replaceState(null, "");
     setSelected(null);
-    if (found.length === 1) openDetail(found[0], "list");
   };
 
   const handleSuggestion = (pokemon, typed) => {
@@ -93,7 +92,7 @@ function App() {
             key={selected.key}
             pokemon={selected}
             onSelect={(p) => openDetail(p)}
-            backLabel={window.history.state?.from === "pokemon" ? "上一隻" : "結果"}
+            backLabel={window.history.state?.from === "pokemon" ? "上一隻" : "全部結果"}
             onBack={() => window.history.back()}
           />
         ) : results === null ? (
