@@ -1,73 +1,24 @@
-import { memo } from "react";
 import PokemonCard from "./PokemonCard";
-import PokemonCardSkeleton from "./PokemonCardSkeleton";
-import "./PokemonGrid.css";
 
-const PokemonGrid = memo(function PokemonGrid({
-  pokemon,
-  onPokemonClick,
-  isLoading = false,
-  onLoadMore,
-  hasMore = false,
-  totalCount = 0,
-  displayCount = 0
-}) {
-  // Show skeleton cards during loading
-  if (isLoading) {
-    return (
-      <div className="pokemon-grid">
-        <div className="pokemon-cards">
-          {Array.from({ length: 8 }, (_, index) => (
-            <PokemonCardSkeleton key={`skeleton-${index}`} />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (!pokemon || pokemon.length === 0) {
-    return (
-      <div className="pokemon-grid-empty">
-        <div className="empty-state"></div>
-      </div>
-    );
-  }
-
+function PokemonGrid({ pokemon, visible, onSelect, onLoadMore }) {
+  const shown = pokemon.slice(0, visible);
   return (
-    <div className="pokemon-grid">
-      <div className="pokemon-cards">
-        {pokemon.map((poke, index) => {
-          // Create a more robust unique key that accounts for variants and evolution sources
-          const totalStats = poke.total_stats || poke.stats?.reduce((sum, stat) => sum + stat.value, 0) || 0;
-          const isVariant = poke.is_variant || false;
-          const variantId = isVariant ? 'variant' : 'base';
-          const nameKey = poke.name || poke.englishName || `pokemon-${poke.id}`;
-
-          const uniqueKey = `${poke.id}-${nameKey}-${totalStats}-${variantId}-${index}`;
-
-          return (
-            <PokemonCard
-              key={uniqueKey}
-              pokemon={poke}
-              onClick={onPokemonClick}
-              index={index}
-            />
-          );
-        })}
+    <section className="results" aria-label="搜尋結果">
+      <p className="results-count">
+        找到 {pokemon.length} 筆
+      </p>
+      <div className="poke-grid">
+        {shown.map((p, i) => (
+          <PokemonCard key={p.key} pokemon={p} onSelect={onSelect} eager={i < 6} />
+        ))}
       </div>
-
-      {hasMore && (
-        <div className="load-more-container">
-          <div className="load-more-info">
-            已載入 {displayCount} / 總共 {totalCount} 筆
-          </div>
-          <button className="load-more-button" onClick={onLoadMore}>
-            LOAD MORE
-          </button>
-        </div>
+      {visible < pokemon.length && (
+        <button type="button" className="pixel-button load-more" onClick={onLoadMore}>
+          LOAD MORE {shown.length}/{pokemon.length}
+        </button>
       )}
-    </div>
+    </section>
   );
-});
+}
 
 export default PokemonGrid;

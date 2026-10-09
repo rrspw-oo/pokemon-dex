@@ -1,304 +1,126 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import SearchSuggestions from "./SearchSuggestions";
-import { getPokemonSearchSuggestions } from "../services/pokemonApi";
-import "./SearchBox.css";
+import { suggestPokemon } from "../services/pokemonApi";
 
-function SearchBox({ onSearch, isLoading, resetKey }) {
+const LIST_ID = "search-suggestions";
+
+function SearchBox({ onSearch, onSelect, resetKey, presetQuery }) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
-  const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
-  const [caretPosition, setCaretPosition] = useState(0);
-  const [showCaret, setShowCaret] = useState(false);
-
-  const suggestionsTimeoutRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef(null);
-  const containerRef = useRef(null);
-  const isSelectingSuggestionRef = useRef(false);
-  const measureSpanRef = useRef(null);
 
-  // Update caret position
-  const updateCaretPosition = useCallback(() => {
-    if (!inputRef.current || !measureSpanRef.current) return;
-
-    const input = inputRef.current;
-    const cursorPos = input.selectionStart || 0;
-    const textBeforeCursor = query.substring(0, cursorPos);
-
-    measureSpanRef.current.textContent = textBeforeCursor;
-    const textWidth = measureSpanRef.current.offsetWidth;
-
-    setCaretPosition(16 + textWidth);
-  }, [query]);
-
-  // Update caret position when query changes
   useEffect(() => {
-    updateCaretPosition();
-  }, [query, updateCaretPosition]);
+    setQuery(presetQuery);
+    setSuggestions([]);
+    setOpen(false);
+    setActiveIndex(-1);
+  }, [resetKey, presetQuery]);
 
-  // Handle reset from parent component
-  useEffect(() => {
-    if (resetKey) {
-      setQuery("");
-      setSuggestions([]);
-      setShowSuggestions(false);
-      setSelectedSuggestionIndex(-1);
-      setShowCaret(false);
+  const close = () => {
+    setOpen(false);
+    setActiveIndex(-1);
+  };
 
-      // Clear any pending timeouts
-      if (suggestionsTimeoutRef.current) {
-        clearTimeout(suggestionsTimeoutRef.current);
-        suggestionsTimeoutRef.current = null;
-      }
-    }
-  }, [resetKey]);
-
-  // 搜尋功能（現在只在提交和選擇建議時使用）
-  const performSearch = useCallback(
-    (searchQuery) => {
-      onSearch(searchQuery);
-    },
-    [onSearch]
-  );
-
-  const fetchSuggestions = useCallback((searchQuery) => {
-    if (!searchQuery || searchQuery.length < 1) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-    const result = getPokemonSearchSuggestions(searchQuery, 8);
-    const apply = (newSuggestions) => {
-      setSuggestions(newSuggestions);
-      setShowSuggestions(newSuggestions.length > 0);
-    };
-    if (result && typeof result.then === "function") {
-      setIsFetchingSuggestions(true);
-      result
-        .then(apply)
-        .catch(() => {
-          setSuggestions([]);
-          setShowSuggestions(false);
-        })
-        .finally(() => setIsFetchingSuggestions(false));
-    } else {
-      apply(result || []);
-    }
-  }, []);
-
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const value = e.target.value;
     setQuery(value);
-    setSelectedSuggestionIndex(-1);
-
-    if (value.length === 0) {
-      onSearch("");
-      setSuggestions([]);
-      setShowSuggestions(false);
-    } else {
-      fetchSuggestions(value);
-    }
+    setActiveIndex(-1);
+    const next = value.trim() ? suggestPokemon(value) : [];
+    setSuggestions(next);
+    setOpen(next.length > 0);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (query.trim()) {
-      performSearch(query.trim());
-      setShowSuggestions(false);
-    }
+  const submit = () => {
+    const q = query.trim();
+    if (!q) return;
+    close();
+    inputRef.current?.blur();
+    onSearch(q);
   };
 
-  const clearSearch = () => {
-    setQuery("");
-    onSearch("");
-    setSuggestions([]);
-    setShowSuggestions(false);
-    setSelectedSuggestionIndex(-1);
+  const pick = (pokemon) => {
+    close();
+    inputRef.current?.blur();
+    onSelect(pokemon, query.trim());
   };
 
-  // 處理建議點擊
-  const handleSuggestionClick = (suggestion) => {
-    // Set flag to prevent focus handler from retriggering suggestions
-    isSelectingSuggestionRef.current = true;
-
-    // Use englishName or id for search instead of formatted text
-    const searchTerm =
-      suggestion.englishName || suggestion.id?.toString() || suggestion.text;
-    setQuery(searchTerm);
-    setSuggestions([]); // Clear suggestions array to prevent retrigger
-    setShowSuggestions(false);
-    setSelectedSuggestionIndex(-1);
-    performSearch(searchTerm);
-
-    // Reset flag after a short delay
-    setTimeout(() => {
-      isSelectingSuggestionRef.current = false;
-    }, 200);
-  };
-
-  // 處理鍵盤導航
   const handleKeyDown = (e) => {
-    if (!showSuggestions || suggestions.length === 0) return;
-
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        setSelectedSuggestionIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : prev
-        );
-        break;
-
-      case "ArrowUp":
-        e.preventDefault();
-        setSelectedSuggestionIndex((prev) => (prev > 0 ? prev - 1 : -1));
-        break;
-
-      case "Enter":
-        e.preventDefault();
-        if (
-          selectedSuggestionIndex >= 0 &&
-          suggestions[selectedSuggestionIndex]
-        ) {
-          handleSuggestionClick(suggestions[selectedSuggestionIndex]);
-        } else if (query.trim()) {
-          performSearch(query.trim());
-          setShowSuggestions(false);
-        }
-        break;
-
-      case "Escape":
-        setShowSuggestions(false);
-        setSelectedSuggestionIndex(-1);
-        inputRef.current?.blur();
-        break;
-
-      default:
-        break;
+    if (e.key === "ArrowDown" && open) {
+      e.preventDefault();
+      setActiveIndex((i) => Math.min(i + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp" && open) {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(i - 1, -1));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (open && activeIndex >= 0) pick(suggestions[activeIndex]);
+      else submit();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      close();
     }
   };
 
-  // 處理輸入框焦點
-  const handleInputFocus = () => {
-    // Don't show suggestions if we're in the middle of selecting one
-    if (
-      !isSelectingSuggestionRef.current &&
-      query.length >= 1 &&
-      suggestions.length > 0
-    ) {
-      setShowSuggestions(true);
-    }
-  };
-
-  const handleInputBlur = (e) => {
-    if (!e) return;
-
-    const relatedTarget = e.relatedTarget;
-
-    if (relatedTarget) {
-      try {
-        if (relatedTarget.type === 'submit' ||
-            relatedTarget.classList?.contains('search-button')) {
-          return;
-        }
-      } catch (err) {
-        // Ignore classList errors on some mobile browsers
-      }
-    }
-
-    setTimeout(() => {
-      if (!isSelectingSuggestionRef.current) {
-        setShowSuggestions(false);
-        setSelectedSuggestionIndex(-1);
-      }
-    }, 200);
+  const clear = () => {
+    setQuery("");
+    setSuggestions([]);
+    close();
+    inputRef.current?.focus();
   };
 
   return (
-    <div className="search-box" ref={containerRef}>
-      <form onSubmit={handleSubmit} className="search-form">
-        <div className="search-input-container">
-          <span
-            ref={measureSpanRef}
-            style={{
-              position: "absolute",
-              visibility: "hidden",
-              whiteSpace: "pre",
-              fontFamily: "Press Start 2P, PingFang TC, Microsoft JhengHei, Courier New, monospace",
-              fontSize: "12px",
-              letterSpacing: "1px",
-            }}
-          />
-
-          {showCaret && (
-            <div
-              className="pixel-caret"
-              style={{ left: `${caretPosition}px` }}
-            />
-          )}
-
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onFocus={() => {
-              handleInputFocus();
-              setShowCaret(true);
-              updateCaretPosition();
-            }}
-            onBlur={() => {
-              handleInputBlur();
-              setShowCaret(false);
-            }}
-            onClick={updateCaretPosition}
-            onKeyUp={updateCaretPosition}
-            placeholder={showCaret ? "" : " # or names"}
-            className="search-input"
-            disabled={isLoading}
-            autoComplete="off"
-            role="combobox"
-            aria-expanded={showSuggestions}
-            aria-haspopup="listbox"
-            aria-autocomplete="list"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="clear-button"
-              disabled={isLoading}
-              onTouchStart={(e) => e.stopPropagation()}
-            ></button>
-          )}
-          <button
-            type="submit"
-            className="search-button"
-            disabled={isLoading || query.trim().length < 1}
-            onClick={(e) => {
-              e.preventDefault();
-              if (query.trim()) {
-                performSearch(query.trim());
-                setShowSuggestions(false);
-              }
-            }}
-          >
-            {isLoading ? "Catching..." : "GO"}
+    <form
+      className="search"
+      role="search"
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+    >
+      <div className="search-field">
+        <input
+          ref={inputRef}
+          type="search"
+          enterKeyHint="search"
+          className="search-input"
+          value={query}
+          placeholder="編號 / 名稱 / 屬性"
+          aria-label="搜尋寶可夢"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck="false"
+          role="combobox"
+          aria-expanded={open}
+          aria-controls={LIST_ID}
+          aria-autocomplete="list"
+          aria-activedescendant={open && activeIndex >= 0 ? `${LIST_ID}-${activeIndex}` : undefined}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setOpen(suggestions.length > 0)}
+          onBlur={close}
+        />
+        {query && (
+          <button type="button" className="search-clear" aria-label="清除" onClick={clear} onPointerDown={(e) => e.preventDefault()}>
+            ×
           </button>
-
-          <SearchSuggestions
-            query={query}
-            suggestions={suggestions}
-            isVisible={showSuggestions}
-            onSuggestionClick={handleSuggestionClick}
-            onSuggestionHover={setSelectedSuggestionIndex}
-            selectedIndex={selectedSuggestionIndex}
-            isLoading={isFetchingSuggestions}
-          />
-        </div>
-      </form>
-    </div>
+        )}
+      </div>
+      <button type="submit" className="search-go" disabled={!query.trim()}>
+        GO
+      </button>
+      {open && (
+        <SearchSuggestions
+          id={LIST_ID}
+          suggestions={suggestions}
+          activeIndex={activeIndex}
+          onPick={pick}
+          onHover={setActiveIndex}
+        />
+      )}
+    </form>
   );
 }
 

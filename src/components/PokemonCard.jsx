@@ -1,203 +1,22 @@
-import { memo, useState } from "react";
-import { getTypeColor } from "../services/pokemonApi";
-import "./PokemonCard.css";
-import "../styles/pixelEffects.css";
+import { memo } from "react";
+import Sprite from "./Sprite";
+import TypeBadges from "./TypeBadges";
+import { formatId } from "../utils/format";
 
-const PokemonCard = memo(function PokemonCard({ pokemon, onClick, index = 0 }) {
-  const [imageError, setImageError] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [failedUrls, setFailedUrls] = useState(new Set());
-  const [isShiny, setIsShiny] = useState(false);
-  const [isGmax, setIsGmax] = useState(false);
-  const resolvedChineseName = pokemon.chineseName;
-
-  const getImageChain = () => {
-    const chain = [];
-
-    if (isGmax && pokemon.hasGmaxForm && pokemon.gmaxImage) {
-      chain.push(pokemon.gmaxImage);
-    } else if (isShiny && pokemon.hasShinySprite && pokemon.shinyImage) {
-      chain.push(pokemon.shinyImage);
-    } else {
-      if (pokemon.image) chain.push(pokemon.image);
-      if (pokemon.imageFallback && pokemon.imageFallback !== pokemon.image) {
-        chain.push(pokemon.imageFallback);
-      }
-      if (pokemon.imageAlternatives) {
-        pokemon.imageAlternatives.forEach((url) => {
-          if (!chain.includes(url)) chain.push(url);
-        });
-      }
-    }
-    return chain;
-  };
-
-  const handleImageError = (event) => {
-    const failedUrl = event.target.src;
-    const imageChain = getImageChain();
-
-
-    // Track failed URL
-    setFailedUrls((prev) => new Set([...prev, failedUrl]));
-
-    // Try next image in chain
-    if (currentImageIndex < imageChain.length - 1) {
-      setCurrentImageIndex((prev) => prev + 1);
-    } else {
-      // All images failed
-      setImageError(true);
-      setImageLoaded(true);
-    }
-  };
-
-  const handleImageLoad = () => {
-    const loadedUrl = getCurrentImageUrl();
-    setImageLoaded(true);
-  };
-
-  // Get current image URL to display
-  const getCurrentImageUrl = () => {
-    const imageChain = getImageChain();
-
-    if (imageError) {
-      // All images failed, return placeholder
-      return pokemon.imageFallback || pokemon.image;
-    }
-
-    // Return current image in chain
-    if (currentImageIndex < imageChain.length) {
-      return imageChain[currentImageIndex];
-    }
-
-    // Fallback to original image
-    return pokemon.image;
-  };
-
-  const formatId = (id) => {
-    return `#${id.toString().padStart(3, "0")}`;
-  };
-
-
-  // Get basic pixel class for all Pokemon (no type-based effects)
-  const getPixelClass = () => {
-    return "pixel-art";
-  };
-
-  const handleCardClick = () => {
-    if (onClick && !pokemon.is_custom) {
-      onClick(pokemon);
-    }
-  };
-
-  const handleShinyToggle = (event) => {
-    event.stopPropagation();
-    if (pokemon.hasShinySprite) {
-      setIsShiny(!isShiny);
-      setIsGmax(false);
-      setCurrentImageIndex(0);
-      setImageError(false);
-      setFailedUrls(new Set());
-    }
-  };
-
-  const handleGmaxToggle = (event) => {
-    event.stopPropagation();
-    if (pokemon.hasGmaxForm) {
-      setIsGmax(!isGmax);
-      setIsShiny(false);
-      setCurrentImageIndex(0);
-      setImageError(false);
-      setFailedUrls(new Set());
-    }
-  };
-
+const PokemonCard = memo(function PokemonCard({ pokemon, onSelect, eager }) {
   return (
-    <div
-      className={`pokemon-card pokemon-card-pixel ${
-        !pokemon.is_custom ? "clickable" : ""
-      } ${isShiny ? "shiny" : ""}`}
-      onClick={handleCardClick}
-    >
-      <div className="pokemon-header">
-        <div className="pokemon-id">{formatId(pokemon.id)}</div>
-        {pokemon.types && pokemon.types.length > 0 && (
-          <div className="pokemon-types">
-            {pokemon.types.map((type, index) => (
-              <span
-                key={index}
-                className="type-badge"
-                style={{ backgroundColor: getTypeColor(type.name) }}
-              >
-                {type.chinese}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="pokemon-image-container">
-        {!imageLoaded && (
-          <div className="image-placeholder">
-            <div className="placeholder-spinner pixel-spinner"></div>
-          </div>
-        )}
-        <img
-          src={getCurrentImageUrl()}
-          alt={`${resolvedChineseName} (${pokemon.englishName})`}
-          className={`pokemon-image ${
-            imageLoaded ? "loaded" : ""
-          } ${getPixelClass()} ${
-            pokemon.isLocalSprite ? "local-sprite" : "external-sprite"
-          } ${
-            isShiny && !pokemon.hasPixelShiny ? "pixelate-fallback" : ""
-          }`}
-          onError={handleImageError}
-          onLoad={handleImageLoad}
-          loading={index < 8 ? "eager" : "lazy"}
-          key={`${pokemon.id}-${currentImageIndex}-${
-            imageError ? "error" : "loading"
-          }-${isShiny ? "shiny" : "normal"}`}
-        />
-      </div>
-
-      <div className="pokemon-names">
-        <h3 className="pokemon-name-zh">{resolvedChineseName}</h3>
-        {!pokemon.is_custom && (
-          <p className="pokemon-name-en">
-            {pokemon.englishName.replace(/-/g, ' ')}
-          </p>
-        )}
-        <div className="form-toggles">
-          {pokemon.hasShinySprite && (
-            <button
-              className={`shiny-toggle ${isShiny ? "active" : ""}`}
-              onClick={handleShinyToggle}
-              title={isShiny ? "切換至一般型態" : "切換至閃光型態"}
-            >
-              Shiny
-            </button>
-          )}
-          {pokemon.hasGmaxForm && (
-            <button
-              className={`gmax-toggle ${isGmax ? "active" : ""}`}
-              onClick={handleGmaxToggle}
-              title={isGmax ? "切換至一般型態" : "切換至超極巨化型態"}
-            >
-              G-MAX
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="pokemon-info">
-        {pokemon.error && (
-          <div className="error-info">
-            <p>資料載入異常</p>
-          </div>
-        )}
-      </div>
-    </div>
+    <button type="button" className="poke-card" onClick={() => onSelect(pokemon)}>
+      <span className="poke-card-top">
+        <span className="dex-no">{formatId(pokemon.id)}</span>
+        <TypeBadges types={pokemon.types} />
+      </span>
+      <span className="sprite-tile">
+        <Sprite key={pokemon.image[0]} urls={pokemon.image} alt={pokemon.zh} eager={eager} />
+      </span>
+      <span className="poke-card-zh">{pokemon.zh}</span>
+      <span className="poke-card-en">{pokemon.en}</span>
+      {pokemon.hint && <span className="poke-card-hint">{pokemon.hint}</span>}
+    </button>
   );
 });
 

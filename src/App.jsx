@@ -1,171 +1,125 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import SearchBox from "./components/SearchBox";
 import PokemonGrid from "./components/PokemonGrid";
+import PokemonDetail from "./components/PokemonDetail";
 import Footer from "./components/Footer";
-import { searchPokemon, searchPokemonForms } from "./services/pokemonApi";
-import "./App.css";
-import "./styles/pixelEffects.css";
+import { searchPokemon, getPokemonByKey } from "./services/pokemonApi";
 
-// LRU Cache implementation for app-level caching
-class LRUCache {
-  constructor(maxSize = 50) {
-    this.maxSize = maxSize;
-    this.cache = new Map();
-  }
-
-  get(key) {
-    if (this.cache.has(key)) {
-      const value = this.cache.get(key);
-      this.cache.delete(key);
-      this.cache.set(key, value);
-      return value;
-    }
-    return undefined;
-  }
-
-  set(key, value) {
-    if (this.cache.has(key)) {
-      this.cache.delete(key);
-    } else if (this.cache.size >= this.maxSize) {
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
-    }
-    this.cache.set(key, value);
-  }
-
-  has(key) {
-    return this.cache.has(key);
-  }
-
-  clear() {
-    this.cache.clear();
-  }
-}
+const PAGE_SIZE = 12;
+const EXAMPLES = ["皮卡丘", "#150", "阿羅拉", "惡屬性", "捕捉惡屬性", "誘餌"];
 
 function App() {
-  const [searchResults, setSearchResults] = useState([]);
-  const [allResults, setAllResults] = useState([]);
-  const [displayCount, setDisplayCount] = useState(5);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState(null);
+  const [visible, setVisible] = useState(PAGE_SIZE);
+  const [selected, setSelected] = useState(() => {
+    const key = window.history.state?.pokemonKey;
+    return key == null ? null : getPokemonByKey(key);
+  });
   const [resetKey, setResetKey] = useState(0);
+  const [presetQuery, setPresetQuery] = useState("");
 
-  const searchCache = useMemo(() => new LRUCache(50), []);
+  useEffect(() => {
+    const onPop = (e) => {
+      const key = e.state?.pokemonKey;
+      setSelected(key == null ? null : getPokemonByKey(key));
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
-  const handleSearch = async (query) => {
-    if (!query || query.length < 1) {
-      setSearchResults([]);
-      setAllResults([]);
-      setDisplayCount(5);
-      setError(null);
-      return;
-    }
-
-    // 檢查緩存
-    if (searchCache.has(query)) {
-      const cachedResults = searchCache.get(query);
-      setAllResults(cachedResults);
-      setSearchResults(cachedResults.slice(0, 5));
-      setDisplayCount(5);
-      setError(null);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const results = await searchPokemon(query.trim(), false);
-
-      searchCache.set(query, results);
-
-      setAllResults(results);
-      setSearchResults(results.slice(0, 5));
-      setDisplayCount(5);
-
-      if (results.length === 0) {
-        setError(`找不到包含 "${query}" 的寶可夢`);
-      }
-    } catch (error) {
-      console.warn('Search error:', error);
-      setError("搜尋時發生錯誤，請稍後再試");
-      setSearchResults([]);
-      setAllResults([]);
-    } finally {
-      setIsLoading(false);
-    }
+  const runSearch = (q) => {
+    const found = searchPokemon(q);
+    setQuery(q);
+    setResults(found);
+    setVisible(PAGE_SIZE);
+    return found;
   };
 
-  const handleLoadMore = () => {
-    const newDisplayCount = displayCount + 5;
-    setDisplayCount(newDisplayCount);
-    setSearchResults(allResults.slice(0, newDisplayCount));
+  const openDetail = (pokemon, from = selected ? "pokemon" : "list") => {
+    setSelected(pokemon);
+    window.history.pushState({ pokemonKey: pokemon.key, from }, "");
+    window.scrollTo(0, 0);
   };
 
-  const handlePokemonClick = async (pokemon) => {
-    const cacheKey = `forms_evos_${pokemon.id}`;
-
-    if (searchCache.has(cacheKey)) {
-      setSearchResults(searchCache.get(cacheKey));
-      setError(null);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const forms = await searchPokemonForms(pokemon.id);
-      searchCache.set(cacheKey, forms);
-      setSearchResults(forms);
-
-      if (forms.length === 0) {
-        setError(`找不到 ${pokemon.chineseName} 的型態資料`);
-      }
-    } catch (error) {
-      console.warn('Pokemon forms error:', error);
-      setError(`載入 ${pokemon.chineseName} 型態時發生錯誤，請稍後再試`);
-      setSearchResults([]);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSearch = (q) => {
+    const found = runSearch(q);
+    if (selected) window.history.replaceState(null, "");
+    setSelected(null);
+    if (found.length === 1) openDetail(found[0], "list");
   };
 
-  const handleHeaderClick = () => {
-    // Clear all search state and reset SearchBox
-    setSearchResults([]);
-    setAllResults([]);
-    setDisplayCount(5);
-    setError(null);
-    searchCache.clear();
-    setIsLoading(false);
+  const handleSuggestion = (pokemon, typed) => {
+    runSearch(typed);
+    openDetail(pokemon);
+  };
 
-    setResetKey(prev => prev + 1);
+  const runExample = (example) => {
+    setPresetQuery(example);
+    setResetKey((k) => k + 1);
+    handleSearch(example);
+  };
+
+  const reset = () => {
+    setPresetQuery("");
+    setQuery("");
+    setResults(null);
+    setSelected(null);
+    setResetKey((k) => k + 1);
+    window.history.replaceState(null, "");
   };
 
   return (
-    <div className="app">
-      <div className="container">
-        <header className="header" onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
-          <p>Pokemon Search Tool</p>
-        </header>
-        <SearchBox onSearch={handleSearch} isLoading={isLoading} resetKey={resetKey} />
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-          </div>
-        )}
-        <PokemonGrid
-          pokemon={searchResults}
-          onPokemonClick={handlePokemonClick}
-          isLoading={isLoading}
-          onLoadMore={handleLoadMore}
-          hasMore={allResults.length > displayCount}
-          totalCount={allResults.length}
-          displayCount={displayCount}
+    <div className="shell">
+      <header className="bezel">
+        <span className="power-led" aria-hidden="true" />
+        <h1 className="title">
+          <button type="button" onClick={reset} aria-label="重設搜尋">
+            Pokemon Search Tool
+          </button>
+        </h1>
+      </header>
+
+      <main className="screen">
+        <SearchBox
+          onSearch={handleSearch}
+          onSelect={handleSuggestion}
+          resetKey={resetKey}
+          presetQuery={presetQuery}
         />
-        <Footer />
-      </div>
+
+        {selected ? (
+          <PokemonDetail
+            key={selected.key}
+            pokemon={selected}
+            onSelect={(p) => openDetail(p)}
+            backLabel={window.history.state?.from === "pokemon" ? "上一隻" : "結果"}
+            onBack={() => window.history.back()}
+          />
+        ) : results === null ? (
+          <section className="home">
+            <p className="home-text">輸入編號、名稱、屬性或進化條件</p>
+            <div className="chips">
+              {EXAMPLES.map((ex) => (
+                <button key={ex} type="button" className="chip" onClick={() => runExample(ex)}>
+                  {ex}
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : results.length === 0 ? (
+          <p className="message">找不到「{query}」相關的寶可夢</p>
+        ) : (
+          <PokemonGrid
+            pokemon={results}
+            visible={visible}
+            onSelect={(p) => openDetail(p)}
+            onLoadMore={() => setVisible((v) => v + PAGE_SIZE)}
+          />
+        )}
+      </main>
+
+      <Footer />
     </div>
   );
 }

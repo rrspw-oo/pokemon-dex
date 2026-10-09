@@ -20,16 +20,16 @@ export default defineConfig({
         navigateFallback: null,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/pokeapi\.co\/api\/v2\/.*/i,
-            handler: 'NetworkFirst',
+            urlPattern: /^https:\/\/(raw\.githubusercontent\.com|cdn\.jsdelivr\.net\/gh)\/PokeAPI\/sprites.*\.png$/,
+            handler: 'CacheFirst',
             options: {
-              cacheName: 'pokeapi-cache',
+              cacheName: 'sprites-cache',
               expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7
+                maxEntries: 2500,
+                maxAgeSeconds: 60 * 60 * 24 * 30
               },
               cacheableResponse: {
-                statuses: [0, 200]
+                statuses: [200]
               }
             }
           },
@@ -39,7 +39,7 @@ export default defineConfig({
             options: {
               cacheName: 'images-cache',
               expiration: {
-                maxEntries: 200,
+                maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 30
               }
             }
@@ -51,8 +51,8 @@ export default defineConfig({
         name: 'Pokemon Dex React',
         short_name: 'PokeDex',
         description: 'A comprehensive Pokemon database with Chinese and English names, featuring shiny Pokemon support',
-        theme_color: '#3b82f6',
-        background_color: '#ffffff',
+        theme_color: '#c9c6be',
+        background_color: '#c9c6be',
         display: 'standalone',
         scope: '/pokemon-dex/',
         start_url: '/pokemon-dex/',
@@ -95,9 +95,7 @@ export default defineConfig({
           ],
           'pokemon-utils': [
             './src/utils/searchIndex.js',
-            './src/utils/evolutionIndex.js',
-            './src/utils/spriteUtils.js',
-            './src/utils/localSpriteUtils.js'
+            './src/utils/evolutionIndex.js'
           ],
           'pokemon-api': ['./src/services/pokemonApi.js']
         }
