@@ -1,49 +1,72 @@
 import RankRow from "./RankRow";
+import LeagueIcon from "./LeagueIcon";
 import { useCupsData } from "../services/pvpData";
 import { getPokemonByGoId } from "../services/pokemonApi";
 
-const GROUPS = [
-  ["常駐聯盟", (c) => c.standard],
-  ["迷你盃賽 CP 500", (c) => !c.standard && c.cp === 500],
-  ["超級盃賽 CP 1500", (c) => !c.standard && c.cp === 1500],
-  ["高級盃賽 CP 2500", (c) => !c.standard && c.cp === 2500],
-  ["大師盃賽", (c) => !c.standard && c.cp === 10000],
+const LEAGUE_GROUPS = [
+  { cp: 500, icon: "little", name: "小小盃", sub: "CP 500" },
+  { cp: 1500, icon: "great", name: "超級聯盟", sub: "CP 1500" },
+  { cp: 2500, icon: "ultra", name: "高級聯盟", sub: "CP 2500" },
+  { cp: 10000, icon: "master", name: "大師聯盟", sub: "無 CP 上限" },
 ];
 
-function CupList({ cups, onOpen }) {
-  return GROUPS.map(([title, test]) => {
-    const list = cups.filter(test);
-    if (list.length === 0) return null;
-    return (
-      <div key={title} className="panel">
-        <h3 className="panel-title">{title}</h3>
-        <div className="cup-grid">
-          {list.map((cup) => (
-            <button key={cup.id} type="button" className="cup-card" onClick={() => onOpen(cup.id)}>
-              <span className="cup-name">{cup.zh}</span>
-              <span className="cup-rule">{cup.rules.slice(1).join("・") || cup.rules[0]}</span>
-              {cup.source === "derived" && <span className="cup-tag">推估</span>}
-            </button>
-          ))}
-        </div>
+const groupOf = (cp) => LEAGUE_GROUPS.find((g) => g.cp === cp);
+
+function CupList({ cups, league, onLeague, onOpen }) {
+  const group = groupOf(league);
+  const list = cups.filter((c) => c.cp === league);
+  return (
+    <>
+      <div className="league-picker" role="group" aria-label="聯盟">
+        {LEAGUE_GROUPS.map((g) => (
+          <button
+            key={g.cp}
+            type="button"
+            className={`league-option ${g.cp === league ? "is-on" : ""}`}
+            aria-pressed={g.cp === league}
+            onClick={() => onLeague(g.cp)}
+          >
+            <LeagueIcon league={g.icon} />
+            <span className="league-option-name">{g.name}</span>
+            <span className="league-option-sub">{g.sub}</span>
+          </button>
+        ))}
       </div>
-    );
-  });
+      {group && (
+        <div className="panel">
+          <h3 className="panel-title">
+            {group.name} {group.sub} 的盃賽
+          </h3>
+          <div className="cup-grid">
+            {list.map((cup) => (
+              <button key={cup.id} type="button" className="cup-card" onClick={() => onOpen(cup.id)}>
+                <span className="cup-name">{cup.zh}</span>
+                <span className="cup-rule">{cup.rules.slice(1).join("・") || cup.rules[0]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 function CupDetail({ cup, data, onBack, onSelect }) {
   const ids = (list) => list.map((i) => data.ids[i]);
+  const group = groupOf(cup.cp);
   return (
     <>
       <div className="panel">
         <div className="cup-head">
           <button type="button" className="nav-back" onClick={onBack}>
             <span className="chevron-left" aria-hidden="true" />
-            全部盃賽
+            {group ? group.name : "全部盃賽"}
           </button>
-          {cup.source === "derived" && <span className="cup-tag">推估</span>}
         </div>
-        <h3 className="cup-title">{cup.zh}</h3>
+        <h3 className="cup-title">
+          {group && <LeagueIcon league={group.icon} />}
+          {cup.zh}
+        </h3>
         <ul className="cup-rules">
           {cup.rules.map((rule) => (
             <li key={rule}>{rule}</li>
@@ -75,7 +98,7 @@ function CupDetail({ cup, data, onBack, onSelect }) {
   );
 }
 
-function CupView({ cupId, onOpen, onBack, onSelect }) {
+function CupView({ cupId, league, onLeague, onOpen, onBack, onSelect }) {
   const data = useCupsData();
   if (!data) return <p className="message">載入中</p>;
   const cup = cupId && data.cups.find((c) => c.id === cupId);
@@ -84,7 +107,7 @@ function CupView({ cupId, onOpen, onBack, onSelect }) {
       {cup ? (
         <CupDetail cup={cup} data={data} onBack={onBack} onSelect={onSelect} />
       ) : (
-        <CupList cups={data.cups} onOpen={onOpen} />
+        <CupList cups={data.cups} league={league} onLeague={onLeague} onOpen={onOpen} />
       )}
     </section>
   );

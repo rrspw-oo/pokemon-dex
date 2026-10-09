@@ -1202,13 +1202,6 @@ p {
   line-height: 1.4;
 }
 
-.cup-tag {
-  padding: 0 4px;
-  border: 2px solid var(--ink-soft);
-  color: var(--ink-soft);
-  font-size: 10px;
-  line-height: 14px;
-}
 
 .cup-head {
   display: flex;
@@ -1257,4 +1250,66 @@ p {
   background: #e7dbf7;
   border-color: #6b2fb3;
   color: #4a1f80;
+}
+
+.league-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.league-option {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 3px solid var(--ink);
+  background: var(--paper-hi);
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.league-option:active {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+
+.league-option.is-on {
+  background: var(--highlight);
+}
+
+.league-option .league-icon {
+  grid-row: span 2;
+  width: 36px;
+  height: 36px;
+}
+
+.league-option-name {
+  font-size: 14px;
+}
+
+.league-option-sub {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.cup-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cup-title .league-icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+}
+
+@media (min-width: 600px) {
+  .league-picker {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }

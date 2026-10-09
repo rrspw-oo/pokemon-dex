@@ -23,6 +23,7 @@ const navFromState = (state) => ({
   type: state?.type || null,
   type2: state?.type2 || null,
   cup: state?.cup || null,
+  league: state?.league || 1500,
 });
 
 function App() {
@@ -57,7 +58,15 @@ function App() {
 
   const openDetail = (pokemon) => {
     const from = selected ? "pokemon" : nav.view === "dex" ? (results ? "list" : "home") : nav.view;
-    go({ view: nav.view, type: nav.type, type2: nav.type2, cup: nav.cup, pokemonKey: pokemon.key, from });
+    go({
+      view: nav.view,
+      type: nav.type,
+      type2: nav.type2,
+      cup: nav.cup,
+      league: nav.league,
+      pokemonKey: pokemon.key,
+      from,
+    });
   };
 
   const handleSearch = (q) => {
@@ -113,7 +122,9 @@ function App() {
       return (
         <CupView
           cupId={nav.cup}
-          onOpen={(cup) => go({ view: "cups", cup })}
+          league={nav.league}
+          onLeague={(league) => go({ view: "cups", league }, true)}
+          onOpen={(cup) => go({ view: "cups", cup, league: nav.league })}
           onBack={() => window.history.back()}
           onSelect={openDetail}
         />
