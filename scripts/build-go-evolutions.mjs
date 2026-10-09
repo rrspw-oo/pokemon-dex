@@ -201,6 +201,7 @@ async function main() {
   }
 
   const byTarget = new Map();
+  const regional = new Map();
   for (const tpl of gm) {
     const ps = tpl.data.pokemonSettings;
     const m = tpl.templateId.match(/^V(\d{4})_POKEMON_/);
@@ -213,7 +214,11 @@ async function main() {
       if (!to || to === from) continue;
       const lines = describe(branch, quests, t);
       const region = rank === 2 && Object.keys(REGION_ZH).find((r) => ps.form.split("_").includes(r));
-      if (region) lines.unshift(`限${REGION_ZH[region]}的樣子`);
+      if (region) {
+        if (!regional.has(to)) regional.set(to, []);
+        regional.get(to).push({ from, form: `${REGION_ZH[region]}的樣子`, lines: [...lines] });
+        lines.unshift(`限${REGION_ZH[region]}的樣子`);
+      }
       const option = { from, lines };
       const formName =
         branch.form && (t(`form_${branch.form}`) || t(`form_${branch.form.split("_").slice(1).join("_")}`));
@@ -221,6 +226,14 @@ async function main() {
       const entry = byTarget.get(to);
       if (!entry || rank < entry.rank) byTarget.set(to, { rank, options: [option] });
       else if (rank === entry.rank) entry.options.push(option);
+    }
+  }
+
+  for (const [to, entry] of byTarget) {
+    if (entry.rank === 2 || !regional.has(to)) continue;
+    const baseConditions = new Set(entry.options.map((o) => o.lines.join("/")));
+    for (const option of regional.get(to)) {
+      if (!baseConditions.has(option.lines.join("/"))) entry.options.push(option);
     }
   }
 
@@ -243,6 +256,7 @@ async function main() {
     const conditions = new Set(out[to].map((o) => o.lines.join("/")));
     if (conditions.size === 1) out[to] = [{ from: out[to][0].from, lines: out[to][0].lines }];
     else if (forms.size === 1) out[to].forEach((o) => delete o.form);
+    else if (forms.has("")) out[to].forEach((o) => (o.form ||= "一般的樣子"));
   }
 
   writeFileSync(

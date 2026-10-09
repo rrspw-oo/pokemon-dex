@@ -38,7 +38,9 @@ const TYPE_BY_QUERY = new Map(
 );
 
 const conditions = Object.entries(goEvolutions.byTarget).flatMap(([to, options]) =>
-  options.flatMap((o) => o.lines.map((line) => ({ from: o.from, to: Number(to), line, norm: line.replace(/\s+/g, "") })))
+  options.flatMap((o) =>
+    o.lines.map((line) => ({ from: o.from, to: Number(to), form: o.form, line, norm: line.replace(/\s+/g, "") }))
+  )
 );
 
 function typeOf(query) {
@@ -50,7 +52,7 @@ function conditionMatches(query) {
   const out = new Map();
   for (const c of conditions) {
     if (!(c.norm.includes(q) || Array.from(q).every((ch) => c.norm.includes(ch)))) continue;
-    const key = `${c.from}>${c.to}`;
+    const key = `${c.from}>${c.to}>${c.form || ""}`;
     if (!out.has(key)) out.set(key, c);
   }
   return [...out.values()];
@@ -130,13 +132,14 @@ export function search(rawQuery) {
     const named = new Set(scored.map((x) => x.r.key));
     const hints = new Map();
     for (const c of conditionMatches(query)) {
-      const base = byId.get(c.from)?.[0];
+      const sources = byId.get(c.from) || [];
+      const base = (c.form && sources.find((r) => r.zh.includes(c.form))) || sources[0];
       const target = byId.get(c.to)?.[0];
       if (!base || !target || named.has(base.key)) continue;
       if (!hints.has(base.key)) hints.set(base.key, { base, lines: new Map() });
       const lines = hints.get(base.key).lines;
       if (!lines.has(c.line)) lines.set(c.line, []);
-      lines.get(c.line).push(target.zh);
+      lines.get(c.line).push(c.form ? `${target.zh}（${c.form}）` : target.zh);
     }
     for (const { base, lines } of hints.values()) {
       const hint = [...lines].map(([line, targets]) => `進化成${targets.join("、")}：${line}`).join("；");

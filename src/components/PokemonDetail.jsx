@@ -129,7 +129,7 @@ function FormChangePanel({ pokemon, formChanges, onSelect }) {
         <GoCondition
           title={`變換成${picked.label}`}
           options={picked.options}
-          emptyText="目前無法透過型態變化獲得"
+          emptyText="目前無法透過型態變化獲得，在官方有活動時方可進化"
           target={picked.linked && picked.pokemon.key !== pokemon.key ? picked.pokemon : null}
           onSelect={onSelect}
         />
