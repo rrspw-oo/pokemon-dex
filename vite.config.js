@@ -35,6 +35,20 @@ export default defineConfig({
             }
           },
           {
+            urlPattern: /^https:\/\/wsrv\.nl\/\?url=assets\.tcgdex\.net\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'cards-proxy-cache',
+              expiration: {
+                maxEntries: 300,
+                maxAgeSeconds: 60 * 60 * 24 * 30
+              },
+              cacheableResponse: {
+                statuses: [200]
+              }
+            }
+          },
+          {
             urlPattern: /^https:\/\/assets\.tcgdex\.net\/.*\.webp$/,
             handler: 'CacheFirst',
             options: {

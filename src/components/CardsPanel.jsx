@@ -1,7 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const ASSETS = "https://assets.tcgdex.net/";
-const SOURCES = ["webp", "jpg", "webp?retry"];
+const PROXY = "https://wsrv.nl/?url=assets.tcgdex.net/";
+const SOURCES = [
+  { base: PROXY, ext: "webp", cors: true },
+  { base: ASSETS, ext: "webp" },
+  { base: ASSETS, ext: "jpg" },
+];
+
+const preload = (url) => {
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = url;
+  return img;
+};
 let cardsPromise;
 const loadCards = () => (cardsPromise ||= import("../data/cards.json").then((m) => m.default));
 
@@ -33,7 +45,8 @@ function CardImage({ card, size, alt, lazy, onFail }) {
   return (
     <img
       key={index}
-      src={`${ASSETS}${card.img}/${size}.${SOURCES[index]}`}
+      src={`${SOURCES[index].base}${card.img}/${size}.${SOURCES[index].ext}`}
+      crossOrigin={SOURCES[index].cors ? "anonymous" : undefined}
       alt={alt}
       loading={lazy ? "lazy" : "eager"}
       draggable="false"
@@ -42,18 +55,17 @@ function CardImage({ card, size, alt, lazy, onFail }) {
   );
 }
 
-const highUrl = (card) => `${ASSETS}${card.img}/high.webp`;
+const highUrl = (card) => `${PROXY}${card.img}/high.webp`;
 
 function ViewerImage({ card, alt }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const img = new Image();
+    const img = preload(highUrl(card));
     img.onload = () => setReady(true);
-    img.src = highUrl(card);
   }, [card]);
 
-  if (ready) return <img src={highUrl(card)} alt={alt} draggable="false" />;
+  if (ready) return <img src={highUrl(card)} alt={alt} crossOrigin="anonymous" draggable="false" />;
   return <CardImage card={card} size="low" alt={alt} />;
 }
 
@@ -71,7 +83,7 @@ function CardViewer({ cards, index, name, prices, priceDate, onIndex, onClose })
 
   useEffect(() => {
     for (const near of [cards[index - 1], cards[index + 1]]) {
-      if (near) new Image().src = highUrl(near);
+      if (near) preload(highUrl(near));
     }
   }, [cards, index]);
 
@@ -202,7 +214,7 @@ function CardsPanel({ dex, name }) {
   };
 
   const toggle = () => {
-    if (!open) for (const card of cards) new Image().src = `${ASSETS}${card.img}/low.webp`;
+    if (!open) for (const card of cards) preload(`${PROXY}${card.img}/low.webp`);
     setOpen((v) => !v);
   };
 

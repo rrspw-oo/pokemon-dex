@@ -1026,6 +1026,8 @@ p {
   width: 100%;
   aspect-ratio: 63 / 88;
   object-fit: contain;
+  border-radius: 5px;
+  background: var(--screen);
 }
 
 .card-loading {
