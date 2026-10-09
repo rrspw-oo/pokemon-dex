@@ -63,12 +63,13 @@ export default defineConfig({
       },
       includeAssets: ['homeScreen-icon.svg', 'icons/*.png'],
       manifest: {
-        name: 'Pokemon Dex React',
-        short_name: 'PokeDex',
+        name: 'POKÉMON OMNISEARCH',
+        short_name: 'POKÉMON OMNISEARCH',
         description: 'A comprehensive Pokemon database with Chinese and English names, featuring shiny Pokemon support',
         theme_color: '#c9c6be',
         background_color: '#c9c6be',
         display: 'standalone',
+        orientation: 'portrait-primary',
         scope: '/pokemon-dex/',
         start_url: '/pokemon-dex/',
         icons: [

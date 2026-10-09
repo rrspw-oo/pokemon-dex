@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const ASSETS = "https://assets.tcgdex.net/";
-const FORMATS = ["webp", "jpg"];
+const SOURCES = ["webp", "jpg", "webp?retry"];
 let cardsPromise;
 const loadCards = () => (cardsPromise ||= import("../data/cards.json").then((m) => m.default));
 
@@ -14,10 +14,15 @@ function toCard(img, sets) {
 
 const formatPrice = (price) => `US$${price.toLocaleString("en-US")}`;
 
-function CardImage({ card, size, alt, lazy }) {
+function CardImage({ card, size, alt, lazy, onFail }) {
   const [index, setIndex] = useState(0);
 
-  if (index >= FORMATS.length) {
+  useEffect(() => {
+    if (index >= SOURCES.length) onFail?.(card.img);
+  }, [index, card, onFail]);
+
+  if (index >= SOURCES.length) {
+    if (onFail) return null;
     return (
       <span className="card-missing" role="img" aria-label={alt}>
         ?
@@ -28,7 +33,7 @@ function CardImage({ card, size, alt, lazy }) {
   return (
     <img
       key={index}
-      src={`${ASSETS}${card.img}/${size}.${FORMATS[index]}`}
+      src={`${ASSETS}${card.img}/${size}.${SOURCES[index]}`}
       alt={alt}
       loading={lazy ? "lazy" : "eager"}
       draggable="false"
@@ -160,6 +165,10 @@ function CardsPanel({ dex, name }) {
     return [...priced, ...cards.filter((card) => !priced.includes(card))];
   }, [cards, prices]);
 
+  const [failed, setFailed] = useState(() => new Set());
+  const onFail = useCallback((img) => setFailed((prev) => new Set(prev).add(img)), []);
+  const visible = ordered?.filter((card) => !failed.has(card.img));
+
   if (!cards) return null;
 
   const onPointerDown = (e) => {
@@ -192,7 +201,10 @@ function CardsPanel({ dex, name }) {
     drag.current = null;
   };
 
-  const toggle = () => setOpen((v) => !v);
+  const toggle = () => {
+    if (!open) for (const card of cards) new Image().src = `${ASSETS}${card.img}/low.webp`;
+    setOpen((v) => !v);
+  };
 
   return (
     <section className="panel">
@@ -210,7 +222,9 @@ function CardsPanel({ dex, name }) {
             </>
           )}
         </button>
+        {open && visible.length === 0 && <p className="card-loading">此寶可夢暫搜尋不到卡牌</p>}
         <ul
+          hidden={open && visible.length === 0}
           className={`card-strip ${open ? "" : "is-closed"}`}
           aria-hidden={!open}
           onPointerDown={onPointerDown}
@@ -219,11 +233,11 @@ function CardsPanel({ dex, name }) {
           onPointerLeave={onPointerLeave}
           onClickCapture={onClickCapture}
         >
-          {ordered.map((card, i) => (
+          {visible.map((card, i) => (
             <li key={card.img}>
               <button type="button" className="card-thumb" disabled={!open} onClick={() => setViewing(i)}>
                 {open ? (
-                  <CardImage card={card} size="low" alt={`${name} ${card.set} ${card.no}`} lazy />
+                  <CardImage card={card} size="low" alt={`${name} ${card.set} ${card.no}`} lazy onFail={onFail} />
                 ) : (
                   <span className="card-back" />
                 )}
@@ -244,7 +258,7 @@ function CardsPanel({ dex, name }) {
       </div>
       {viewing !== null && (
         <CardViewer
-          cards={ordered}
+          cards={visible}
           index={viewing}
           name={name}
           prices={prices}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import SearchBox from "./components/SearchBox";
 import PokemonGrid from "./components/PokemonGrid";
 import PokemonDetail from "./components/PokemonDetail";
@@ -42,12 +42,21 @@ function App() {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
+  const anchorTop = useRef(null);
+
+  useLayoutEffect(() => {
+    if (anchorTop.current == null) return;
+    const panel = document.querySelector(".evo-panel");
+    if (panel) window.scrollBy(0, panel.getBoundingClientRect().top - anchorTop.current);
+    anchorTop.current = null;
+  }, [nav]);
+
   const go = (next, replace = false) => {
     const state = { ...next };
     if (replace) window.history.replaceState(state, "");
     else window.history.pushState(state, "");
     setNav(navFromState(state));
-    window.scrollTo(0, 0);
+    if (anchorTop.current == null) window.scrollTo(0, 0);
   };
 
   const runSearch = (q) => {
@@ -56,7 +65,8 @@ function App() {
     setVisible(PAGE_SIZE);
   };
 
-  const openDetail = (pokemon) => {
+  const openDetail = (pokemon, keepTop = null) => {
+    anchorTop.current = keepTop;
     const from = selected ? "pokemon" : nav.view === "dex" ? (results ? "list" : "home") : nav.view;
     go({
       view: nav.view,

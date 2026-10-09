@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import Sprite from "./Sprite";
 import TypeBadges from "./TypeBadges";
 import PvpPanel from "./PvpPanel";
@@ -106,74 +106,68 @@ const optionsFrom = (member, fromId) =>
   (member.go || []).filter((o) => fromId == null || o.from === fromId).map((o) => ({ label: o.form, lines: o.lines }));
 
 function EvolutionPanel({ pokemon, family, onSelect }) {
+  const panelRef = useRef(null);
   const all = family.stages.flatMap((stage, i) => stage.map((m) => ({ ...m, stage: i })));
-  const stages = family.stages[0]?.some((m) => m.pokemon.id === pokemon.id) ? family.stages.slice(1) : family.stages;
-  const [pickedKey, setPickedKey] = useState(null);
-  const visible = all.filter((m) => stages.some((stage) => stage.some((x) => x.pokemon.key === m.pokemon.key)));
   const linked = (child, parent) =>
     child.go ? child.go.some((o) => o.from === parent.pokemon.id) : family.stages[parent.stage].length === 1;
   const nextOf = (member) => all.filter((m) => m.stage === member.stage + 1 && linked(m, member));
   const current = all.find((m) => m.pokemon.id === pokemon.id);
-  const picked =
-    visible.find((m) => m.pokemon.key === pickedKey) ||
-    (current && (visible.includes(current) || nextOf(current).length <= 2) ? current : null);
-  const nexts = picked ? nextOf(picked) : [];
-  const prevs = picked && nexts.length === 0 ? all.filter((m) => m.stage === picked.stage - 1 && linked(picked, m)) : [];
+  const nexts = current ? nextOf(current) : [];
+  const prevs = current && nexts.length === 0 ? all.filter((m) => m.stage === current.stage - 1 && linked(current, m)) : [];
+  const open = (target) => {
+    if (target.key !== pokemon.key) onSelect(target, panelRef.current.getBoundingClientRect().top);
+  };
 
   return (
-    <section className="panel">
+    <section className="panel evo-panel" ref={panelRef}>
       <h3 className="panel-title">進化</h3>
       {family.stages.length === 0 ? (
         getMegas(pokemon.id).length > 0 ? (
           <div className="go-condition">
-            <MegaBlock id={pokemon.id} current={pokemon.key} onSelect={onSelect} />
+            <MegaBlock id={pokemon.id} current={pokemon.key} onSelect={open} />
           </div>
         ) : (
           <p className="panel-empty">此寶可夢不會進化</p>
         )
       ) : (
         <>
-          <div className={`evo-chain ${stages.length === 1 ? "is-single" : ""}`}>
-            {stages.map((stage, i) => (
+          <div className="evo-chain">
+            {family.stages.map((stage, i) => (
               <Fragment key={i}>
                 {i > 0 && <span className="evo-chevron" aria-hidden="true" />}
-                <div className="evo-stage" style={{ "--cols": Math.min(stage.length, 3) }}>
+                <div
+                  className={`evo-stage ${stage.length >= 4 ? "is-wide" : ""}`}
+                  style={{ "--cols": stage.length >= 4 ? 4 : stage.length }}
+                >
                   {stage.map(({ pokemon: p }) => (
-                    <MiniCard
-                      key={p.key}
-                      pokemon={p}
-                      current={p.id === pokemon.id}
-                      selected={p.key === picked?.pokemon.key}
-                      onClick={(target) => setPickedKey(target.key)}
-                    />
+                    <MiniCard key={p.key} pokemon={p} current={p.id === pokemon.id} selected={p.id === pokemon.id} onClick={open} />
                   ))}
                 </div>
               </Fragment>
             ))}
           </div>
-          {picked ? (
+          {nexts.length > 2 ? (
+            <GoHint text="點選進化後的寶可夢查看 Pokémon GO 進化條件" />
+          ) : (
             <div className="go-condition" aria-live="polite">
               {nexts.map((next) => (
                 <GoBlock
                   key={next.pokemon.key}
                   title={`進化成${next.pokemon.zh}`}
-                  options={optionsFrom(next, picked.pokemon.id)}
+                  options={optionsFrom(next, current.pokemon.id)}
                   emptyText="Pokémon GO 目前沒有這個進化"
                 />
               ))}
               {prevs.map((prev) => (
                 <GoBlock
                   key={prev.pokemon.key}
-                  title={`由${prev.pokemon.zh}進化成${picked.pokemon.zh}`}
-                  options={optionsFrom(picked, prev.pokemon.id)}
+                  title={`由${prev.pokemon.zh}進化成${current.pokemon.zh}`}
+                  options={optionsFrom(current, prev.pokemon.id)}
                   emptyText="Pokémon GO 目前沒有這個進化"
                 />
               ))}
-              <MegaBlock id={picked.pokemon.id} current={pokemon.key} onSelect={onSelect} />
-              {picked.pokemon.id !== pokemon.id && <GoOpen target={picked.pokemon} onSelect={onSelect} />}
+              <MegaBlock id={current.pokemon.id} current={pokemon.key} onSelect={open} />
             </div>
-          ) : (
-            <GoHint text="點選寶可夢查看 Pokémon GO 進化條件" />
           )}
         </>
       )}
