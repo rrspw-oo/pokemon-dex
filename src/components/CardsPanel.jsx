@@ -49,6 +49,21 @@ function CardImage({ card, size, alt, lazy }) {
   );
 }
 
+const highUrl = (card) => `${ASSETS}${card.img}/high.webp`;
+
+function ViewerImage({ card, alt }) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setReady(true);
+    img.src = highUrl(card);
+  }, [card]);
+
+  if (ready) return <img src={highUrl(card)} alt={alt} draggable="false" />;
+  return <CardImage card={card} size="low" alt={alt} />;
+}
+
 function CardViewer({ cards, index, name, prices, onIndex, onClose }) {
   const card = cards[index];
   const price = highPrice(prices[card.img]);
@@ -60,6 +75,12 @@ function CardViewer({ cards, index, name, prices, onIndex, onClose }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  useEffect(() => {
+    for (const near of [cards[index - 1], cards[index + 1]]) {
+      if (near) new Image().src = highUrl(near);
+    }
+  }, [cards, index]);
 
   const swipe = useRef(null);
   const onPointerDown = (e) => {
@@ -96,7 +117,7 @@ function CardViewer({ cards, index, name, prices, onIndex, onClose }) {
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
     >
-      <CardImage key={card.img} card={card} size="high" alt={`${name} ${card.set} ${card.no}`} />
+      <ViewerImage key={card.img} card={card} alt={`${name} ${card.set} ${card.no}`} />
       <p className="card-viewer-caption">
         {card.set} #{card.no}
         {price && <span className="card-price">市價 {price}</span>}

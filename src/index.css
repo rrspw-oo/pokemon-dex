@@ -1070,8 +1070,8 @@ p {
 }
 
 .card-viewer img {
-  max-width: min(90vw, 420px);
-  max-height: 72vh;
+  width: min(90vw, 420px, 72vh * 63 / 88);
+  aspect-ratio: 63 / 88;
   object-fit: contain;
 }
 
