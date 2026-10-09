@@ -2,12 +2,34 @@ import { useEffect, useRef } from "react";
 import Sprite from "./Sprite";
 import { formatId } from "../utils/format";
 
+const TAP_SLOP = 10;
+
 function SearchSuggestions({ id, suggestions, activeIndex, onPick, onHover }) {
   const listRef = useRef(null);
+  const touch = useRef(null);
 
   useEffect(() => {
     listRef.current?.children[activeIndex]?.scrollIntoView({ block: "nearest" });
   }, [activeIndex]);
+
+  const onTouchStart = (e) => {
+    const t = e.touches[0];
+    touch.current = { x: t.clientX, y: t.clientY, moved: false };
+  };
+
+  const onTouchMove = (e) => {
+    const t = e.touches[0];
+    const start = touch.current;
+    if (start && Math.hypot(t.clientX - start.x, t.clientY - start.y) > TAP_SLOP) start.moved = true;
+  };
+
+  const onTouchEnd = (e, p) => {
+    const start = touch.current;
+    touch.current = null;
+    if (!start || start.moved) return;
+    e.preventDefault();
+    onPick(p);
+  };
 
   return (
     <ul
@@ -25,7 +47,10 @@ function SearchSuggestions({ id, suggestions, activeIndex, onPick, onHover }) {
           aria-selected={i === activeIndex}
           className={`suggestion ${i === activeIndex ? "is-active" : ""}`}
           onClick={() => onPick(p)}
-          onPointerEnter={() => onHover(i)}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={(e) => onTouchEnd(e, p)}
+          onPointerEnter={(e) => e.pointerType === "mouse" && onHover(i)}
         >
           <span className="suggestion-sprite">
             <Sprite key={p.image[0]} urls={p.image} alt="" eager />

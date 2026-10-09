@@ -10,6 +10,7 @@ function SearchBox({ onSearch, onSelect, resetKey, presetQuery }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef(null);
+  const blurTimer = useRef(null);
 
   useEffect(() => {
     setQuery(presetQuery);
@@ -41,6 +42,7 @@ function SearchBox({ onSearch, onSelect, resetKey, presetQuery }) {
   };
 
   const pick = (pokemon) => {
+    clearTimeout(blurTimer.current);
     close();
     inputRef.current?.blur();
     onSelect(pokemon, query.trim());
@@ -99,8 +101,13 @@ function SearchBox({ onSearch, onSelect, resetKey, presetQuery }) {
           aria-activedescendant={open && activeIndex >= 0 ? `${LIST_ID}-${activeIndex}` : undefined}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => setOpen(suggestions.length > 0)}
-          onBlur={close}
+          onFocus={() => {
+            clearTimeout(blurTimer.current);
+            setOpen(suggestions.length > 0);
+          }}
+          onBlur={() => {
+            blurTimer.current = setTimeout(close, 200);
+          }}
         />
         {query && (
           <button type="button" className="search-clear" aria-label="清除" onClick={clear} onPointerDown={(e) => e.preventDefault()}>
