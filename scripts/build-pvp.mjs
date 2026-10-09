@@ -139,6 +139,16 @@ async function main() {
 
   const moveOut = {};
   const pokemonOut = {};
+  const ids = [];
+  const idIndex = new Map();
+  const ref = (id) => {
+    if (!idIndex.has(id)) {
+      idIndex.set(id, ids.length);
+      ids.push(id);
+    }
+    return idIndex.get(id);
+  };
+  const known = (id) => used.has(id.replace(/_shadow$/, ""));
   for (const p of pvpoke.pokemon) {
     if (!used.has(p.speciesId)) continue;
     const entry = { s: [p.baseStats.atk, p.baseStats.def, p.baseStats.hp] };
@@ -147,15 +157,21 @@ async function main() {
       const hit = rankings[li].get(p.speciesId);
       if (!hit) return;
       const moveset = hit.r.moveset;
-      entry[cp] = [hit.rank, hit.r.score, moveset, moveset.filter((id) => elite.has(id))];
-      for (const id of moveset) {
-        const m = movesById.get(id);
-        if (!m) continue;
-        const zh = zhMoves.get(id) || (id.startsWith("HIDDEN_POWER") && zhMoves.get("HIDDEN_POWER"));
-        moveOut[id] = [zh || m.name, m.type, m.energyGain > 0 ? 1 : 0];
-      }
+      entry[cp] = [
+        hit.rank,
+        hit.r.score,
+        moveset,
+        moveset.filter((id) => elite.has(id)),
+        (hit.r.matchups || []).map((m) => m.opponent).filter(known).map(ref),
+        (hit.r.counters || []).map((m) => m.opponent).filter(known).map(ref),
+      ];
     });
     pokemonOut[p.speciesId] = entry;
+  }
+
+  for (const m of pvpoke.moves) {
+    const zh = zhMoves.get(m.moveId) || (m.moveId.startsWith("HIDDEN_POWER") && zhMoves.get("HIDDEN_POWER"));
+    moveOut[m.moveId] = [zh || m.name, m.type, m.energyGain > 0 ? 1 : 0];
   }
 
   for (const [id, m] of Object.entries(moveOut)) {
@@ -171,6 +187,7 @@ async function main() {
       maxLevel: MAX_LEVEL,
       cpm: cpmTable(gm),
       moves: moveOut,
+      ids,
       pokemon: pokemonOut,
     })
   );
